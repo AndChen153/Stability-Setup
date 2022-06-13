@@ -3,3 +3,4 @@ Stability Tester for Perovskite Devices Summer 2022 JP lab
 
 [Raspberry Pi headless](https://medium.com/@jrcharney/connect-your-raspberry-pi-to-your-computer-via-ethernet-4564e1e68922#:~:text=Connect%20your%20Raspberry%20Pi%20using,make%20sure%20things%20are%20connected).
 
+[Git Command Line no Login](https://stackoverflow.com/questions/35942754/how-can-i-save-username-and-password-in-git#35942890)
