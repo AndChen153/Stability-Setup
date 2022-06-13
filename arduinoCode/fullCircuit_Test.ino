@@ -5,8 +5,8 @@
 Adafruit_MCP4725 dac_A;
 Adafruit_INA219 ina219_A(0x41);
 
-uint32_t resistance;
-float dacVoltsOut;
+uint32_t input;
+// float dacVoltsOut;
 
 void setup()
 {
@@ -33,17 +33,21 @@ void setup()
         }
     }
 
-    dacVoltsOut = 0.8;
+    // dacVoltsOut = 0.8;
     ina219_A.setCalibration_16V_400mA();
 }
 
 void loop()
 {
-    // if (dacVoltsOut > 3.3) {
-    //     dacVoltsOut = 0;
-    // } else {
-    //     dacVoltsOut += 0.1;
-    // }
+    if (Serial.available())
+    {
+        input = Serial.read();
+        Serial.println(input);
+        if (input > 4095 or input < 0)
+        {
+            input = 0;
+        }
+    }
     float shuntvoltage_A = 0;
     float busvoltage_A = 0;
     float current_mA_A = 0;
@@ -51,7 +55,7 @@ void loop()
     float power_mW_A = 0;
 
     // dac_A.setVoltage((uint16_t)(dacVoltsOut * 4095.0 / 3.3), false);
-    dac_A.setVoltage((uint16_t)(0), false);
+    dac_A.setVoltage((uint16_t)(input), false);
 
     shuntvoltage_A = ina219_A.getShuntVoltage_mV();
     busvoltage_A = ina219_A.getBusVoltage_V();
@@ -60,25 +64,29 @@ void loop()
 
     loadvoltage_A = busvoltage_A + (shuntvoltage_A / 1000);
 
-    Serial.print("dac Voltage: ");
-    Serial.print(dacVoltsOut);
-    Serial.println(" V");
-
-    Serial.print("Load Voltage:   ");
     Serial.print(loadvoltage_A);
-    // Serial.print(busvoltage_A);
-    // Serial.print(shuntvoltage_A);
-    Serial.println(" V");
-
-    Serial.print("Current:        ");
+    Serial.print(", ");
     Serial.print(current_mA_A);
-    Serial.println(" mA");
+
+    Serial.println("");
+    delay(50);
+}
+
+
+// Serial.print("dac Voltage: ");
+    // Serial.print((input/4095.0) * 3.3);
+    // Serial.println(" V");
+
+    // Serial.print("Load Voltage:   ");
+    // Serial.print(loadvoltage_A);
+    // // Serial.print(busvoltage_A);
+    // // Serial.print(shuntvoltage_A);
+    // Serial.println(" V");
+
+    // Serial.print("Current:        ");
+    // Serial.print(current_mA_A);
+    // Serial.println(" mA");
 
     // Serial.print("Resistance:     ");
     // Serial.print((loadvoltage_A / current_mA_A));
     // Serial.println("k ohms");
-
-
-    Serial.println("");
-    delay(300);
-}
