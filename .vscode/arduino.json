@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
     "port": "COM4",
-    "sketch": "fullCircuit_Test.ino"
+    "sketch": "arduinoCode\\fullCircuit_Test.ino"
 }
