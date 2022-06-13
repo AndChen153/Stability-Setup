@@ -36,8 +36,6 @@ void setup()
 
     // dacVoltsOut = 0.8;
     ina219_A.setCalibration_16V_400mA();
-
-    input = 3000;
 }
 
 void loop()
