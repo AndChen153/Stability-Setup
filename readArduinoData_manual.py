@@ -28,6 +28,7 @@ if __name__ == '__main__':
     input_value = 0
     while True:
         if count > 15:
+            ser.write(str(0).encode())
             input_value = take_input()
             count = 0
         if ser.in_waiting > 0:
