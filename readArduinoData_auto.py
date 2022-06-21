@@ -19,7 +19,7 @@ def take_input(val):
     elif (val < 0 or val > 3.3):
         return 0
 
-    val = float(val)*4096.0/3.3
+    val = float(val)*4095.0/3.3
     val = round(val)
     return val
 

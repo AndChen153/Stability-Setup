@@ -16,7 +16,7 @@ def take_input():
         f.close()
         exit()
 
-    input_value = float(input_value)*4096.0/3.3
+    input_value = float(input_value)*4095.0/3.3
     input_value = round(input_value)
     return input_value
 
