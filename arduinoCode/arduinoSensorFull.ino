@@ -67,7 +67,6 @@ void loop()
     float loadvoltage_A = 0;
     float power_mW_A = 0;
 
-    // dac_A.setVoltage((uint16_t)(dacVoltsOut * 4095.0 / 3.3), false);
     dac_A.setVoltage(input, false);
     float voltsOut = input/4096.0 * 3.3;
 
