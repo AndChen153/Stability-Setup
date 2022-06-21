@@ -3,10 +3,11 @@
 #include <Adafruit_MCP4725.h>
 
 Adafruit_MCP4725 dac_A;
-Adafruit_INA219 ina219_A(0x41);
+Adafruit_INA219 ina219_A;
 
 uint16_t input;
-int temp;
+String input_value;
+int volts;
 // float dacVoltsOut;
 
 void setup()
@@ -42,13 +43,14 @@ void loop()
 {
     if (Serial.available())
     {
-        int volts = Serial.parseInt();
+        input_value = Serial.readString();
+        volts = input_value.toInt();
         if (volts > 0)
         {
             // Serial.println(volts);
             input = (uint16_t)volts;
         }
-        else if (volts == -1)
+        else if (volts < 0)
         {
             input = 0;
         }
@@ -67,6 +69,7 @@ void loop()
 
     // dac_A.setVoltage((uint16_t)(dacVoltsOut * 4095.0 / 3.3), false);
     dac_A.setVoltage(input, false);
+    float voltsOut = input/4096.0 * 3.3;
 
     shuntvoltage_A = ina219_A.getShuntVoltage_mV();
     busvoltage_A = ina219_A.getBusVoltage_V();
@@ -79,12 +82,16 @@ void loop()
 
     loadvoltage_A = busvoltage_A + (shuntvoltage_A / 1000);
 
-    Serial.print(input);
+    Serial.print(voltsOut);
+    Serial.print(", ");
+    Serial.print(loadvoltage_A);
     Serial.print(", ");
     Serial.print(current_mA_A);
+    Serial.print(", ");
+    Serial.print((loadvoltage_A/current_mA_A)*1000);
 
     Serial.println("");
-    delay(50);
+    delay(10);
 }
 
 // Serial.print("dac Voltage: ");
