@@ -74,13 +74,13 @@ void loop()
     shuntvoltage_A = ina219_A.getShuntVoltage_mV();
     busvoltage_A = ina219_A.getBusVoltage_V();
     current_mA_A = ina219_A.getCurrent_mA();
+    power_mW_A = ina219_A.getPower_mW();
+    loadvoltage_A = busvoltage_A + (shuntvoltage_A / 1000);
+
     if (current_mA_A < 0)
     {
         current_mA_A = 0;
     }
-    power_mW_A = ina219_A.getPower_mW();
-
-    loadvoltage_A = busvoltage_A + (shuntvoltage_A / 1000);
 
     Serial.print(voltsOut);
     Serial.print(", ");
