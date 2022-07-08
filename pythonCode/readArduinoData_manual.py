@@ -21,7 +21,7 @@ def take_input():
     return input_value
 
 if __name__ == '__main__':
-    ser = serial.Serial('COM4', 115200, timeout=1)
+    ser = serial.Serial('COM3', 115200, timeout=1)
     ser.flush()
 
     count = 16

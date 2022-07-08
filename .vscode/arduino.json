@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
-    "port": "COM4",
-    "sketch": "arduinoCode\\fullCircuit_Test.ino"
+    "port": "COM3",
+    "sketch": "arduinoSensorFull.ino"
 }
