@@ -1,4 +1,4 @@
-// version 1.1
+// version 1.0
 #include <Wire.h>
 #include <Adafruit_INA219.h>
 #include <Adafruit_MCP4725.h>
