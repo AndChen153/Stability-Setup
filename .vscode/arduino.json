@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
-    "port": "COM3",
-    "sketch": "arduinoAuto.ino"
+    "port": "COM6",
+    "sketch": "arduinoAuto8Pixels.ino"
 }

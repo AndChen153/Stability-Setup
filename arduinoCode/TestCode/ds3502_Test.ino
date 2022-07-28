@@ -43,6 +43,17 @@ void loop()
         delay(500);
     }
 }
+
+
+// convert decimal voltage value to 12 bit int to control the MCP4725
+uint16_t convert_to_12bit(float val) {
+    if (val < 0 or val > 3.3) {
+        return 0;
+    }
+    val = float(val)*4095.0/3.3;
+    int bits = floor(val);
+    return bits;
+}
 // void loop()
 // {
 //     // uint8_t default_value = ds3502.getWiper();

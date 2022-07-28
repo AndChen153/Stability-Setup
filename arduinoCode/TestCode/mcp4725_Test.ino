@@ -25,10 +25,17 @@ void setup(void)
     // For Adafruit MCP4725A1 the address is 0x62 (default) or 0x63 (ADDR pin tied to VCC)
     // For MCP4725A0 the address is 0x60 or 0x61
     // For MCP4725A2 the address is 0x64 or 0x65
-    dac.begin(0x62);
+    if (!dac.begin())
+    {
+        Serial.println("Failed to find dac_A chip");
+        while (1)
+        {
+            delay(10);
+        }
+    }
     voltageOut = 5.0;
     Serial.println("Voltage Out = ");
-    Serial.print((uint32_t)voltageOut*4095.0/5.0);
+    Serial.print(2);
 }
 
 void loop(void)
@@ -48,6 +55,16 @@ void loop(void)
     //       delay(50);
     // }
 
-    dac.setVoltage((uint16_t)(voltageOut*4095.0/5.0), false);
+    dac.setVoltage(convert_to_12bit(3), false);
 
+}
+
+// convert decimal voltage value to 12 bit int to control the MCP4725
+uint16_t convert_to_12bit(float val) {
+    if (val < 0 or val > 3.3) {
+        return 0;
+    }
+    val = float(val)*4095.0/3.3;
+    int bits = floor(val);
+    return bits;
 }
