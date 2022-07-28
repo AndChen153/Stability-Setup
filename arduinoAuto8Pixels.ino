@@ -173,7 +173,7 @@ void loop(void) {
     if (newData == true && scanDone && tracking_And_ScanningDone) {
         strcpy(tempChars, receivedChars);
         parseData();
-        // showParsedData();
+        showParsedData();
         zero();
 
         newData = false;
@@ -238,9 +238,15 @@ void loop(void) {
 // algo for finding
 void perturbAndObserve() {
     unsigned long startMillis = millis();
-    unsigned long currMillis;
+    unsigned long currMillis = 0;
     float Vset[8];
-    memset(Vset, voltage_Starting_PnO, sizeof(Vset));
+    // Serial.println(voltage_Starting_PnO);
+    // memset(Vset, voltage_Starting_PnO, sizeof(Vset));
+
+    for (int ID = 0; ID < 8; ID ++) {
+        Vset[ID] = voltage_Starting_PnO;
+    }
+
     float VsetUp[8];
     float VsetDown[8];
 
@@ -254,45 +260,16 @@ void perturbAndObserve() {
     float loadVoltages[8];
     float currentsFlipped[8];
 
+    float reset[8] = {0,0,0,0,0,0,0,0};
 
+    // Serial.println(currMillis);
     while(currMillis/1000 < 120) {
+
         memset(avgPowerCalced, 0.0, sizeof(avgPowerCalced));
         memset(avgPowerCalcedUp, 0.0, sizeof(avgPowerCalcedUp));
         memset(avgPowerCalcedDown, 0.0, sizeof(avgPowerCalcedDown));
 
-        // Vset ---------------------------------------------------------------
-        for (int ID = 0; ID < 8; ID ++) {
-            setVoltage(&allDAC[ID],  Vset[ID], ID);
-        }
-        delay(measurmentDelayMultiplier);
-
-
-        for (count = 0; count < measurements_Per_Step_PnO; count++) {
-            for (int ID = 0; ID < 8; ID ++) {
-                getINA129(&allINA219[ID], ID);
-
-                avgPowerCalced[ID] += abs(loadvoltage * current_mA);
-                loadVoltages[ID] += loadvoltage;
-                currentsFlipped[ID] += current_mA;
-
-                delay(measurement_Delay_PnO);
-            }
-
-        }
-
-        for (int ID = 0; ID < 8; ID ++) {
-            avgPowerCalced[ID] = avgPowerCalced[ID]/count;
-            loadVoltages[ID] = loadVoltages[ID]/count;
-            currentsFlipped[ID] =  currentsFlipped[ID]/count;
-        }
-        // Serial.print("avg power calced: ");
-        // Serial.println(avgPowerCalced);
-
-        zero();
-        delay(measurement_Delay_PnO);
-
-
-        // Vset + deltaV ------------------------------------------------------
+        // Vset + deltaV --------------------------------------------------------------------------
 
         for (int ID = 0; ID < 8; ID ++) {
             VsetUp[ID] = Vset[ID] + voltage_Step__Size_PnO;
@@ -305,10 +282,11 @@ void perturbAndObserve() {
             for (int ID = 0; ID < 8; ID ++) {
                 getINA129(&allINA219[ID], ID);
 
-                avgPowerCalcedUp[ID] += abs(loadvoltage * current_mA);
+                avgPowerCalcedUp[ID] += abs(loadvoltage * current_mA_Flipped);
 
-                delay(measurement_Delay_PnO);
+
             }
+            delay(measurement_Delay_PnO);
 
         }
 
@@ -317,13 +295,13 @@ void perturbAndObserve() {
         }
 
         zero();
-        delay(measurement_Delay_PnO);
+        delay(measurmentDelayMultiplier);
 
 
-        // Vset - deltaV ------------------------------------------------------
+        // Vset - deltaV --------------------------------------------------------------------------
 
         for (int ID = 0; ID < 8; ID ++) {
-            VsetDown[ID] = Vset[ID] - voltage_Step__Size_PnO;
+            VsetDown[ID] = Vset[ID] - 1;
             setVoltage(&allDAC[ID],  VsetDown[ID], ID);
 
         }
@@ -334,41 +312,89 @@ void perturbAndObserve() {
             for (int ID = 0; ID < 8; ID ++) {
                 getINA129(&allINA219[ID], ID);
 
-                avgPowerCalcedDown[ID] += abs(loadvoltage * current_mA);
+                avgPowerCalcedDown[ID] += abs(loadvoltage * current_mA_Flipped);
 
-                delay(measurement_Delay_PnO);
             }
+            delay(measurement_Delay_PnO);
 
         }
         for (int ID = 0; ID < 8; ID ++) {
             avgPowerCalcedDown[ID] = avgPowerCalcedDown[ID]/count;
         }
 
+        zero();
+        delay(measurmentDelayMultiplier);
+
+
+        // Vset -----------------------------------------------------------------------------------
+        for (int ID = 0; ID < 8; ID ++) {
+            setVoltage(&allDAC[ID],  Vset[ID], ID);
+        }
+        delay(measurmentDelayMultiplier);
+
+
+        for (count = 0; count < measurements_Per_Step_PnO; count++) {
+            for (int ID = 0; ID < 8; ID ++) {
+                getINA129(&allINA219[ID], ID);
+
+                avgPowerCalced[ID] += abs(loadvoltage * current_mA_Flipped);
+                loadVoltages[ID] += loadvoltage;
+                currentsFlipped[ID] += current_mA;
+
+            }
+            delay(measurement_Delay_PnO);
+
+        }
+
+        for (int ID = 0; ID < 8; ID ++) {
+            avgPowerCalced[ID] = avgPowerCalced[ID]/count;
+            loadVoltages[ID] = loadVoltages[ID]/count;
+            currentsFlipped[ID] =  currentsFlipped[ID]/count;
+        }
+        // Serial.print("avg power calced: ");
+        // Serial.println(avgPowerCalced);
+
+        zero();
+        delay(measurmentDelayMultiplier);
+
+        // calculations ---------------------------------------------------------------------------
 
         for (int ID = 0; ID < 8; ID ++) {
             PCE[ID] = (avgPowerCalced[ID]/1000)/(0.1*0.128);
 
-            if (avgPowerCalcedUp[ID] > avgPowerCalcedDown[ID] && avgPowerCalcedUp[ID] > avgPowerCalced[ID]) {
+            Serial.print(ID); Serial.print(", ");
+            Serial.print(VsetUp[ID]); Serial.print(", "); Serial.print(avgPowerCalcedUp[ID]); Serial.print(",     ");
+            Serial.print(VsetDown[ID]);Serial.print(", "); Serial.print(avgPowerCalcedDown[ID]); Serial.print(",     ");
+            Serial.print(Vset[ID]);Serial.print(", "); Serial.print(avgPowerCalced[ID]);
+            Serial.println("");
+
+            // if (avgPowerCalcedUp[ID] > avgPowerCalcedDown[ID] && avgPowerCalcedUp[ID] > avgPowerCalced[ID]) {
+            if (avgPowerCalcedUp[ID] > avgPowerCalcedDown[ID]) {
                 Vset[ID] += voltage_Step__Size_PnO/3;
-            } else if (avgPowerCalcedDown[ID] > avgPowerCalcedUp[ID] && avgPowerCalcedDown[ID] > avgPowerCalced[ID]) {
+            }
+            // if (avgPowerCalcedDown[ID] > avgPowerCalcedUp[ID] && avgPowerCalcedDown[ID] > avgPowerCalced[ID]) {
+            else if (avgPowerCalcedUp[ID] < avgPowerCalcedDown[ID]) {
                 Vset[ID] -= voltage_Step__Size_PnO/3;
             }
         }
-
-
-        for (int ID = 0; ID < 8; ID ++) {
-            Serial.print(Vset[ID]);
-            Serial.print(", ");
-            Serial.print(loadVoltages[ID], 4);
-            Serial.print(", ");
-            Serial.print(currentsFlipped[ID], 4);
-            Serial.print(", ");
-            Serial.print(PCE[ID], 4);
-            Serial.print(", ");
-        }
-        Serial.print(millis()/1000.0, 4);
         Serial.println("");
-        currMillis = millis() - startMillis;
+
+        // currMillis = millis() - startMillis;
+        // Serial.print(millis()/1000.0, 4);
+        // Serial.print(", ");
+        // for (int ID = 0; ID < 8; ID ++) {
+        //     Serial.print(Vset[ID]);
+        //     Serial.print(", ");
+        //     Serial.print(loadVoltages[ID], 4);
+        //     Serial.print(", ");
+        //     Serial.print(currentsFlipped[ID], 4);
+        //     Serial.print(", ");
+        //     Serial.print(PCE[ID], 4);
+        //     Serial.print(", ");
+        // }
+        // Serial.print("null");
+        // Serial.println("");
+
     }
 
     perturb_And_ObserveDone = true;
@@ -530,7 +556,7 @@ void getINA129(Adafruit_INA219 *ina219, uint8_t ID) {
     current_mA         = ina219 -> getCurrent_mA();
     power_mW           = ina219 -> getPower_mW();
     current_mA_Flipped = current_mA * -1;
-    loadvoltage      = busvoltage + (shuntvoltage / 1000);
+    loadvoltage        = busvoltage + (shuntvoltage / 1000);
 }
 
 // set the DAC voltage out
@@ -546,7 +572,7 @@ void zero() {
             setVoltage(&allDAC[ID], 0, ID);
         }
     }
-    delay(10);
+    delay(100);
 }
 
 // convert decimal voltage value to 12 bit int to control the MCP4725
