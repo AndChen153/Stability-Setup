@@ -24,7 +24,7 @@ Adafruit_MCP4725 dac_6;
 Adafruit_MCP4725 dac_7;
 Adafruit_MCP4725 allDAC[] = {dac_0, dac_1, dac_2, dac_3, dac_4, dac_5, dac_6, dac_7};
 
-#define TCAADDR 0x71
+#define TCAADDR 0x70
 #define TCAADDR2 0x71
 
 
@@ -136,7 +136,7 @@ void TCA9548A_INA219(uint8_t bus) {
 // --------------------------------------------------------------------------------------
 
 void TCA9548A_MCP475(uint8_t bus) {
-    Wire.beginTransmission(0x71); // TCA9548A_INA219 address is 0x70
+    Wire.beginTransmission(0x71); // TCA9548A_MCP475 address is 0x71
     Wire.write(1 << bus);         // send byte to select bus
     Wire.endTransmission();
     // Serial.print("TCA channel "); Serial.print(bus); Serial.println(" activated");
