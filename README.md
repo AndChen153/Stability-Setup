@@ -29,12 +29,19 @@ https://onlinelibrary.wiley.com/doi/full/10.1002/solr.201800287?saml_referrer
 https://pubs.rsc.org/en/content/articlelanding/2017/tc/c7tc03482b
 
 to buy
+
 https://www.amazon.com/AITRIP-PCSTCA9548A-Multiplexer-Breakout-Expansion/dp/B08JGSMRF9/ref=pd_lpo_1?pd_rd_i=B08JGSMRF9&th=1
 
 https://www.amazon.com/BOJACK-PC817-OPTOCOUPLER-Installation-PC817C/dp/B08CXRHDHP/ref=sr_1_8?crid=7WPI1A2T7QOM&keywords=optocoupler&qid=1657751883&sprefix=optocoupler%2Caps%2C54&sr=8-8
 
 
 # Conda
+
+To activate this environment, use:
+
+'''
+conda activate 'C:\Users\Andrew Chen\Dropbox\code\Stability-Setup\env'
+'''
 
 to create environment.yml file, navigate to Stability-Setup directory and then run:
 
@@ -54,4 +61,5 @@ to update environment from yml file:
 conda env update --prefix ./env --file environment.yml  --prune
 ```
 
-  - vs2015_runtime=14.27.29016=h5e58377_2
+
+*** make sure to run conda promp as admin

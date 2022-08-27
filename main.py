@@ -5,23 +5,25 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 start = time.time()
 
 VOLTAGE_RANGE = 1.2
 VOLTAGE_STEP_SIZE = 0.03
-VOLTAGE_READ_COUNT = 5
-VOLTAGE_SCAN_RATE = 50         # mV/s
+VOLTAGE_READ_COUNT = 3
+VOLTAGE_SCAN_RATE = 100         # mV/s
 
 VOLTAGE_Starting_PNO = 0.8
-VOLTAGE_STEP_SIZE_PNO = 0.09!
+VOLTAGE_STEP_SIZE_PNO = 0.09
 VOLTAGE_READ_COUNT_PNO = 5
 VOLTAGE_DELAY_TIME_PNO = 5
 
-COM = 'COM3!'
+COM = 'COM3'
 SERIAL_BAUD_RATE = 115200
 
-# mode = "scan"
-mode = "PnO"
+mode = "scan"
+scanMode = "light_" # "dark_"
+# mode = "PnO"
 arr = np.empty([5, 18], dtype="object")
 
 
@@ -59,14 +61,14 @@ line = ""
 run = True
 done = False
 
-print(arr)
+# print(arr)
 if __name__ == '__main__':
     ser = serial.Serial(COM, SERIAL_BAUD_RATE, timeout=1)
     ser.flush()
 
     # while line != "Done!":
     while not done:
-        fileName = "./data/" + mode + "light_" + today + ".csv"
+        fileName = "./data/" + mode + scanMode + today + ".csv"
         if ser.in_waiting > 0:
             if run:
                 if mode == "scan":
@@ -83,15 +85,14 @@ if __name__ == '__main__':
 
             print(line)
 
-            # if len(data_list) > 25:
-            # # #     print(line)
-            # # #     # print(np.array([data_list]))
-            # # #     # print(np.array([data_list]).shape)
-            #     arr = np.append(arr, np.array([data_list]),axis = 0)
+            if len(data_list) > 25:
+            # #     # print(np.array([data_list]))
+            # #     # print(np.array([data_list]).shape)
+                arr = np.append(arr, np.array([data_list]),axis = 0)
 
-            # if line == "Done!":
+            if line == "Done!":
             #     # run = True
-            #     donw = True
+                done = True
             #     np.savetxt(fileName, arr, delimiter=",", fmt='%s')
 
             #     if mode == "PnO":
