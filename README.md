@@ -21,6 +21,8 @@ https://learn.adafruit.com/adafruit-tca9548a-1-to-8-i2c-multiplexer-breakout/wir
 
 Mppt measurement
 
+https://www.youtube.com/watch?v=u8HJZGJQz8I&ab_channel=AHSANMEHMOOD
+
 https://onlinelibrary.wiley.com/doi/full/10.1002/solr.201800287?saml_referrer
 
 https://pubs.rsc.org/en/content/articlelanding/2017/tc/c7tc03482b
