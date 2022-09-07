@@ -1,5 +1,5 @@
 {
     "board": "arduino:sam:arduino_due_x_dbg",
-    "port": "COM3",
-    "sketch": "adruinoAuto8Pixels_Find_maximum_rates.ino"
+    "port": "COM5",
+    "sketch": "arduinoAuto8Pixels1_2.ino"
 }
