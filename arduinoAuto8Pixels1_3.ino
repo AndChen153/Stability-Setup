@@ -242,6 +242,8 @@ void perturbAndObserve() {
     float Vset[8];
     float VsetUp;
     float VsetDown;
+    float time;
+    int count;
 
     for (int ID = 0; ID < 8; ID ++) {
         Vset[ID] = voltage_Starting_PnO;
@@ -253,33 +255,49 @@ void perturbAndObserve() {
     float loadvoltageArr[8];
     float current_mA_FlippedArr[8];
     float PCE[8];
+    measurements_Per_Step_PnO++; //average not working correctly
 
     while(millis()/1000 < 120) {
+        //measurements_Per_Step_PnO
+        time = millis();
         for (int ID = 0; ID < 8; ++ID) {
             // Vset ---------------------------------------------------
             setVoltage(&allDAC[ID],  Vset[ID], ID);
             delay(measurement_Delay_PnO);
-            getINA129(&allINA219[ID], ID);
-            avgPowerCalced[ID] = loadvoltage * current_mA_Flipped;
-            loadvoltageArr[ID] = loadvoltage;
-            current_mA_FlippedArr[ID] = current_mA_Flipped;
+
+            for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
+                getINA129(&allINA219[ID], ID);
+                avgPowerCalced[ID] += loadvoltage * current_mA_Flipped;
+                loadvoltageArr[ID] += loadvoltage;
+                current_mA_FlippedArr[ID] += current_mA_Flipped;
+            }
 
             // Vset + deltaV ------------------------------------------
             VsetUp = Vset[ID] + voltage_Step__Size_PnO;
             setVoltage(&allDAC[ID],  VsetUp, ID);
             delay(measurement_Delay_PnO);
-            getINA129(&allINA219[ID], ID);
-            avgPowerCalcedUp = loadvoltage * current_mA_Flipped;
+
+            for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
+                getINA129(&allINA219[ID], ID);
+                avgPowerCalcedUp += loadvoltage * current_mA_Flipped;
+            }
             // zero();
 
             // Vset - deltaV ------------------------------------------
             VsetDown = Vset[ID] - voltage_Step__Size_PnO;
             setVoltage(&allDAC[ID],  VsetDown, ID);
             delay(measurement_Delay_PnO);
-            getINA129(&allINA219[ID], ID);
-            avgPowerCalcedDown = loadvoltage * current_mA_Flipped;
-            // zero();
 
+            for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
+                getINA129(&allINA219[ID], ID);
+                avgPowerCalcedDown += loadvoltage * current_mA_Flipped;
+            }
+            // zero();
+            avgPowerCalced[ID] = avgPowerCalced[ID]/measurements_Per_Step_PnO;
+            avgPowerCalcedUp = avgPowerCalcedUp/measurements_Per_Step_PnO;
+            avgPowerCalcedDown = avgPowerCalcedDown/measurements_Per_Step_PnO;
+            loadvoltageArr[ID] = loadvoltageArr[ID]/measurements_Per_Step_PnO;
+            current_mA_FlippedArr[ID] = current_mA_FlippedArr[ID]/measurements_Per_Step_PnO;
 
             if (avgPowerCalcedUp > avgPowerCalcedDown && avgPowerCalcedUp > avgPowerCalced[ID]) {
                 Vset[ID] += voltage_Step__Size_PnO;
@@ -290,12 +308,12 @@ void perturbAndObserve() {
             PCE[ID] = (avgPowerCalced[ID]/1000)/(0.1*0.128);
         }
 
-        Serial.print(millis()/1000.0, 4);
+        Serial.print(time/1000.0, 4);
         Serial.print(", ");
         for (int ID = 0; ID < 8; ++ID) {
-            Serial.print(loadvoltageArr[ID]);
+            Serial.print(loadvoltageArr[ID], 2);
             Serial.print(", ");
-            Serial.print(current_mA_FlippedArr[ID]);
+            Serial.print(current_mA_FlippedArr[ID], 2);
             Serial.print(", ");
         }
 
@@ -304,7 +322,7 @@ void perturbAndObserve() {
             // Serial.print(", ");
             // Serial.print(current_mA_Flipped, 4);
             // Serial.print(", ");
-            Serial.print(PCE[ID]*100, 4);
+            Serial.print((PCE[ID]*100), 4);
             Serial.print(", ");
             // Serial.print(avgPowerCalcedUp, 4);
             // Serial.print(", ");
