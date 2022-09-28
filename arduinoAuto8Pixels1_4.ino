@@ -41,6 +41,7 @@ float val1;
 float val2;
 int val3;
 int val4;
+int val5;
 const byte numChars = 32;
 char receivedChars[numChars];
 char tempChars[numChars];        // temporary array for use when parsing
@@ -55,6 +56,7 @@ float voltage_Starting_PnO      = 0.0;
 float voltage_Step__Size_PnO    = 0.000;
 int measurement_Delay_PnO       = 0;
 int measurements_Per_Step_PnO   = 0;
+int dummy;
 
 // Tracking and Scanning Variables ------------------------------------------------------
 boolean tracking_And_ScanningDone = true;
@@ -63,6 +65,7 @@ float voltage_Starting_TaS    = 0.0;
 float voltage_Step__Size_TaS  = 0.000;
 int measurement_Delay_TaS     = 0;
 int measurements_Per_Step_TaS = 0;
+int dummy;
 
 // Scan Variables -----------------------------------------------------------------------
 boolean scanDone = true;
@@ -77,6 +80,7 @@ float voltage_Range_Scan       = 0.0;
 float voltage_Step_Size_Scan   = 0.000;
 int measurements_Per_Step_Scan = 0;
 int measurement_Rate_Scan     = 0;
+int light_Status = 0;
 
 
 
@@ -141,6 +145,8 @@ void loop(void) {
         voltage_Step_Size_Scan = val2;
         measurements_Per_Step_Scan = val3;
         measurement_Rate_Scan = val4;
+        dummy = val5;
+
 
         scan("backward");
         scan("forward");
@@ -154,6 +160,7 @@ void loop(void) {
         voltage_Step__Size_TaS = val2;
         measurement_Delay_TaS = val3;
         measurements_Per_Step_TaS = val4;
+        dummy = val5;
 
         trackingAndScanning();
         Serial.println("Done!");
@@ -165,6 +172,7 @@ void loop(void) {
         voltage_Step__Size_PnO = val2;
         measurements_Per_Step_PnO= val3;
         measurement_Delay_PnO = val4;
+        light_Status = val5;
 
         perturbAndObserve();
         Serial.println("Done!");
@@ -176,68 +184,7 @@ void loop(void) {
 // --------------------------------------------------------------------------------------
 
 void perturbAndObserve() {
-    // int pixelID = 0;
-    // float Vset = voltage_Starting_PnO;
-    // float VsetUp;
-    // float VsetDown;
-
-    // int count;
-    // float avgPowerCalced = 0;
-    // float avgPowerCalcedUp = 0;
-    // float avgPowerCalcedDown = 0;
-    // float PCE = 0;
-
-    // while(millis()/1000 < 120) {
-    //     // Vset ---------------------------------------------------
-    //     setVoltage(&allDAC[ID],  Vset, ID);
-    //     delay(measurement_Delay_PnO);
-    //     getINA129(&allINA219[ID], ID);
-    //     avgPowerCalced = loadvoltage * current_mA_Flipped;
-
-    //     // Vset + deltaV ------------------------------------------
-    //     VsetUp = Vset + voltage_Step__Size_PnO;
-    //     setVoltage(&allDAC[ID],  VsetUp, ID);
-    //     delay(measurement_Delay_PnO);
-    //     getINA129(&allINA219[ID], ID);
-    //     avgPowerCalcedUp = loadvoltage * current_mA_Flipped;
-    //     // zero();
-
-    //     // Vset - deltaV ------------------------------------------
-    //     VsetDown = Vset - voltage_Step__Size_PnO;
-    //     setVoltage(&allDAC[ID],  VsetDown, ID);
-    //     delay(measurement_Delay_PnO);
-    //     getINA129(&allINA219[ID], ID);
-    //     avgPowerCalcedDown = loadvoltage * current_mA_Flipped;
-    //     // zero();
-
-
-    //     if (avgPowerCalcedUp > avgPowerCalcedDown && avgPowerCalcedUp > avgPowerCalced) {
-    //         Vset += voltage_Step__Size_PnO;
-    //     } else if (avgPowerCalcedDown > avgPowerCalcedUp && avgPowerCalcedDown > avgPowerCalced) {
-    //         Vset -= voltage_Step__Size_PnO;
-    //     }
-
-    //     PCE = (avgPowerCalced/1000)/(0.1*0.128);
-
-    //     Serial.print(Vset);
-    //     Serial.print(", ");
-    //     Serial.print(loadvoltage, 4);
-    //     Serial.print(", ");
-    //     Serial.print(current_mA_Flipped, 4);
-    //     Serial.print(", ");
-    //     Serial.print(PCE*100, 4);
-    //     Serial.print(", ");
-    //     Serial.print(avgPowerCalcedUp, 4);
-    //     Serial.print(", ");
-    //     Serial.print(avgPowerCalced, 4);
-    //     Serial.print(", ");
-    //     Serial.print(avgPowerCalcedDown, 4);
-
-
-    //     // Serial.print(", ");
-    //     // Serial.print(millis()/1000.0, 4);
-    //     Serial.println("");
-    // }
+    lightControl(1);
 
     float Vset[8];
     float VsetUp;
@@ -358,6 +305,7 @@ void trackingAndScanning() {
 
 // performs forward or backward JV scan of solar cell
 void scan(String dir) {
+    lightControl(light_Status);
 
     int s = (voltage_Range_Scan*1000)/measurement_Rate_Scan;
     int steps = (voltage_Range_Scan*1000)/(voltage_Step_Size_Scan*1000);
@@ -444,6 +392,18 @@ void scan(String dir) {
 
 // Helper functions ---------------------------------------------------------------------
 
+// TO IMPLEMENT LATER
+// TO IMPLEMENT LATER
+// TO IMPLEMENT LATER
+// TO IMPLEMENT LATER
+void lightControl(int light_Status) {
+    if (light_Status == 0) {
+        Serial.print("turn light off");
+    } else if (light_Status == 1) {
+        Serial.print("turn light on");
+    }
+
+}
 
 void displaySensorVals(Adafruit_INA219 *ina219, int ID) {
     TCA9548A_INA219(ID);
@@ -623,5 +583,7 @@ void showParsedData() {
     Serial.print(val3);
     Serial.print(", Val4: ");
     Serial.print(val4);
+    Serial.print(", Val5: ");
+    Serial.print(val5);
     Serial.println("");
 }

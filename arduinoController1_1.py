@@ -20,38 +20,26 @@ start = time.time()
 # PNO_MEASUREMENT_DELAY = 100
 
 
-modeInput = int(input("0 for scan, 1 for pno"))
-if modeInput == 0:
-    mode = "scan"
-    scanModeInput = int(input("0 for dark, 1 for light"))
-    if scanModeInput == 0:
-        scanMode = "dark_"
-    else:
-        scanMode = "light_"
-    fileName = "./data/" + mode + scanMode + today + ".csv"
-else:
-    mode = "PnO"
-    fileName = "./data/" + mode + today + ".csv"
-
-
 
 class StabilitySetup:
 
-    def __init__(self, COM: str, SERIAL_BAUD_RATE: int) -> None:
-        """
-        Parameters
-        ----------
-        COM : str
-            com port to communicate with arduino
-            typically "COM5" or "COM3"
-        SERIAL_BAUD_RATE : str
-            serial rate to communicate with arduino
-            set to 115200 in arduino code
-        """
-        self.ser = serial.Serial(COM, SERIAL_BAUD_RATE, timeout=1)
-        self.ser.flush()
+    # def __init__(self, COM: str, SERIAL_BAUD_RATE: int) -> None:
+    #     """
+    #     Parameters
+    #     ----------
+    #     COM : str
+    #         com port to communicate with arduino
+    #         typically "COM5" or "COM3"
+    #     SERIAL_BAUD_RATE : str
+    #         serial rate to communicate with arduino
+    #         set to 115200 in arduino code
+    #     """
+    #     self.ser = serial.Serial(COM, SERIAL_BAUD_RATE, timeout=1)
+    #     self.ser.flush()
+    def __init__(self) -> None:
+        pass
 
-    def readData(self):
+    def _readData(self):
         """
         Reads data outputed on serial bus by arduino
         """
@@ -72,11 +60,11 @@ class StabilitySetup:
                     done = True
 
 
-    def saveData(self):
+    def _saveData(self):
         """
         saves numpy array to csv file
         """
-        np.savetxt(fileName, self.arr, delimiter=",", fmt='%s')
+        np.savetxt(self.fileName, self.arr, delimiter=",", fmt='%s')
 
 
     def printTime(self):
@@ -85,7 +73,7 @@ class StabilitySetup:
         print("\n"+ str(total_time))
 
 
-    def Scan(self, SCAN_RANGE: float, SCAN_STEP_SIZE: float, SCAN_READ_COUNT: int, SCAN_RATE: int, SCAN_MODE: int) -> np.ndarray:
+    def scan(self, SCAN_RANGE: float, SCAN_STEP_SIZE: float, SCAN_READ_COUNT: int, SCAN_RATE: int, LIGHT_STATUS: int) -> np.ndarray:
         """
         Parameters
         ----------
@@ -112,24 +100,30 @@ class StabilitySetup:
         """
         today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
 
-        self.fileName = "./data/scan" + scanMode + today + ".csv"
+        if LIGHT_STATUS == 0:
+            light = "dark"
+        else:
+            light = "light"
 
-        self.parameters = "<scan," + str(SCAN_RANGE) + "," + str(SCAN_STEP_SIZE) + "," + str(SCAN_READ_COUNT) + "," + str(SCAN_RATE) + ">"
+        self.fileName = "./data/scan" + light + today + ".csv"
 
-        self.arr = np.empty([5, 18], dtype="object")
+        self.parameters = "<scan," + str(SCAN_RANGE) + "," + str(SCAN_STEP_SIZE) + "," + str(SCAN_READ_COUNT) + "," + str(SCAN_RATE) + "," + str(LIGHT_STATUS) + ">"
+
+        self.arr = np.empty([6, 18], dtype="object")
         self.arr[0][0] = "Voltage Range: " + str(SCAN_RANGE)
         self.arr[1][0] = "Voltage Step Size: " + str(SCAN_STEP_SIZE)
         self.arr[2][0] = "Voltage Read Count: " + str(SCAN_READ_COUNT)
         self.arr[3][0] = "Voltage Delay Time: " + str(SCAN_RATE)
-        self.arr[4] = ["Volts_output", "Pixel 0 V", "Pixel 0 mA","Pixel 1 V", "Pixel 1 mA","Pixel 2 V", "Pixel 2 mA","Pixel 3 V", "Pixel 3 mA","Pixel 4 V", "Pixel 4 mA","Pixel 5 V", "Pixel 5 mA","Pixel 6 V", "Pixel 6 mA","Pixel 7 V", "Pixel 7 mA", "Time"]
+        self.arr[4][0] = "Light Status: " + light
+        self.arr[5] = ["Volts_output", "Pixel 0 V", "Pixel 0 mA","Pixel 1 V", "Pixel 1 mA","Pixel 2 V", "Pixel 2 mA","Pixel 3 V", "Pixel 3 mA","Pixel 4 V", "Pixel 4 mA","Pixel 5 V", "Pixel 5 mA","Pixel 6 V", "Pixel 6 mA","Pixel 7 V", "Pixel 7 mA", "Time"]
 
-        self.readData()
+        self._readData()
         print(self.arr)
-        self.printTime
+        self.printTime()
         return self.arr
 
 
-    def PnO(self, PNO_STARTING_VOLTAGE: float, PNO_STEP_SIZE: float, PNO_MEASUREMENTS_PER_STEP: int, PNO_MEASUREMENT_DELAY: int) -> np.ndarray:
+    def pno(self, PNO_STARTING_VOLTAGE: float, PNO_STEP_SIZE: float, PNO_MEASUREMENTS_PER_STEP: int, PNO_MEASUREMENT_DELAY: int, DUMMY: int) -> np.ndarray:
         """
         Parameters
         ----------
@@ -155,7 +149,7 @@ class StabilitySetup:
         today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         self.fileName = "./data/PnO" + today + ".csv"
 
-        self.parameters = "<PnO," + str(PNO_STARTING_VOLTAGE) + "," + str(PNO_STEP_SIZE) + "," + str(PNO_MEASUREMENTS_PER_STEP) + "," + str(PNO_MEASUREMENT_DELAY) + ">"
+        self.parameters = "<PnO," + str(PNO_STARTING_VOLTAGE) + "," + str(PNO_STEP_SIZE) + "," + str(PNO_MEASUREMENTS_PER_STEP) + "," + str(PNO_MEASUREMENT_DELAY) + "," + str(DUMMY) + ">"
 
         self.arr = np.empty([5, 26], dtype="object")
         self.arr[0][0] = "Voltage Range: " + str(PNO_STARTING_VOLTAGE)
@@ -164,76 +158,8 @@ class StabilitySetup:
         self.arr[3][0] = "Voltage Delay Time: " + str(PNO_MEASUREMENT_DELAY)
         self.arr[4] = ["Time","Pixel 0 V","Pixel 0 mA","Pixel 1 V","Pixel 1 mA","Pixel 2 V","Pixel 2 mA","Pixel 3 V","Pixel 3 mA","Pixel 4 V","Pixel 4 mA","Pixel 5 V","Pixel 5 mA","Pixel 6 V","Pixel 6 mA","Pixel 7 V","Pixel 7 mA", "Pixel 0 PCE", "Pixel 1 PCE", "Pixel 2 PCE", "Pixel 3 PCE", "Pixel 4 PCE", "Pixel 5 PCE", "Pixel 6 PCE", "Pixel 7 PCE", "Filler Val"]
 
-        self.readData()
+        self._readData()
         print(self.arr)
-        self.printTime
+        self.printTime()
 
         return self.arr
-
-
-
-
-
-line = ""
-run = True
-done = False
-
-# print(arr)
-if __name__ == '__main__':
-    # while line != "Done!":
-    while not done:
-
-        if ser.in_waiting > 0:
-            if run:
-                if mode == "scan":
-                    resetScanArr()
-                    ser.write(scanMessage.encode())
-                elif mode == "PnO":
-                    resetPnO()
-                    ser.write(pnoMessage.encode())
-                run = False
-
-            line = ser.readline().decode('utf-8').rstrip()
-            data_list = line.split(",")
-            # print(data_list)
-
-            print(line)
-
-            if len(data_list) > 10:
-                arr = np.append(arr, np.array([data_list]),axis = 0)
-            #     # print(np.array([data_list]))
-                # print(np.array([arr]).shape)
-
-
-            if line == "Done!":
-                # run = True
-                done = True
-                # UNCOMMENT THIS LINE TO SAVE
-                np.savetxt(fileName, arr, delimiter=",", fmt='%s')
-
-            #     if mode == "PnO":
-            #         done = True
-            #         run = False
-            #     mode = "PnO"
-
-            ####add functionality to send 0.8*VoC to Arduino for VSet
-
-
-
-    print ("\n")
-    print(arr)
-    print(fileName)
-    # pltarr = np.delete(arr, [0,1,2,3], axis=0)
-
-
-    # plt.plot(pltarr[ :,1],pltarr[ :,2])
-    # plt.title(message)
-    # plt.xlabel('Voltage')
-    # plt.ylabel('Current')
-    # plt.show()
-
-
-    end = time.time()
-    total_time = end - start
-    print("\n"+ str(total_time))
-

@@ -1,0 +1,75 @@
+import PySimpleGUI as sg
+from arduinoController1_1 import StabilitySetup
+
+# Create an event loop
+
+
+class UserInterface:
+    def __init__(self) -> None:
+        pass
+
+
+    def make_win1(self):
+        layoutScan = [ [sg.Button("Scan"), sg.Button("PNO"), sg.Button("GO")],
+                            [sg.Text('SCAN_RANGE (V):'), sg.InputText("1.2")],
+                            [sg.Text('SCAN_STEP_SIZE (V):'), sg.InputText("0.03")],
+                            [sg.Text('SCAN_READ_COUNT:'), sg.InputText("3")],
+                            [sg.Text('SCAN_RATE (mV/s):'), sg.InputText("50")],
+                            [sg.Text('SCAN_MODE (0 = dark, 1 = light):'), sg.InputText("1")],
+                            ]
+        return sg.Window('Scan', layoutScan, finalize=True)
+
+    def make_win2(self):
+        layoutPnO = [  [sg.Button("Scan"), sg.Button("PNO"), sg.Button("GO")],
+                            [sg.Text('PNO_STARTING_VOLTAGE (V):'), sg.InputText("0.09")],
+                            [sg.Text('PNO_STEP_SIZE (V):'), sg.InputText("0.02")],
+                            [sg.Text('PNO_MEASUREMENTS_PER_STEP:'), sg.InputText("5")],
+                            [sg.Text('PNO_MEASUREMENT_DELAY (mV/s):'), sg.InputText("100")],
+                            ]
+        return sg.Window('PNO', layoutPnO, finalize=True)
+
+    def open(self, stabilitySetutp: StabilitySetup):
+        window1, window2 = self.make_win1(), None
+        mode = "Scan"
+
+        # while True:
+        #     event, values = self.window.read()
+
+        #     if event == "Scan":
+        #         print("runscan")
+        #         self.window.close()
+        #         self.window = sg.Window("StabilitySetup", self.layoutScan)
+        #     elif event == "PNO":
+        #         print("pnoset")
+        #         self.window.close()
+        #         self.window = sg.Window("StabilitySetup", self.layoutPnO)
+        #     elif event == "GO":
+        #         print("RUN")
+        #     elif event == sg.WIN_CLOSED:
+        #         break
+
+        while True:             # Event Loop
+            window, event, values = sg.read_all_windows()
+            if event == sg.WIN_CLOSED:
+                break
+            elif event == "PNO" and not window2:
+                mode = "PNO"
+                window2 = self.make_win2()
+                if window1:
+                    window1.close()
+                    window1 = None
+            elif event == "Scan" and not window1:
+                mode = "Scan"
+                window1 = self.make_win1()
+                if window2:
+                    window2.close()
+                    window2 = None
+            elif event == "GO":
+                if mode == "Scan" and not window2:
+                    print("runScan")
+                if mode == "PNO" and not window1:
+                    print("runpno")
+
+        window1.close()
+        window2.close()
+
