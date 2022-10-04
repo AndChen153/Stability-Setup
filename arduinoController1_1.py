@@ -25,22 +25,22 @@ start = time.time()
 
 class StabilitySetup:
 
-    # def __init__(self, COM: str, SERIAL_BAUD_RATE: int) -> None:
-    #     """
-    #     Parameters
-    #     ----------
-    #     COM : str
-    #         com port to communicate with arduino
-    #         typically "COM5" or "COM3"
-    #     SERIAL_BAUD_RATE : str
-    #         serial rate to communicate with arduino
-    #         set to 115200 in arduino code
-    #     """
-    #     self.ser = serial.Serial(COM, SERIAL_BAUD_RATE, timeout=1)
-    #     self.ser.flush()
+    def __init__(self, COM: str, SERIAL_BAUD_RATE: int) -> None:
+        """
+        Parameters
+        ----------
+        COM : str
+            com port to communicate with arduino
+            typically "COM5" or "COM3"
+        SERIAL_BAUD_RATE : str
+            serial rate to communicate with arduino
+            set to 115200 in arduino code
+        """
+        self.ser = serial.Serial(COM, SERIAL_BAUD_RATE, timeout=1)
+        self.ser.flush()
 
-    def __init__(self) -> None:
-        pass
+    # def __init__(self) -> None:
+    #     pass
 
     def _readData(self):
         """

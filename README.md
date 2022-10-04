@@ -29,6 +29,13 @@ https://pubs.rsc.org/en/content/articlelanding/2017/tc/c7tc03482b
 
 # to buy
 
+# TODO
+
+10/4/22 start stability measuremnt, next wednesday
+
+- setup computer & lamp on eqe stand
+
+- prepare configuration for measurement of 4 samples
 
 
 # Conda
