@@ -28,8 +28,14 @@ class UserInterface:
                             ]
         return sg.Window('PNO', layoutPnO, finalize=True)
 
+    def make_win3(self):
+        layoutLight = [[sg.Text('Press When Light is On')],
+                       [sg.Button("Continue")],
+                            ]
+        return sg.Window('Light', layoutLight, finalize=True)
+
     def open(self, stabilitySetutp: StabilitySetup):
-        window1, window2 = self.make_win1(), None
+        window1, window2, window3 = self.make_win1(), None, None
         mode = "Scan"
 
         # while True:
@@ -50,6 +56,8 @@ class UserInterface:
 
         while True:             # Event Loop
             window, event, values = sg.read_all_windows()
+            lightON = False
+
             if event == sg.WIN_CLOSED:
                 break
             elif event == "PNO" and not window2:
@@ -58,18 +66,39 @@ class UserInterface:
                 if window1:
                     window1.close()
                     window1 = None
+
             elif event == "Scan" and not window1:
                 mode = "Scan"
                 window1 = self.make_win1()
                 if window2:
                     window2.close()
                     window2 = None
+
             elif event == "GO":
+                valueList = list(values.values())
                 if mode == "Scan" and not window2:
-                    print("runScan")
+                    if (int(valueList[-1]) == 1):
+                        try:
+                            window1.close()
+                        except:
+                            pass
+                        try:
+                            window2.close()
+                        except:
+                            pass
+                        window3 = self.make_win3()
+                    else:
+                        print("runScan")
+                        return(valueList,mode)
                 if mode == "PNO" and not window1:
                     print("runpno")
+                    return(valueList,mode)
+
+            elif event == "Continue":
+                print("runScan")
+                return(valueList,mode)
 
         window1.close()
         window2.close()
+        window3.close()
 

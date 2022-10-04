@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from fileinput import filename
 import serial
 from datetime import datetime
 import time
@@ -60,11 +61,17 @@ class StabilitySetup:
                     done = True
 
 
-    def _saveData(self):
+    def _saveData(self) -> str:
         """
         saves numpy array to csv file
+
+        Returns
+        -------
+        fileName
+            fileName for file that was just saved
         """
         np.savetxt(self.fileName, self.arr, delimiter=",", fmt='%s')
+        return self.fileName
 
 
     def printTime(self):
@@ -97,6 +104,8 @@ class StabilitySetup:
         -------
         arr
             numpy array setup for a scan
+        filename
+            name of file that data will be saved to
         """
         today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
 
@@ -120,7 +129,7 @@ class StabilitySetup:
         self._readData()
         print(self.arr)
         self.printTime()
-        return self.arr
+        return self.arr, self.fileName
 
 
     def pno(self, PNO_STARTING_VOLTAGE: float, PNO_STEP_SIZE: float, PNO_MEASUREMENTS_PER_STEP: int, PNO_MEASUREMENT_DELAY: int, DUMMY: int) -> np.ndarray:
@@ -144,6 +153,8 @@ class StabilitySetup:
         -------
         arr
             numpy array filled with data
+        filename
+            name of file that data will be saved to
         """
 
         today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
@@ -162,4 +173,4 @@ class StabilitySetup:
         print(self.arr)
         self.printTime()
 
-        return self.arr
+        return self.arr, self.fileName

@@ -65,7 +65,6 @@ float voltage_Starting_TaS    = 0.0;
 float voltage_Step__Size_TaS  = 0.000;
 int measurement_Delay_TaS     = 0;
 int measurements_Per_Step_TaS = 0;
-int dummy;
 
 // Scan Variables -----------------------------------------------------------------------
 boolean scanDone = true;
