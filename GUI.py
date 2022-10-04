@@ -91,14 +91,28 @@ class UserInterface:
                         print("runScan")
                         return(valueList,mode)
                 if mode == "PNO" and not window1:
-                    print("runpno")
-                    return(valueList,mode)
+                    try:
+                        window1.close()
+                    except:
+                        pass
+                    try:
+                        window2.close()
+                    except:
+                        pass
+                    window3 = self.make_win3()
 
             elif event == "Continue":
                 print("runScan")
                 return(valueList,mode)
-
-        window1.close()
-        window2.close()
-        window3.close()
-
+        try:
+            window1.close()
+        except:
+            pass
+        try:
+            window2.close()
+        except:
+            pass
+        try:
+            window3.close()
+        except:
+            pass

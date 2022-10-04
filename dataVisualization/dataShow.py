@@ -19,17 +19,20 @@ def showPCEGraphs(arr, graphName):
     for i in range(len(pceList)):
         pceList[i] = [float(j) for j in pceList[i]]
 
-
-    for i in range(len(pceList)):
-        lineName = "PCE" + str(i)
-        plt.plot(time,pceList[i], label = lineName)
-
+    plt.figure(figsize=(10, 8))
     plt.xlim(0,120)
     plt.ylim(0,15)
     plt.title(graphName[:-4])
     plt.xlabel('Time [s]')
     plt.ylabel('PCE [%]')
-    plt.legend(bbox_to_anchor = (1.2, 0.75))
+    plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
+
+
+    for i in range(len(pceList)):
+        lineName = "PCE" + str(i)
+        plt.plot(time,pceList[i], label = lineName)
+
+    plt.legend(bbox_to_anchor=(1.15, 0.65))
     plt.show()
 
 def showJVGraphs(arr, graphName):
@@ -49,30 +52,43 @@ def showJVGraphs(arr, graphName):
 
         jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
 
-    ax = plt.gca()
-    ax.spines['bottom'].set_position('zero')
+
+    # f = plt.figure()
+    # f.set_figwidth(10)
+    # f.set_figheight(10)
+
+
+
+    plt.figure(figsize=(10, 8))
+    plt.xlim(0,1.4)
+    plt.ylim(-40, 30)
+    plt.title(graphName[:-4])
+    plt.xlabel('Bias [V]')
+    plt.ylabel('Jmeas [mA/cm]')
+    plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
 
 
     for i in range(0,len(jvList),2):
         lineName = "Pixel " + str(int(i/2))
         plt.plot(jvList[i],jvList[i+1], label = lineName)
 
-    plt.xlim(0,1.4)
-    plt.ylim(-40, 30)
-    plt.title(graphName[:-4])
-    plt.xlabel('Bias [V]')
-    plt.ylabel('Jmeas [mA/cm]')
-    plt.legend(bbox_to_anchor = (1.24, 0.75))
+    ax = plt.gca()
+    ax.spines['bottom'].set_position('zero')
+
+    plt.legend(bbox_to_anchor=(1.18, 0.7))
+
     plt.show()
 
 if __name__ == '__main__':
     filepathPCE = r"..\data\Sept 9 MPPT 8 Pixel test\PnOSep-09-2022 11_22_45.csv"
     filePathJV = r"..\data\Sept 9 MPPT 8 Pixel test\scanlight_Sep-09-2022 11_14_58.csv"
+
     arrPCE = np.loadtxt(filepathPCE, delimiter=",", dtype=str)
     graphNamePCE = filepathPCE.split('\\')
 
     arrJV = np.loadtxt(filePathJV, delimiter=",", dtype=str)
     graphNameJV = filePathJV.split('\\')
+
     showPCEGraphs(arrPCE, graphNamePCE[-1])
     showJVGraphs(arrJV, graphNameJV[-1])
 
