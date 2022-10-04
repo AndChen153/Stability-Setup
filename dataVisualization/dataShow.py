@@ -4,6 +4,7 @@ import numpy as np
 
 
 def showPCEGraphs(arr, graphName):
+    graphName = graphName.split('\\')
     headers = arr[4,:]
     headerDict = {value: index for index, value in enumerate(headers)}
     arr = arr[5:, :]
@@ -22,7 +23,7 @@ def showPCEGraphs(arr, graphName):
     plt.figure(figsize=(10, 8))
     plt.xlim(0,120)
     plt.ylim(0,15)
-    plt.title(graphName[:-4])
+    plt.title(graphName[-1][:-4])
     plt.xlabel('Time [s]')
     plt.ylabel('PCE [%]')
     plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
@@ -36,15 +37,17 @@ def showPCEGraphs(arr, graphName):
     plt.show()
 
 def showJVGraphs(arr, graphName):
-    headers = arr[4,:]
+    graphName = graphName.split('\\')
+
+    headers = arr[6,:]
     headerDict = {value: index for index, value in enumerate(headers)}
     # print(headerDict)
-    arr = arr[5:, :]
+    arr = arr[6:, :]
 
 
     jvList = []
 
-    for i in range(headerDict["Pixel 0 V"], (headerDict["Pixel 7 mA"]+1)):
+    for i in range(1, 17):
         jvList.append(arr[:,i])
 
     for i in range(0,len(jvList),2):
@@ -62,7 +65,7 @@ def showJVGraphs(arr, graphName):
     plt.figure(figsize=(10, 8))
     plt.xlim(0,1.4)
     plt.ylim(-40, 30)
-    plt.title(graphName[:-4])
+    plt.title(graphName[-1][:-4])
     plt.xlabel('Bias [V]')
     plt.ylabel('Jmeas [mA/cm]')
     plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)

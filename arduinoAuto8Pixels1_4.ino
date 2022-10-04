@@ -56,6 +56,7 @@ float voltage_Starting_PnO      = 0.0;
 float voltage_Step__Size_PnO    = 0.000;
 int measurement_Delay_PnO       = 0;
 int measurements_Per_Step_PnO   = 0;
+int measurement_Time            = 0;
 int dummy;
 
 // Tracking and Scanning Variables ------------------------------------------------------
@@ -144,7 +145,8 @@ void loop(void) {
         voltage_Step_Size_Scan = val2;
         measurements_Per_Step_Scan = val3;
         measurement_Rate_Scan = val4;
-        dummy = val5;
+        light_Status = val5;
+
 
 
         scan("backward");
@@ -171,7 +173,7 @@ void loop(void) {
         voltage_Step__Size_PnO = val2;
         measurements_Per_Step_PnO= val3;
         measurement_Delay_PnO = val4;
-        light_Status = val5;
+        measurement_Time = val5;
 
         perturbAndObserve();
         Serial.println("Done!");
@@ -189,6 +191,7 @@ void perturbAndObserve() {
     float VsetUp;
     float VsetDown;
     float time;
+    int startMillis = millis();
     int count;
 
     for (int ID = 0; ID < 8; ID ++) {
@@ -203,9 +206,10 @@ void perturbAndObserve() {
     float PCE[8];
     measurements_Per_Step_PnO++; //average not working correctly
 
-    while(millis()/1000 < 120) {
+    int currentMillis = 0;
+    while(currentMillis/1000.0 < measurement_Time) {
         //measurements_Per_Step_PnO
-        time = millis();
+        currentMillis = millis() - startMillis;
         for (int ID = 0; ID < 8; ++ID) {
             // Vset ---------------------------------------------------
             setVoltage(&allDAC[ID],  Vset[ID], ID);
@@ -254,7 +258,7 @@ void perturbAndObserve() {
             PCE[ID] = (avgPowerCalced[ID]/1000)/(0.1*0.128);
         }
 
-        Serial.print(time/1000.0, 4);
+        Serial.print(currentMillis/1000.0, 4);
         Serial.print(", ");
         for (int ID = 0; ID < 8; ++ID) {
             Serial.print(loadvoltageArr[ID], 2);
@@ -397,9 +401,9 @@ void scan(String dir) {
 // TO IMPLEMENT LATER
 void lightControl(int light_Status) {
     if (light_Status == 0) {
-        Serial.print("turn light off");
+        Serial.println("turn light off");
     } else if (light_Status == 1) {
-        Serial.print("turn light on");
+        Serial.println("turn light on");
     }
 
 }

@@ -1,0 +1,10 @@
+Voltage Range: ,0.09,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Step Size: ,0.02,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Read Count: ,5,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Delay Time: ,100,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Time,Pixel 0 V,Pixel 0 mA,Pixel 1 V,Pixel 1 mA,Pixel 2 V,Pixel 2 mA,Pixel 3 V,Pixel 3 mA,Pixel 4 V,Pixel 4 mA,Pixel 5 V,Pixel 5 mA,Pixel 6 V,Pixel 6 mA,Pixel 7 V,Pixel 7 mA,Pixel 0 PCE,Pixel 1 PCE,Pixel 2 PCE,Pixel 3 PCE,Pixel 4 PCE,Pixel 5 PCE,Pixel 6 PCE,Pixel 7 PCE,Filler Val
+0.0000, ovf, 0.47, 0.09, 0.10, 0.10, 0.10, ovf, nan, 0.09, 0.08, 0.10, 0.08, 0.00, 0.10, 0.09, 0.03, 0.0719, 0.0687, 0.0750, nan, 2.8466, 0.0625, 0.0031, 0.0219, 1
+0.0000, ovf, 0.18, 0.12, 0.12, 0.13, 0.12, ovf, nan, 0.11, 0.11, 0.13, 0.11, 0.08, 0.12, 0.12, 0.11, 0.0995, 0.0953, 0.1031, nan, 0.5463, 0.1010, 0.0630, 0.0854, 1
+0.0000, ovf, 0.13, 0.15, 0.12, 0.16, 0.12, ovf, nan, 0.11, 0.10, 0.14, 0.12, 0.11, 0.12, 0.14, 0.10, 0.1197, 0.1159, 0.1229, nan, 0.1509, 0.1075, 0.0876, 0.0955, 1
+0.0000, ovf, 0.12, 0.15, 0.12, 0.18, 0.10, ovf, nan, 0.11, 0.12, 0.16, 0.12, 0.12, 0.12, 0.17, 0.02, 0.1231, 0.1193, 0.1220, nan, 0.0970, 0.1242, 0.0927, 0.0159, 1
+0.0000, ovf, 0.12, 0.15, 0.10, 0.21, 0.13, ovf, nan, 0.11, 0.10, 0.18, 0.10, 0.12, 0.12, 0.17, 0.05, 0.1393, 0.1032, 0.1807, nan, 0.0761, 0.1223, 0.0930, 0.0589, 1

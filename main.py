@@ -7,8 +7,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-# ac = arduinoController1_1.StabilitySetup("COM5", 115200)
-ac = arduinoController1_1.StabilitySetup()
+ac = arduinoController1_1.StabilitySetup("COM5", 115200)
+# ac = arduinoController1_1.StabilitySetup()
 gui = GUI.UserInterface()
 
 
@@ -33,10 +33,11 @@ if __name__ == '__main__':
         if mode == "Scan":
             print(params, "JV")
             # dataShow.showJVGraphs(arrJV, graphNameJV[-1])
-            dataShow.showJVGraphs(ac.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4])))
+            arr, fileName = ac.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
+            dataShow.showJVGraphs(arr, fileName)
         elif mode == "PNO":
             print(params, "PNO")
             # dataShow.showPCEGraphs(arrPCE, graphNamePCE[-1])
-
-            dataShow.showPCEGraphs(ac.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), 0)
+            arr, fileName = ac.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
+            dataShow.showPCEGraphs(arr, fileName)
 

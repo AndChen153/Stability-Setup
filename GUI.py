@@ -25,6 +25,7 @@ class UserInterface:
                             [sg.Text('PNO_STEP_SIZE (V):'), sg.InputText("0.02")],
                             [sg.Text('PNO_MEASUREMENTS_PER_STEP:'), sg.InputText("5")],
                             [sg.Text('PNO_MEASUREMENT_DELAY (mV/s):'), sg.InputText("100")],
+                            [sg.Text('Time (secs):'), sg.InputText("120")]
                             ]
         return sg.Window('PNO', layoutPnO, finalize=True)
 
@@ -102,6 +103,10 @@ class UserInterface:
                     window3 = self.make_win3()
 
             elif event == "Continue":
+                try:
+                    window3.close()
+                except:
+                    pass
                 print("runScan")
                 return(valueList,mode)
         try:

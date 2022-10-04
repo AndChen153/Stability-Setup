@@ -63,7 +63,7 @@ class StabilitySetup:
                     done = True
 
 
-    def _saveData(self) -> str:
+    def saveData(self) -> str:
         """
         saves numpy array to csv file
 
@@ -144,6 +144,7 @@ class StabilitySetup:
         self._readData()
         print(self.arr)
         self.printTime()
+        self.saveData()
         return self.arr, self.fileName
 
 
@@ -203,5 +204,6 @@ class StabilitySetup:
         self._readData()
         print(self.arr)
         self.printTime()
+        self.saveData()
 
         return self.arr, self.fileName
