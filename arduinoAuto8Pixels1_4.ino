@@ -152,6 +152,7 @@ void loop(void) {
         measurements_Per_Step_Scan = val3;
         measurement_Rate_Scan = val4;
         light_Status = val5;
+        lightControl(light_Status);
 
 
 
@@ -317,7 +318,7 @@ void trackingAndScanning() {
 // performs forward or backward JV scan of solar cell
 void scan(String dir) {
     led(true);
-    lightControl(light_Status);
+
 
     int s = (voltage_Range_Scan*1000)/measurement_Rate_Scan;
     int steps = (voltage_Range_Scan*1000)/(voltage_Step_Size_Scan*1000);

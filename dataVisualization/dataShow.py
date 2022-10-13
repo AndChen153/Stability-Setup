@@ -52,8 +52,8 @@ def showJVGraphs(arr, graphName):
 
     for i in range(0,len(jvList),2):
         jvList[i] = [float(j) for j in jvList[i]]
-
-        jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
+        jvList[i+1] = [float(x) for x in jvList[i+1]]
+        # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
 
 
     # f = plt.figure()
@@ -67,7 +67,8 @@ def showJVGraphs(arr, graphName):
     plt.ylim(-40, 30)
     plt.title(graphName[-1][:-4])
     plt.xlabel('Bias [V]')
-    plt.ylabel('Jmeas [mA/cm]')
+    plt.ylabel('Current [mA]')
+    # plt.ylabel('Jmeas [mA/cm]')
     plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
 
 
