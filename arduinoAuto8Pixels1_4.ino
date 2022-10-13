@@ -27,7 +27,6 @@ Adafruit_MCP4725 allDAC[] = {dac_0, dac_1, dac_2, dac_3, dac_4, dac_5, dac_6, da
 #define TCAADDR 0x70
 #define TCAADDR2 0x71
 
-
 // INA219 Variables ---------------------------------------------------------------------
 float shuntvoltage;
 float busvoltage;
@@ -88,6 +87,13 @@ int light_Status = 0;
 
 
 void setup(void) {
+    //pins
+    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(52, OUTPUT);
+    digitalWrite(52, HIGH);
+
+
+    //system setup
     Wire.begin();
 
     Serial.begin(115200);
@@ -185,6 +191,7 @@ void loop(void) {
 // --------------------------------------------------------------------------------------
 
 void perturbAndObserve() {
+    led(true);
     lightControl(1);
 
     float Vset[8];
@@ -287,6 +294,7 @@ void perturbAndObserve() {
 
 
     perturb_And_ObserveDone = true;
+    led(false);
 
 }
 
@@ -308,6 +316,7 @@ void trackingAndScanning() {
 
 // performs forward or backward JV scan of solar cell
 void scan(String dir) {
+    led(true);
     lightControl(light_Status);
 
     int s = (voltage_Range_Scan*1000)/measurement_Rate_Scan;
@@ -387,6 +396,7 @@ void scan(String dir) {
     }
 
     scanDone = true;
+    led(false);
 }
 
 // --------------------------------------------------------------------------------------
@@ -589,4 +599,14 @@ void showParsedData() {
     Serial.print(", Val5: ");
     Serial.print(val5);
     Serial.println("");
+}
+
+// --------------------------------------------------------------------------------------
+
+void led(boolean status) {
+    if (status) {
+        digitalWrite(LED_BUILTIN, HIGH);
+    } else {
+        digitalWrite(LED_BUILTIN, LOW);
+    }
 }

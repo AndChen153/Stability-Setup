@@ -1,13 +1,26 @@
 from statistics import mode
-import arduinoController1_1
+import controller1_1
 import GUI
 from dataVisualization import dataShow
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import serial.tools.list_ports
 
 
-ac = arduinoController1_1.StabilitySetup("COM5", 115200)
+arduino_ports = [
+    p.device
+    for p in serial.tools.list_ports.comports()
+    if 'Arduino' in p.description  # may need tweaking to match new arduinos
+]
+if not arduino_ports:
+    raise IOError("No Arduino found")
+if len(arduino_ports) > 1:
+    print('Multiple Arduinos found - using the first')
+print(arduino_ports[0])
+
+
+ac = controller1_1.StabilitySetup(arduino_ports[0], 115200)
 # ac = arduinoController1_1.StabilitySetup()
 gui = GUI.UserInterface()
 

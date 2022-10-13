@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from arduinoController1_1 import StabilitySetup
+from controller1_1 import StabilitySetup
 
 # Create an event loop
 
