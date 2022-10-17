@@ -2,9 +2,11 @@
 from email import header
 from fileinput import filename
 import serial
+import time
 from datetime import datetime
 import time
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 
 today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
@@ -41,13 +43,17 @@ class StabilitySetup:
         """
         self.ser = serial.Serial(COM, SERIAL_BAUD_RATE, timeout=1)
         self.ser.flush()
+        self.mode = ""
 
     def _readData(self):
         """
         Reads data outputed on serial bus by arduino
+        Saves data after certain interval of time
         """
         done = False
         line = ""
+        timeOrig = time.time()
+        timeSave = 10 # time between saves in minutes
         while not done:
             if self.ser.in_waiting > 0:
                 line = self.ser.readline().decode('utf-8').rstrip()
@@ -59,20 +65,37 @@ class StabilitySetup:
                 if len(data_list) > 10:
                     self.arr = np.append(self.arr, np.array([data_list]),axis = 0)
 
+                if abs(time.time() - timeOrig) > timeSave * 60:
+                    self.saveData()
+
                 if line == "Done!":
                     done = True
 
 
+
     def saveData(self) -> str:
         """
-        saves numpy array to csv file
+        saves numpy array to csv file with the option to save at different time intervals
 
         Returns
         -------
         fileName
             fileName for file that was just saved
         """
-        np.savetxt(self.fileName, self.arr, delimiter=",", fmt='%s')
+        if not os.path.exists(self.fileName):
+            np.savetxt(self.fileName, self.arr, delimiter="," , fmt='%s')
+            if (self.mode == "scan"):
+                self.arr = np.empty([1, len(self.scanArrWidth)], dtype="object")
+            elif (self.mode == "PNO"):
+                self.arr = np.empty([1, len(self.PNOArrWidth)], dtype="object")
+        else:
+            with open(self.fileName,'ab') as f:
+                np.savetxt(f, self.arr, delimiter="," , fmt='%s')
+            if (self.mode == "scan"):
+                self.arr = np.empty([1, len(self.scanArrWidth)], dtype="object")
+            elif (self.mode == "PNO"):
+                self.arr = np.empty([1, len(self.PNOArrWidth)], dtype="object")
+
         return self.fileName
 
 
@@ -117,6 +140,7 @@ class StabilitySetup:
             light = "light"
 
         self.fileName = "./data/scan" + light + today + ".csv"
+        self.mode = "scan"
 
         self.parameters = "<scan," + str(SCAN_RANGE) + "," + str(SCAN_STEP_SIZE) + "," + str(SCAN_READ_COUNT) + "," + str(SCAN_RATE) + "," + str(LIGHT_STATUS) + ">"
 
@@ -131,6 +155,8 @@ class StabilitySetup:
                        "Pixel 6 V", "Pixel 6 mA",
                        "Pixel 7 V", "Pixel 7 mA",
                        "Time"]
+
+        self.scanArrWidth = len(headerArr)
 
         self.arr = np.empty([6, len(headerArr)], dtype="object")
         self.arr[0][0], self.arr[0][1] = "Voltage Range: ", SCAN_RANGE
@@ -175,7 +201,7 @@ class StabilitySetup:
 
         today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         self.fileName = "./data/PnO" + today + ".csv"
-
+        self.mode = "PNO"
         self.parameters = "<PnO," + str(PNO_STARTING_VOLTAGE) + "," + str(PNO_STEP_SIZE) + "," + str(PNO_MEASUREMENTS_PER_STEP) + "," + str(PNO_MEASUREMENT_DELAY) + "," + str(DUMMY) + ">"
 
         headerArr  = ["Time",
@@ -192,6 +218,8 @@ class StabilitySetup:
                        "Pixel 4 PCE", "Pixel 5 PCE",
                        "Pixel 6 PCE", "Pixel 7 PCE",
                        "Filler Val"]
+
+        self.PNOArrWidth = len(headerArr)
 
         self.arr = np.empty([5, len(headerArr)], dtype="object")
         self.arr[0][0], self.arr[0][1] = "Voltage Range: ", PNO_STARTING_VOLTAGE
