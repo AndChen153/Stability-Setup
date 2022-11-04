@@ -42,9 +42,10 @@ def showPCEGraphs(arr, graphName):
     plt.legend(bbox_to_anchor=(1.15, 0.65))
     plt.show()
 
-def showJVGraphs(arr, graphName):
+def showJVGraphs(graphName):
+    arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
-
+    print(arr)
     headers = arr[6,:]
     headerDict = {value: index for index, value in enumerate(headers)}
     # print(headerDict)

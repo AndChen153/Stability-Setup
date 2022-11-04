@@ -45,15 +45,16 @@ class StabilitySetup:
         self.ser.flush()
         self.mode = ""
 
-    def _readData(self):
+    def readData(self):
         """
-        Reads data outputed on serial bus by arduino
-        Saves data after certain interval of time
+        * Reads data outputed on serial bus by arduino
+        * Saves data after certain interval of time
+        * Does not need to manage mode because that is taken care of on the arduino
         """
         done = False
         line = ""
         timeOrig = time.time()
-        timeSave = 10 # time between saves in minutes
+        timeSave = 0.1 # time between saves in minutes
         while not done:
             if self.ser.in_waiting > 0:
                 line = self.ser.readline().decode('utf-8').rstrip()
@@ -85,16 +86,16 @@ class StabilitySetup:
         if not os.path.exists(self.fileName):
             np.savetxt(self.fileName, self.arr, delimiter="," , fmt='%s')
             if (self.mode == "scan"):
-                self.arr = np.empty([1, len(self.scanArrWidth)], dtype="object")
+                self.arr = np.empty([1, self.scanArrWidth], dtype="object")
             elif (self.mode == "PNO"):
-                self.arr = np.empty([1, len(self.PNOArrWidth)], dtype="object")
+                self.arr = np.empty([1, self.PNOArrWidth], dtype="object")
         else:
             with open(self.fileName,'ab') as f:
                 np.savetxt(f, self.arr, delimiter="," , fmt='%s')
             if (self.mode == "scan"):
-                self.arr = np.empty([1, len(self.scanArrWidth)], dtype="object")
+                self.arr = np.empty([1, self.scanArrWidth], dtype="object")
             elif (self.mode == "PNO"):
-                self.arr = np.empty([1, len(self.PNOArrWidth)], dtype="object")
+                self.arr = np.empty([1, self.PNOArrWidth], dtype="object")
 
         return self.fileName
 
@@ -167,9 +168,9 @@ class StabilitySetup:
         self.arr[5] = headerArr
 
         self.ser.write(self.parameters.encode())  # send data to arduino
-        self._readData()
+        self.readData()
         print(self.arr)
-        self.printTime()
+        # self.printTime()
         self.saveData()
         return self.arr, self.fileName
 
@@ -229,7 +230,7 @@ class StabilitySetup:
         self.arr[4] = headerArr
 
         self.ser.write(self.parameters.encode())  # send data to arduino
-        self._readData()
+        self.readData()
         print(self.arr)
         self.printTime()
         self.saveData()

@@ -28,6 +28,9 @@ gui = GUI.UserInterface()
 #TODO implement light status for PNO to throw error whenever light status turns off
 #TODO measurment for 500/1000 hours
 if __name__ == '__main__':
+    # dataShow.showJVGraphs(arr, fileName)
+    # filePathJVTest = r".\data\scandarkOct-31-2022 15_50_07.csv"
+
     filePathJV = r".\data\Sept 9 MPPT 8 Pixel test\scanlight_Sep-09-2022 11_14_58.csv"
     filepathPCE = r".\data\Sept 9 MPPT 8 Pixel test\PnOSep-09-2022 11_22_45.csv"
 
@@ -47,7 +50,8 @@ if __name__ == '__main__':
             print(params, "JV")
             # dataShow.showJVGraphs(arrJV, graphNameJV[-1])
             arr, fileName = ac.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
-            dataShow.showJVGraphs(arr, fileName)
+            print(fileName)
+            dataShow.showJVGraphs(fileName)
         elif mode == "PNO":
             print(params, "PNO")
             # dataShow.showPCEGraphs(arrPCE, graphNamePCE[-1])
