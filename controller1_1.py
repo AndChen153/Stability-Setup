@@ -68,6 +68,7 @@ class StabilitySetup:
 
                 if abs(time.time() - timeOrig) > timeSave * 60:
                     self.saveData()
+                    timeOrig = time.time()
 
                 if line == "Done!":
                     done = True
@@ -91,7 +92,7 @@ class StabilitySetup:
                 self.arr = np.empty([1, self.PNOArrWidth], dtype="object")
         else:
             with open(self.fileName,'ab') as f:
-                np.savetxt(f, self.arr, delimiter="," , fmt='%s')
+                np.savetxt(f, self.arr[1:, :], delimiter="," , fmt='%s')
             if (self.mode == "scan"):
                 self.arr = np.empty([1, self.scanArrWidth], dtype="object")
             elif (self.mode == "PNO"):
