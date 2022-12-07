@@ -54,7 +54,7 @@ class StabilitySetup:
         done = False
         line = ""
         timeOrig = time.time()
-        timeSave = 0.1 # time between saves in minutes
+        timeSave = 0.5 # time between saves in minutes
         while not done:
             if self.ser.in_waiting > 0:
                 line = self.ser.readline().decode('utf-8').rstrip()
@@ -167,6 +167,7 @@ class StabilitySetup:
         self.arr[3][0], self.arr[3][1] = "Voltage Delay Time: ", SCAN_RATE
         self.arr[4][0], self.arr[4][1] = "Light Status: ",  light
         self.arr[5] = headerArr
+        # print(headerArr)
 
         self.ser.write(self.parameters.encode())  # send data to arduino
         self.readData()
@@ -176,7 +177,7 @@ class StabilitySetup:
         return self.arr, self.fileName
 
 
-    def pno(self, PNO_STARTING_VOLTAGE: float, PNO_STEP_SIZE: float, PNO_MEASUREMENTS_PER_STEP: int, PNO_MEASUREMENT_DELAY: int, DUMMY: int) -> np.ndarray:
+    def pno(self, PNO_STARTING_VOLTAGE: float, PNO_STEP_SIZE: float, PNO_MEASUREMENTS_PER_STEP: int, PNO_MEASUREMENT_DELAY: int, PNO_MEASUREMENT_TIME: int) -> np.ndarray:
         """
         Parameters
         ----------
@@ -192,6 +193,8 @@ class StabilitySetup:
         PNO_MEASUREMENT_DELAY : int
             rate at which pno alg will progress
             100 mV/s
+        PNO_MEASUREMENT_TIME : int
+            total time to run pno for (minutes)
 
         Returns
         -------
@@ -204,7 +207,12 @@ class StabilitySetup:
         today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         self.fileName = "./data/PnO" + today + ".csv"
         self.mode = "PNO"
-        self.parameters = "<PnO," + str(PNO_STARTING_VOLTAGE) + "," + str(PNO_STEP_SIZE) + "," + str(PNO_MEASUREMENTS_PER_STEP) + "," + str(PNO_MEASUREMENT_DELAY) + "," + str(DUMMY) + ">"
+
+        ## TURN INPUT SECONDS INTO MINUTES
+        # PNO_MEASUREMENT_TIME = PNO_MEASUREMENT_TIME*60
+
+
+        self.parameters = "<PnO," + str(PNO_STARTING_VOLTAGE) + "," + str(PNO_STEP_SIZE) + "," + str(PNO_MEASUREMENTS_PER_STEP) + "," + str(PNO_MEASUREMENT_DELAY) + "," + str(PNO_MEASUREMENT_TIME) + ">"
 
         headerArr  = ["Time",
                        "Pixel 0 V","Pixel 0 mA",
@@ -223,13 +231,16 @@ class StabilitySetup:
 
         self.PNOArrWidth = len(headerArr)
 
-        self.arr = np.empty([5, len(headerArr)], dtype="object")
+        self.arr = np.empty([6, len(headerArr)], dtype="object")
         self.arr[0][0], self.arr[0][1] = "Voltage Range: ", PNO_STARTING_VOLTAGE
         self.arr[1][0], self.arr[1][1] = "Voltage Step Size: ", PNO_STEP_SIZE
         self.arr[2][0], self.arr[2][1] = "Voltage Read Count: ", PNO_MEASUREMENTS_PER_STEP
         self.arr[3][0], self.arr[3][1] = "Voltage Delay Time: ", PNO_MEASUREMENT_DELAY
-        self.arr[4] = headerArr
+        self.arr[4][0], self.arr[4][1] = "Voltage Measurement Time: ", PNO_MEASUREMENT_TIME
+        self.arr[5] = headerArr
+        # print(headerArr)
 
+        print(self.parameters)
         self.ser.write(self.parameters.encode())  # send data to arduino
         self.readData()
         print(self.arr)

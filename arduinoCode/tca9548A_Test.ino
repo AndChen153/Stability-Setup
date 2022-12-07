@@ -4,7 +4,7 @@
 #define TCAADDR 0x70
 
 /* Assign a unique ID to this sensor at the same time */
-Adafruit_INA219 ina219_0(0x40);
+Adafruit_INA219 ina219_0;
 Adafruit_INA219 ina219_1;
 Adafruit_INA219 ina219_2;
 Adafruit_INA219 ina219_3;
@@ -17,13 +17,9 @@ Adafruit_INA219 ina219_7;
 void displaySensorVals(Adafruit_INA219 *ina219, int ID)
 {
   TCA9548A(ID);
-  Serial.println("------------------------------------");
-  Serial.print  ("Sensor:     "); Serial.println(ID);
-  Serial.print  ("Voltage:    "); Serial.println(ina219->getBusVoltage_V());
-  Serial.print  ("Current:    "); Serial.println(ina219->getCurrent_mA());
-  Serial.println("------------------------------------");
-  Serial.println("");
-  delay(500);
+  // Serial.print  ("Sensor:     "); Serial.println(ID);
+  // Serial.print  ("Voltage:    "); Serial.println(ina219->getBusVoltage_V());
+  Serial.print(ina219->getCurrent_mA()); Serial.print  (", ");
 }
 
 void TCA9548A(uint8_t bus)
@@ -122,4 +118,6 @@ void loop(void)
   displaySensorVals(&ina219_5, 5);
   displaySensorVals(&ina219_6, 6);
   displaySensorVals(&ina219_7, 7);
+
+  Serial.println("");
 }

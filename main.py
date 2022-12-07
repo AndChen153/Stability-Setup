@@ -56,5 +56,6 @@ if __name__ == '__main__':
             print(params, "PNO")
             # dataShow.showPCEGraphs(arrPCE, graphNamePCE[-1])
             arr, fileName = ac.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
-            dataShow.showPCEGraphs(arr, fileName)
+            print(fileName)
+            dataShow.showPCEGraphs(fileName)
 

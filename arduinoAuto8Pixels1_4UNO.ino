@@ -55,7 +55,7 @@ float voltage_Starting_PnO      = 0.0;
 float voltage_Step__Size_PnO    = 0.000;
 int measurement_Delay_PnO       = 0;
 int measurements_Per_Step_PnO   = 0;
-int measurement_Time            = 0;
+unsigned long measurement_Time            = 0;
 int dummy;
 
 // Tracking and Scanning Variables ------------------------------------------------------
@@ -198,7 +198,7 @@ void perturbAndObserve() {
     float VsetUp;
     float VsetDown;
     float time;
-    int startMillis = millis();
+
     int count;
 
     for (int ID = 0; ID < 8; ID ++) {
@@ -214,9 +214,16 @@ void perturbAndObserve() {
     measurements_Per_Step_PnO++; //average not working correctly
 
     int currentMillis = 0;
-    while(currentMillis/1000.0 < measurement_Time) {
+    int pm = millis();
+    int startMillis = millis();
+    Serial.println(measurement_Time);
+    measurement_Time *= 60;
+    Serial.print("measurement_Time (sec): ");
+    Serial.println(measurement_Time);
+    while((millis()-startMillis)/1000.0 < measurement_Time) {
         //measurements_Per_Step_PnO
-        currentMillis = millis() - startMillis;
+
+
         for (int ID = 0; ID < 8; ++ID) {
             // Vset ---------------------------------------------------
             setVoltage(&allDAC[ID],  Vset[ID], ID);
@@ -265,7 +272,9 @@ void perturbAndObserve() {
             PCE[ID] = (avgPowerCalced[ID]/1000)/(0.1*0.128);
         }
 
-        Serial.print(currentMillis/1000.0, 4);
+        currentMillis = currentMillis + millis() - pm;
+        pm = millis();
+        Serial.print((millis()-startMillis)/1000.0, 4);
         Serial.print(", ");
         for (int ID = 0; ID < 8; ++ID) {
             Serial.print(loadvoltageArr[ID], 2);
@@ -470,7 +479,7 @@ void TCA9548A_INA219(uint8_t bus) {
     Wire.beginTransmission(0x70); // TCA9548A_INA219 address is 0x70
     Wire.write(1 << bus);         // send byte to select bus
     Wire.endTransmission();
-    
+
 }
 
 // --------------------------------------------------------------------------------------

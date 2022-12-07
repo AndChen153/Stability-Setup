@@ -1,0 +1,6 @@
+Voltage Range: ,0.09,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Step Size: ,0.02,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Read Count: ,5,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Delay Time: ,100,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Measurement Time: ,600,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Time,Pixel 0 V,Pixel 0 mA,Pixel 1 V,Pixel 1 mA,Pixel 2 V,Pixel 2 mA,Pixel 3 V,Pixel 3 mA,Pixel 4 V,Pixel 4 mA,Pixel 5 V,Pixel 5 mA,Pixel 6 V,Pixel 6 mA,Pixel 7 V,Pixel 7 mA,Pixel 0 PCE,Pixel 1 PCE,Pixel 2 PCE,Pixel 3 PCE,Pixel 4 PCE,Pixel 5 PCE,Pixel 6 PCE,Pixel 7 PCE,Filler Val

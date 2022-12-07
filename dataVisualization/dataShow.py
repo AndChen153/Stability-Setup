@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def showPCEGraphs(arr, graphName):
+def showPCEGraphs(graphName):
+    arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
     headers = arr[4,:]
     headerDict = {value: index for index, value in enumerate(headers)}
