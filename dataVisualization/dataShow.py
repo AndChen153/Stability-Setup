@@ -6,30 +6,36 @@ import numpy as np
 def showPCEGraphs(graphName):
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
-    headers = arr[4,:]
+    headers = arr[5,:]
     headerDict = {value: index for index, value in enumerate(headers)}
-    arr = arr[5:, :]
+    arr = arr[6:, :]
 
 
     time = arr[:,headerDict["Time"]]
     pceList = []
 
+
     for i in range(headerDict["Pixel 0 PCE"], (headerDict["Pixel 7 PCE"]+1)):
         pceList.append(arr[:,i])
 
-
+    # print(pceList)
 
     time = [float(i) for i in time]
 
     maxTime = max(time)*1.01
-    maxPCE = 0
+    maxPCE = 15
     for i in range(len(pceList)):
         pceList[i] = [float(j) for j in pceList[i]]
-        if max(pceList[i]) > maxPCE: maxPCE = max(pceList[i])
+    #     if max(pceList[i]) > maxPCE:
+    #         maxPCE = max(pceList[i])
 
     plt.figure(figsize=(10, 8))
+    # ax = plt.gca()
+    # ax.set_xlim([0,maxTime])
+    # ax.set_ylim(top=15)
+
     plt.xlim(0,maxTime)
-    plt.ylim(0,maxPCE*1.05)
+    plt.ylim(bottom = -0, top = 15)
     plt.title(graphName[-1][:-4])
     plt.xlabel('Time [s]')
     plt.ylabel('PCE [%]')
@@ -38,7 +44,11 @@ def showPCEGraphs(graphName):
 
     for i in range(len(pceList)):
         lineName = "PCE" + str(i)
-        plt.plot(time,pceList[i], label = lineName)
+        print(np.array(pceList[i]))
+        # plt.plot(time,pceList[i], label = lineName)
+        plt.plot(time,kalmanFilter(predictions = np.array(pceList[i]),process_noise=0.003, measurement_var=0.0055), label = lineName)
+
+
 
     plt.legend(bbox_to_anchor=(1.15, 0.65))
     plt.show()
@@ -107,19 +117,56 @@ def showJVGraphs(graphName):
 
     plt.show()
 
+def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var = 0.1) -> np.ndarray:
+        '''
+        Inputs:
+            - Context predictions (e.g. slope, walking speed, etc.)
+            - Process noise for predictions
+            - Measurement uncertainty (in the form of variance)
+
+        Output:
+            - Updated estimates of context
+        '''
+
+        estimates = []
+
+        # Initialize
+        prior_estimate = predictions[0]
+        prior_var = 0.1
+
+        for i in range(len(predictions)):
+
+            slope_measurement = np.float64(predictions[i])
+
+            # Update
+            kalman_gain = prior_var / (prior_var + measurement_var) # Kn
+            estimate = prior_estimate + kalman_gain*(slope_measurement-prior_estimate) # Xnn
+            estimates.append(estimate)
+            estimate_var = (1-kalman_gain)*prior_var # Pnn
+
+            # Dynamics
+            prior_estimate = estimate
+            prior_var = estimate_var + process_noise
+
+        return estimates
+
+
+
 if __name__ == '__main__':
-    filepathPCE = r"..\data\Sept 9 MPPT 8 Pixel test\PnOSep-09-2022 11_22_45.csv"
-    filePathJV = r"..\data\Sept 9 MPPT 8 Pixel test\scanlight_Sep-09-2022 11_14_58.csv"
+    filepathPCE = r"..\data\PnODec-10-2022 17_54_27.csv"
 
 
-    arrPCE = np.loadtxt(filepathPCE, delimiter=",", dtype=str)
+    # arrPCE = np.loadtxt(filepathPCE, delimiter=",", dtype=str)
     graphNamePCE = filepathPCE.split('\\')
 
-    arrJV = np.loadtxt(filePathJV, delimiter=",", dtype=str)
-    graphNameJV = filePathJV.split('\\')
+    showPCEGraphs(filepathPCE)
 
-    showPCEGraphs(arrPCE, graphNamePCE[-1])
-    showJVGraphs(arrJV, graphNameJV[-1])
+    # filePathJV = r"..\data\Sept 9 MPPT 8 Pixel test\scanlight_Sep-09-2022 11_14_58.csv"
+
+    # arrJV = np.loadtxt(filePathJV, delimiter=",", dtype=str)
+    # graphNameJV = filePathJV.split('\\')
+
+    # showJVGraphs(arrJV, graphNameJV[-1])
 
 
 # %%
