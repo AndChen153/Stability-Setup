@@ -153,7 +153,7 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 
 
 if __name__ == '__main__':
-    filepathPCE = r"..\data\PnODec-10-2022 17_54_27.csv"
+    filepathPCE = r"..\data\PnODec-11-2022 12_53_29.csv"
 
 
     # arrPCE = np.loadtxt(filepathPCE, delimiter=",", dtype=str)
