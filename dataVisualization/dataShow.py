@@ -23,7 +23,7 @@ def showPCEGraphs(graphName):
     time = [float(i) for i in time]
 
     maxTime = max(time)*1.01
-    maxPCE = 15
+    maxPCE = 20
     for i in range(len(pceList)):
         pceList[i] = [float(j) for j in pceList[i]]
     #     if max(pceList[i]) > maxPCE:
@@ -33,11 +33,11 @@ def showPCEGraphs(graphName):
     # ax = plt.gca()
     # ax.set_xlim([0,maxTime])
     # ax.set_ylim(top=15)
-
-    plt.xlim(0,maxTime)
-    plt.ylim(bottom = -0, top = 15)
+    print("Time: ", maxTime/60/60)
+    plt.xlim(0,maxTime/60/60)
+    plt.ylim(bottom = -0, top = maxPCE)
     plt.title(graphName[-1][:-4])
-    plt.xlabel('Time [s]')
+    plt.xlabel('Time [Hours]')
     plt.ylabel('PCE [%]')
     plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
 
@@ -46,7 +46,7 @@ def showPCEGraphs(graphName):
         lineName = "PCE" + str(i)
         print(np.array(pceList[i]))
         # plt.plot(time,pceList[i], label = lineName)
-        plt.plot(time,kalmanFilter(predictions = np.array(pceList[i]),process_noise=0.003, measurement_var=0.0055), label = lineName)
+        plt.plot((np.array(time)/60/60),kalmanFilter(predictions = np.array(pceList[i]),process_noise=0.1, measurement_var=0.1), label = lineName)
 
 
 
@@ -153,11 +153,11 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 
 
 if __name__ == '__main__':
-    filepathPCE = r"..\data\PnODec-11-2022 12_53_29.csv"
+    filepathPCE = r"..\data\PnODec-13-2022 15_44_12.csv"
 
 
     # arrPCE = np.loadtxt(filepathPCE, delimiter=",", dtype=str)
-    graphNamePCE = filepathPCE.split('\\')
+    # graphNamePCE = filepathPCE.split('\\')
 
     showPCEGraphs(filepathPCE)
 
