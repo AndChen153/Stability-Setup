@@ -35,6 +35,7 @@ def showPCEGraphs(graphName):
     # ax.set_ylim(top=15)
 
     plt.xlim(0,maxTime/60/60)
+    print(maxTime/60/60)
     plt.ylim(bottom = -0, top = 15)
     plt.title(graphName[-1][:-4])
     plt.xlabel('Time [hrs]')
@@ -155,16 +156,11 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 
 
 if __name__ == '__main__':
-    filepathPCE = r"..\data\PnODec-11-2022 12_53_29.csv"
-
-
-    # arrPCE = np.loadtxt(filepathPCE, delimiter=",", dtype=str)
+    filepathPCE = r"..\data\PnODec-13-2022 19_43_10.csv"
 
     showPCEGraphs(filepathPCE)
 
-    filePathJV = r"..\data\scanlightDec-11-2022 12_42_28.csv"
-
-    # arrJV = np.loadtxt(filePathJV, delimiter=",", dtype=str)
+    filePathJV = r"..\data\scanlightDec-13-2022 19_22_16.csv"
 
     showJVGraphs(filePathJV)
 
