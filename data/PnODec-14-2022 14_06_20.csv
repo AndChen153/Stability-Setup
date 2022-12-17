@@ -1,0 +1,17 @@
+Voltage Range: ,0.6,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Step Size: ,0.02,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Read Count: ,5,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Delay Time: ,100,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Measurement Time: ,10080,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Time,Pixel 0 V,Pixel 0 mA,Pixel 1 V,Pixel 1 mA,Pixel 2 V,Pixel 2 mA,Pixel 3 V,Pixel 3 mA,Pixel 4 V,Pixel 4 mA,Pixel 5 V,Pixel 5 mA,Pixel 6 V,Pixel 6 mA,Pixel 7 V,Pixel 7 mA,Pixel 0 PCE,Pixel 1 PCE,Pixel 2 PCE,Pixel 3 PCE,Pixel 4 PCE,Pixel 5 PCE,Pixel 6 PCE,Pixel 7 PCE,Filler Val
+2.9250, 0.73, 0.08, 0.73, 2.93, ovf, 2.28, 0.74, 2.47, 0.74, ovf, ovf, 3.30, 0.73, 1.82, ovf, 2.38, 0.5502, ovf, ovf, ovf, ovf, ovf, ovf, 11.4222, 1
+5.8550, 0.70, 0.10, 0.70, 3.76, ovf, 3.16, 0.71, 3.51, 0.71, ovf, ovf, 2.47, 0.72, 2.17, ovf, 2.88, 0.4683, ovf, ovf, ovf, ovf, ovf, ovf, 13.1515, 1
+8.7840, 0.68, 0.07, 0.68, 4.03, ovf, 3.29, 0.68, 3.85, 0.68, ovf, ovf, 2.31, 0.72, 2.11, ovf, 2.93, 0.2968, ovf, ovf, ovf, ovf, ovf, ovf, 12.9058, 1
+11.7150, 0.65, 0.09, 0.65, 4.07, ovf, 3.30, 0.66, 3.88, 0.66, ovf, ovf, 2.30, 0.72, 2.10, ovf, 2.92, 0.4010, ovf, ovf, ovf, ovf, ovf, ovf, 12.8061, 1
+14.6450, 0.63, 0.07, 0.63, 4.03, ovf, 3.27, 0.63, 3.80, 0.63, ovf, ovf, 2.37, 0.72, 2.12, ovf, 2.95, 0.2700, ovf, ovf, ovf, ovf, ovf, ovf, 13.3067, 1
+17.5740, 0.64, 0.06, 0.64, 3.89, ovf, 3.21, 0.65, 3.68, 0.65, ovf, ovf, 2.33, 0.72, 2.15, ovf, 2.88, 0.2559, ovf, ovf, ovf, ovf, ovf, ovf, 13.0239, 1
+20.5050, 0.63, 0.03, 0.67, 3.83, -1380231424.00, 3.17, 0.67, 3.73, 0.67, ovf, ovf, 2.35, 0.72, 2.13, ovf, 2.80, 0.1104, ovf, ovf, ovf, ovf, ovf, ovf, 12.6638, 1
+23.4360, 0.60, 0.04, 0.69, 3.81, -230038576.00, 3.23, 0.70, 3.64, 0.66, ovf, ovf, 2.39, 0.72, 2.10, ovf, 2.73, 0.1486, -1766546944.0000, ovf, ovf, ovf, ovf, ovf, 12.7315, 1
+26.3670, 0.62, 0.04, 0.71, 3.65, -38339764.00, 3.17, 0.68, 3.69, 0.63, -3575116032.00, ovf, 2.38, 0.72, 2.07, ovf, 2.66, 0.1602, -294424512.0000, ovf, ovf, ovf, ovf, ovf, 12.7863, 1
+29.3000, 0.64, 0.06, 0.74, 3.49, -6389960.50, 3.06, 0.70, 3.53, 0.61, -595852672.00, 3986296576.00, 2.35, 0.72, 2.06, ovf, 2.58, 0.2376, -49070752.0000, ovf, ovf, ovf, ovf, ovf, 12.8056, 1
+32.2340, 0.63, 0.03, 0.76, 3.38, -1064992.87, 3.03, 0.72, 3.34, 0.63, -99308776.00, 664382784.00, 2.41, 0.72, 2.11, ovf, 2.60, 0.1073, -8178444.5000, ovf, ovf, ovf, ovf, ovf, 12.9639, 1
