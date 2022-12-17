@@ -160,7 +160,7 @@ if __name__ == '__main__':
 
     showPCEGraphs(filepathPCE)
 
-    filePathJV = r"..\data\scanlightDec-13-2022 19_22_16.csv"
+    filePathJV = r"..\data\scanlightDec-14-2022 12_41_50.csv"
 
     showJVGraphs(filePathJV)
 
