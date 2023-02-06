@@ -1,9 +1,11 @@
 #%%
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy_indexed as npi
 
 
-def showPCEGraphs(graphName):
+
+def showPCEGraphs(graphName, divFactor = 50):
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
     headers = arr[5,:]
@@ -12,45 +14,56 @@ def showPCEGraphs(graphName):
 
 
     time = arr[:,headerDict["Time"]]
-    pceList = []
-
-
-    for i in range(headerDict["Pixel 0 PCE"], (headerDict["Pixel 7 PCE"]+1)):
-        pceList.append(arr[:,i])
-
+    pceList = np.array(arr)
+    average = pceList.shape[0]/divFactor
+    print(average)
+    # print(range(headerDict["Pixel 0 PCE"], (headerDict["Pixel 7 PCE"]+1)))
+    # pceList = np.delete(pceList, [1:headerDict["Pixel 0 PCE"]-1], 1)
+    pceList = np.delete(pceList, slice(1,17), axis=1)
+    pceList = pceList[:,0:-1]
+    for i in range(len(pceList)):
+        pceList[i] = [float(j) if j != " ovf" else 0.0 for j in pceList[i]]
+    pceList = pceList.astype(float)
     # print(pceList)
 
-    time = [float(i) for i in time]
+    pceList[:,0] = np.floor(pceList[:,0]/average)
+    time = np.unique(pceList[:,0])
+    data = []
+    # print(len(time))
+
+
+    # print(len(npi.group_by(pceList[:, 0]).split(pceList[:, 8])))
+    for i in range(1,pceList.shape[1]):
+        avg = []
+        colSplit = npi.group_by(pceList[:, 0]).split(pceList[:, i])
+        for i in colSplit:
+            avg.append(np.average(i))
+        data.append(avg)
+    time = np.array(time)
+    data = np.array(data).T
+    time*=average
+    time/=3600
+
+    # a = a[a[:, 0].argsort()])
 
     maxTime = max(time)*1.01
-    maxPCE = 15
-    for i in range(len(pceList)):
-        pceList[i] = [float(j) for j in pceList[i]]
-    #     if max(pceList[i]) > maxPCE:
-    #         maxPCE = max(pceList[i])
+    maxPCE = 11
+
+
 
     plt.figure(figsize=(10, 8))
-    # ax = plt.gca()
-    # ax.set_xlim([0,maxTime])
-    # ax.set_ylim(top=15)
-
-    plt.xlim(0,maxTime/60/60)
-    print(maxTime/60/60)
-    plt.ylim(bottom = -0, top = 15)
+    plt.xlim(0,maxTime)
+    print(maxTime)
+    plt.ylim(bottom = -0, top = maxPCE)
     plt.title(graphName[-1][:-4])
     plt.xlabel('Time [hrs]')
     plt.ylabel('PCE [%]')
     plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
 
-
-    for i in range(len(pceList)):
+    for i in range(data.shape[1]):
         lineName = "PCE" + str(i)
-        print(np.array(pceList[i]))
-        # plt.plot(time,pceList[i], label = lineName)
-        plt.plot(np.array(time)/60/60,kalmanFilter(predictions = np.array(pceList[i]),process_noise=0.003, measurement_var=0.0055), label = lineName)
-        
-        # plt.plot(np.array(time)/60/60,kalmanFilter(predictions = np.array(pceList[i]),process_noise=0.1, measurement_var=0.1), label = lineName)
-
+        # print(np.array(pceList[i]))
+        plt.plot(time,data[:,i], label = lineName)
 
 
     plt.legend(bbox_to_anchor=(1.15, 0.65))
@@ -126,7 +139,6 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
             - Context predictions (e.g. slope, walking speed, etc.)
             - Process noise for predictions
             - Measurement uncertainty (in the form of variance)
-
         Output:
             - Updated estimates of context
         '''
@@ -156,13 +168,13 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 
 
 if __name__ == '__main__':
-    filepathPCE = r"..\data\PnODec-13-2022 19_43_10.csv"
+    filepathPCE = r"..\data\PnODec-14-2022 14_07_24.csv"
 
     showPCEGraphs(filepathPCE)
 
-    filePathJV = r"..\data\scanlightDec-14-2022 12_41_50.csv"
+    # filePathJV = r"..\data\scanlightDec-14-2022 12_41_50.csv"
 
-    showJVGraphs(filePathJV)
+    # showJVGraphs(filePathJV)
 
 
 # %%

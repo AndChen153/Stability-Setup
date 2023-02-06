@@ -1,0 +1,12 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : Project [LitosConnector.PrjPcb]
+   Generated File[LitosConnector.TXT]
+   Generated File[LitosConnector.LDP]
+   Generated File[LitosConnector.DRR]
+
+
+Files Generated   : 3
+Documents Printed : 0
+
+Finished Output Generation At 10:52:11 AM On 1/11/2023
