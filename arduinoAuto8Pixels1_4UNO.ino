@@ -377,7 +377,10 @@ void scan(String dir) {
 
 
             delay(delayTimeMS);                    //to set the scan rate
+            unsigned long currMillis = millis() - startMillis;
 
+            Serial.print(currMillis/1000.0, 4);
+            Serial.print(",");
             Serial.print(voltage_val);
             Serial.print(",");
             for (int ID = 0; ID < 8; ++ID) {
@@ -386,8 +389,7 @@ void scan(String dir) {
                 Serial.print(avgCurr[ID]/volt_Step_Count, 4);
                 Serial.print(",");
             }
-            unsigned long currMillis = millis() - startMillis;
-            Serial.print(currMillis/1000.0, 4);
+            Serial.print(1);
             Serial.println("");
             // Serial.println("");
 
@@ -480,7 +482,7 @@ void setupSensor_Dac(Adafruit_MCP4725 *dac, uint8_t ID) {
 
 void TCA9548A_INA219(uint8_t bus) {
     // Serial.print("TCA channel "); Serial.print(bus); Serial.println(" activated");
-    Wire.beginTransmission(0x72); // TCA9548A_INA219 address is 0x70
+    Wire.beginTransmission(0x70); // TCA9548A_INA219 address is 0x70
     Wire.write(1 << bus);         // send byte to select bus
     Wire.endTransmission();
 
@@ -489,7 +491,7 @@ void TCA9548A_INA219(uint8_t bus) {
 // --------------------------------------------------------------------------------------
 
 void TCA9548A_MCP475(uint8_t bus) {
-    Wire.beginTransmission(0x73); // TCA9548A_MCP475 address is 0x71
+    Wire.beginTransmission(0x71); // TCA9548A_MCP475 address is 0x71
     Wire.write(1 << bus);         // send byte to select bus
     Wire.endTransmission();
     // Serial.print("TCA channel "); Serial.print(bus); Serial.println(" activated");

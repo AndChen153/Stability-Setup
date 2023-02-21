@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy_indexed as npi
 
+import sys
+np.set_printoptions(threshold=sys.maxsize)
+
 
 
 def showPCEGraphs(graphName, divFactor = 50):
@@ -66,7 +69,7 @@ def showPCEGraphs(graphName, divFactor = 50):
 
     plt.figure(figsize=(10, 8))
     plt.xlim(0,maxTime)
-    
+
     plt.ylim(bottom = -0, top = maxPCE)
     plt.title(graphName[-1][:-4])
     plt.xlabel('Time [hrs]')
@@ -91,7 +94,7 @@ def showJVGraphs(graphName):
     # print(headerDict)
     arr = arr[6:, :]
     length = (len(headers) - 1)
-    print(length)
+    # print(length)
 
     jvList = []
 
@@ -105,7 +108,7 @@ def showJVGraphs(graphName):
     minY = 0
 
     for i in range(0,len(jvList),2):
-        print(i)
+        # print(i)
         jvList[i] = [float(j) for j in jvList[i]]
         jvList[i+1] = [float(x) for x in jvList[i+1]]
         # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
@@ -138,7 +141,7 @@ def showJVGraphs(graphName):
 
 
     for i in range(0,len(jvList),2):
-        print(i)
+        # print(i)
         lineName = "Pixel " + str(int(i/2))
         plt.plot(jvList[i],jvList[i+1], label = lineName)
 
@@ -187,7 +190,7 @@ if __name__ == '__main__':
     # filepathPCE = r"..\data\PnOJan-23-2023 13_15_47.csv"
 
     # showPCEGraphs(filepathPCE)
-    filePathJV = r"..\data\scanlightFeb-21-2023 12_00_43.csv"
+    filePathJV = r"..\data\scanlightFeb-21-2023 15_22_36.csv"
 
     showJVGraphs(filePathJV)
 

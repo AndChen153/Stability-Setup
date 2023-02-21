@@ -156,14 +156,14 @@ class StabilitySetup:
                        "Pixel 0_5 V","Pixel 0_5 mA",
                        "Pixel 0_6 V","Pixel 0_6 mA",
                        "Pixel 0_7 V","Pixel 0_7 mA",
-                       "Pixel 1_0 V","Pixel 1_0 mA",
-                       "Pixel 1_1 V","Pixel 1_1 mA",
-                       "Pixel 1_2 V","Pixel 1_2 mA",
-                       "Pixel 1_3 V","Pixel 1_3 mA",
-                       "Pixel 1_4 V","Pixel 1_4 mA",
-                       "Pixel 1_5 V","Pixel 1_5 mA",
-                       "Pixel 1_6 V","Pixel 1_6 mA",
-                       "Pixel 1_7 V","Pixel 1_7 mA",
+                    #    "Pixel 1_0 V","Pixel 1_0 mA",
+                    #    "Pixel 1_1 V","Pixel 1_1 mA",
+                    #    "Pixel 1_2 V","Pixel 1_2 mA",
+                    #    "Pixel 1_3 V","Pixel 1_3 mA",
+                    #    "Pixel 1_4 V","Pixel 1_4 mA",
+                    #    "Pixel 1_5 V","Pixel 1_5 mA",
+                    #    "Pixel 1_6 V","Pixel 1_6 mA",
+                    #    "Pixel 1_7 V","Pixel 1_7 mA",
                     #    "Pixel 2_0 V","Pixel 2_0 mA",
                     #    "Pixel 2_1 V","Pixel 2_1 mA",
                     #    "Pixel 2_2 V","Pixel 2_2 mA",
@@ -180,7 +180,7 @@ class StabilitySetup:
                     #    "Pixel 3_5 V","Pixel 3_5 mA",
                     #    "Pixel 3_6 V","Pixel 3_6 mA",
                     #    "Pixel 3_7 V","Pixel 3_7 mA",
-                    
+
                        "ARDUINOID"]
 
         self.scanArrWidth = len(headerArr)

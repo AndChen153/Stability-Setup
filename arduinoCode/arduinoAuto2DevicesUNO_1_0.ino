@@ -10,98 +10,102 @@
 // #define PIN_Wire_SDA        (70u)
 // #define PIN_Wire_SCL        (71u)
 
-int ARUDINOID = 23;
+int ARUDINOID = 1;
 
 /* Assign a unique ID to each sensor at the same time */
-// Adafruit_INA219 ina219_0;
-// Adafruit_INA219 ina219_1;
-// Adafruit_INA219 ina219_2;
-// Adafruit_INA219 ina219_3;
-// Adafruit_INA219 ina219_4;
-// Adafruit_INA219 ina219_5;
-// Adafruit_INA219 ina219_6;
-// Adafruit_INA219 ina219_7;
-// Adafruit_INA219 ina219_8;
-// Adafruit_INA219 ina219_9;
-// Adafruit_INA219 ina219_10;
-// Adafruit_INA219 ina219_11;
-// Adafruit_INA219 ina219_12;
-// Adafruit_INA219 ina219_13;
-// Adafruit_INA219 ina219_14;
-// Adafruit_INA219 ina219_15;
+Adafruit_INA219 ina219_0;
+Adafruit_INA219 ina219_1;
+Adafruit_INA219 ina219_2;
+Adafruit_INA219 ina219_3;
+Adafruit_INA219 ina219_4;
+Adafruit_INA219 ina219_5;
+Adafruit_INA219 ina219_6;
+Adafruit_INA219 ina219_7;
+Adafruit_INA219 ina219_8;
+Adafruit_INA219 ina219_9;
+Adafruit_INA219 ina219_10;
+Adafruit_INA219 ina219_11;
+Adafruit_INA219 ina219_12;
+Adafruit_INA219 ina219_13;
+Adafruit_INA219 ina219_14;
+Adafruit_INA219 ina219_15;
 
-Adafruit_INA219 ina219_16;
-Adafruit_INA219 ina219_17;
-Adafruit_INA219 ina219_18;
-Adafruit_INA219 ina219_19;
-Adafruit_INA219 ina219_20;
-Adafruit_INA219 ina219_21;
-Adafruit_INA219 ina219_22;
-Adafruit_INA219 ina219_23;
-Adafruit_INA219 ina219_24;
-Adafruit_INA219 ina219_25;
-Adafruit_INA219 ina219_26;
-Adafruit_INA219 ina219_27;
-Adafruit_INA219 ina219_28;
-Adafruit_INA219 ina219_29;
-Adafruit_INA219 ina219_30;
-Adafruit_INA219 ina219_31;
+Adafruit_INA219 *allINA[] =  {&ina219_0, &ina219_1, &ina219_2, &ina219_3, &ina219_4, &ina219_5, &ina219_6, &ina219_7,
+                            &ina219_8, &ina219_9, &ina219_10, &ina219_11, &ina219_12, &ina219_13, &ina219_14, &ina219_15,};
 
-// Adafruit_INA219 *allINA[] =  {&ina219_0, &ina219_1, &ina219_2, &ina219_3, &ina219_4, &ina219_5, &ina219_6, &ina219_7,
-//                             &ina219_8, &ina219_9, &ina219_10, &ina219_11, &ina219_12, &ina219_13, &ina219_14, &ina219_15,};
-Adafruit_INA219 *allINA[] =  {&ina219_16, &ina219_17, &ina219_18, &ina219_19, &ina219_20, &ina219_21, &ina219_22, &ina219_23,
-                            &ina219_24, &ina219_25, &ina219_26, &ina219_27, &ina219_28, &ina219_29, &ina219_30, &ina219_31};
+
+
+
+// Adafruit_INA219 ina219_16;
+// Adafruit_INA219 ina219_17;
+// Adafruit_INA219 ina219_18;
+// Adafruit_INA219 ina219_19;
+// Adafruit_INA219 ina219_20;
+// Adafruit_INA219 ina219_21;
+// Adafruit_INA219 ina219_22;
+// Adafruit_INA219 ina219_23;
+// Adafruit_INA219 ina219_24;
+// Adafruit_INA219 ina219_25;
+// Adafruit_INA219 ina219_26;
+// Adafruit_INA219 ina219_27;
+// Adafruit_INA219 ina219_28;
+// Adafruit_INA219 ina219_29;
+// Adafruit_INA219 ina219_30;
+// Adafruit_INA219 ina219_31;
+
+// Adafruit_INA219 *allINA[] =  {&ina219_16, &ina219_17, &ina219_18, &ina219_19, &ina219_20, &ina219_21, &ina219_22, &ina219_23,
+//                             &ina219_24, &ina219_25, &ina219_26, &ina219_27, &ina219_28, &ina219_29, &ina219_30, &ina219_31};
 
 
 /* Assign a unique ID to each sensor at the same time */
-// Adafruit_MCP4725 dac_0;
-// Adafruit_MCP4725 dac_1;
-// Adafruit_MCP4725 dac_2;
-// Adafruit_MCP4725 dac_3;
-// Adafruit_MCP4725 dac_4;
-// Adafruit_MCP4725 dac_5;
-// Adafruit_MCP4725 dac_6;
-// Adafruit_MCP4725 dac_7;
-// Adafruit_MCP4725 dac_8;
-// Adafruit_MCP4725 dac_9;
-// Adafruit_MCP4725 dac_10;
-// Adafruit_MCP4725 dac_11;
-// Adafruit_MCP4725 dac_12;
-// Adafruit_MCP4725 dac_13;
-// Adafruit_MCP4725 dac_14;
-// Adafruit_MCP4725 dac_15;
-
-Adafruit_MCP4725 dac_16;
-Adafruit_MCP4725 dac_17;
-Adafruit_MCP4725 dac_18;
-Adafruit_MCP4725 dac_19;
-Adafruit_MCP4725 dac_20;
-Adafruit_MCP4725 dac_21;
-Adafruit_MCP4725 dac_22;
-Adafruit_MCP4725 dac_23;
-Adafruit_MCP4725 dac_24;
-Adafruit_MCP4725 dac_25;
-Adafruit_MCP4725 dac_26;
-Adafruit_MCP4725 dac_27;
-Adafruit_MCP4725 dac_28;
-Adafruit_MCP4725 dac_29;
-Adafruit_MCP4725 dac_30;
-Adafruit_MCP4725 dac_31;
-
-// Adafruit_MCP4725 *allDAC [] = {&dac_0, &dac_1, &dac_2, &dac_3, &dac_4, &dac_5, &dac_6, &dac_7,
-//                             &dac_8, &dac_9, &dac_10, &dac_11, &dac_12, &dac_13, &dac_14, &dac_15};
+Adafruit_MCP4725 dac_0;
+Adafruit_MCP4725 dac_1;
+Adafruit_MCP4725 dac_2;
+Adafruit_MCP4725 dac_3;
+Adafruit_MCP4725 dac_4;
+Adafruit_MCP4725 dac_5;
+Adafruit_MCP4725 dac_6;
+Adafruit_MCP4725 dac_7;
+Adafruit_MCP4725 dac_8;
+Adafruit_MCP4725 dac_9;
+Adafruit_MCP4725 dac_10;
+Adafruit_MCP4725 dac_11;
+Adafruit_MCP4725 dac_12;
+Adafruit_MCP4725 dac_13;
+Adafruit_MCP4725 dac_14;
+Adafruit_MCP4725 dac_15;
 
 
-Adafruit_MCP4725 *allDAC [] = {&dac_16, &dac_17, &dac_18, &dac_19, &dac_20, &dac_21, &dac_22, &dac_23,
-                            &dac_24, &dac_25, &dac_26, &dac_27, &dac_28, &dac_29, &dac_30, &dac_31,};
+Adafruit_MCP4725 *allDAC [] = {&dac_0, &dac_1, &dac_2, &dac_3, &dac_4, &dac_5, &dac_6, &dac_7,
+                            &dac_8, &dac_9, &dac_10, &dac_11, &dac_12, &dac_13, &dac_14, &dac_15};
+
+// Adafruit_MCP4725 dac_16;
+// Adafruit_MCP4725 dac_17;
+// Adafruit_MCP4725 dac_18;
+// Adafruit_MCP4725 dac_19;
+// Adafruit_MCP4725 dac_20;
+// Adafruit_MCP4725 dac_21;
+// Adafruit_MCP4725 dac_22;
+// Adafruit_MCP4725 dac_23;
+// Adafruit_MCP4725 dac_24;
+// Adafruit_MCP4725 dac_25;
+// Adafruit_MCP4725 dac_26;
+// Adafruit_MCP4725 dac_27;
+// Adafruit_MCP4725 dac_28;
+// Adafruit_MCP4725 dac_29;
+// Adafruit_MCP4725 dac_30;
+// Adafruit_MCP4725 dac_31;
+
+// Adafruit_MCP4725 *allDAC [] = {&dac_16, &dac_17, &dac_18, &dac_19, &dac_20, &dac_21, &dac_22, &dac_23,
+//                             &dac_24, &dac_25, &dac_26, &dac_27, &dac_28, &dac_29, &dac_30, &dac_31,};
 
 
 // initialize hexcode i2c addresses for mutliplexers
-// int TCAADR_INA[] = {0x70, 0x72};    // 112, 114
-// int TCAADR_DAC[] = {0x71, 0x73};    // 113, 115
+int TCAADR_INA[] = {0x70, 0x72};    // 112, 114
+int TCAADR_DAC[] = {0x71, 0x73};    // 113, 115
 
-int TCAADR_INA[] = {0x74, 0x76};    // 116, 118
-int TCAADR_DAC[] = {0x75, 0x77};    // 117, 119
+// int TCAADR_INA[] = {0x74, 0x76};    // 116, 118
+// int TCAADR_DAC[] = {0x75, 0x77};    // 117, 119
 
 
 // INA219 Variables ---------------------------------------------------------------------
@@ -187,7 +191,7 @@ void setup(void) {
             setupSensor_Dac(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE]);
         }
     }
-// 
+//
     for (uint8_t DEVICE = 0; DEVICE < 2; DEVICE++) {
         for (uint8_t PIXEL = 0; PIXEL < 8; PIXEL++) {
             // Serial.print(PIXEL);
