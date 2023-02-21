@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
-    "port": "COM23",
-    "sketch": "arduinoAuto8Pixels1_4UNO.ino"
+    "port": "COM9",
+    "sketch": "arduinoCode\\tca9548A_INA_Test.ino"
 }

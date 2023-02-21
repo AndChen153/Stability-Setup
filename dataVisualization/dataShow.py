@@ -6,6 +6,17 @@ import numpy_indexed as npi
 
 
 def showPCEGraphs(graphName, divFactor = 50):
+    # num_rows = 0
+    # numCols = 0
+    # for line in open(graphName):
+    #     num_rows += 1
+    #     numCols = len(np.array(line.split(",")))
+    # arr = np.empty([num_rows,numCols])
+    # arr = arr.astype("str")
+    # row = 0
+    # for line in open(graphName):
+    #     arr[row] = np.array(line.split(","))
+    #     row += 1
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
     headers = arr[5,:]
@@ -16,7 +27,7 @@ def showPCEGraphs(graphName, divFactor = 50):
     time = arr[:,headerDict["Time"]]
     pceList = np.array(arr)
     average = pceList.shape[0]/divFactor
-    print(average)
+    # print(average)
     # print(range(headerDict["Pixel 0 PCE"], (headerDict["Pixel 7 PCE"]+1)))
     # pceList = np.delete(pceList, [1:headerDict["Pixel 0 PCE"]-1], 1)
     pceList = np.delete(pceList, slice(1,17), axis=1)
@@ -47,13 +58,15 @@ def showPCEGraphs(graphName, divFactor = 50):
     # a = a[a[:, 0].argsort()])
 
     maxTime = max(time)*1.01
-    maxPCE = 11
+    maxPCE = 15
+    print("MAXTIME", maxTime)
+    print("MAXPCE", maxPCE)
 
 
 
     plt.figure(figsize=(10, 8))
     plt.xlim(0,maxTime)
-    print(maxTime)
+    
     plt.ylim(bottom = -0, top = maxPCE)
     plt.title(graphName[-1][:-4])
     plt.xlabel('Time [hrs]')
@@ -77,11 +90,12 @@ def showJVGraphs(graphName):
     headerDict = {value: index for index, value in enumerate(headers)}
     # print(headerDict)
     arr = arr[6:, :]
-
+    length = (len(headers) - 1)
+    print(length)
 
     jvList = []
 
-    for i in range(1, 17):
+    for i in range(2, length):
         jvList.append(arr[:,i])
 
 
@@ -91,6 +105,7 @@ def showJVGraphs(graphName):
     minY = 0
 
     for i in range(0,len(jvList),2):
+        print(i)
         jvList[i] = [float(j) for j in jvList[i]]
         jvList[i+1] = [float(x) for x in jvList[i+1]]
         # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
@@ -123,6 +138,7 @@ def showJVGraphs(graphName):
 
 
     for i in range(0,len(jvList),2):
+        print(i)
         lineName = "Pixel " + str(int(i/2))
         plt.plot(jvList[i],jvList[i+1], label = lineName)
 
@@ -168,13 +184,12 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 
 
 if __name__ == '__main__':
-    filepathPCE = r"..\data\PnODec-14-2022 14_07_24.csv"
+    # filepathPCE = r"..\data\PnOJan-23-2023 13_15_47.csv"
 
-    showPCEGraphs(filepathPCE)
+    # showPCEGraphs(filepathPCE)
+    filePathJV = r"..\data\scanlightFeb-21-2023 12_00_43.csv"
 
-    # filePathJV = r"..\data\scanlightDec-14-2022 12_41_50.csv"
-
-    # showJVGraphs(filePathJV)
+    showJVGraphs(filePathJV)
 
 
 # %%
