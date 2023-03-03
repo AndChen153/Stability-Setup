@@ -21,7 +21,8 @@ if len(arduino_ports) > 1:
 print(arduino_ports[0])
 
 
-arduinoController = controller_1_1.StabilitySetup(arduino_ports[0], 115200)
+# arduinoController = controller_1_1.StabilitySetup(arduino_ports[0], 115200)
+arduinoController = controller_1_1.StabilitySetup("COM25", 115200)
 
 
 gui = GUI_1_0.UserInterface()

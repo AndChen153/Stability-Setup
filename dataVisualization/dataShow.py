@@ -9,7 +9,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 
-def showPCEGraphs(graphName, divFactor = 50):
+def showPCEGraphs(graphName, pixels = None, divFactor = 50):
     # num_rows = 0
     # numCols = 0
     # for line in open(graphName):
@@ -21,6 +21,7 @@ def showPCEGraphs(graphName, divFactor = 50):
     # for line in open(graphName):
     #     arr[row] = np.array(line.split(","))
     #     row += 1
+
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
     headers = arr[5,:]
@@ -34,7 +35,9 @@ def showPCEGraphs(graphName, divFactor = 50):
     # print(average)
     # print(range(headerDict["Pixel 0 PCE"], (headerDict["Pixel 7 PCE"]+1)))
     # pceList = np.delete(pceList, [1:headerDict["Pixel 0 PCE"]-1], 1)
-    pceList = np.delete(pceList, slice(1,17), axis=1)
+
+    # UNCOMMENT LINE IF CSV INCLUDES VOLTAGE AND CURRENT
+    pceList = np.delete(pceList, slice(1,33), axis=1)
     pceList = pceList[:,0:-1]
     for i in range(len(pceList)):
         pceList[i] = [float(j) if j != " ovf" else 0.0 for j in pceList[i]]
@@ -76,17 +79,23 @@ def showPCEGraphs(graphName, divFactor = 50):
     plt.xlabel('Time [hrs]')
     plt.ylabel('PCE [%]')
     plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
-
-    for i in range(data.shape[1]):
-        lineName = "PCE" + str(i)
-        # print(np.array(pceList[i]))
-        plt.plot(time,data[:,i], label = lineName)
+    
+    if pixels == None:
+        for i in range(data.shape[1]):
+            lineName = "PCE" + str(i)
+            # print(np.array(pceList[i]))
+            plt.plot(time,data[:,i], label = lineName)
+    else:
+        for i in pixels:
+            lineName = "PCE" + str(i)
+            # print(np.array(pceList[i]))
+            plt.plot(time,data[:,i], label = lineName)
 
 
     plt.legend(bbox_to_anchor=(1.15, 0.65))
     plt.show()
 
-def showJVGraphs(graphName):
+def showJVGraphs(graphName, pixels = None):
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
     print(arr)
@@ -119,6 +128,7 @@ def showJVGraphs(graphName):
         if max(jvList[i+1]) > maxY: maxY = max(jvList[i+1])
         if min(jvList[i+1]) < minY: minY = min(jvList[i+1])
 
+        
     maxX *= 1.1
     minX *= 1.1
     maxY *= 1.1
@@ -140,11 +150,17 @@ def showJVGraphs(graphName):
     # plt.ylabel('Jmeas [mA/cm]')
     plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
 
-
-    for i in range(0,len(jvList),2):
-        # print(i)
-        lineName = "Pixel " + str(int(i/2))
-        plt.plot(jvList[i],jvList[i+1], label = lineName)
+    if pixels == None:
+        for i in range(0,len(jvList),2):
+            # print(i)
+            lineName = "Pixel " + str(int(i/2))
+            plt.plot(jvList[i],jvList[i+1], label = lineName)
+    else:
+        for i in pixels:
+            # print(i)
+            i*=2
+            lineName = "Pixel " + str(int(i/2))
+            plt.plot(jvList[i],jvList[i+1], label = lineName)
 
     ax = plt.gca()
     ax.spines['bottom'].set_position('zero')
@@ -192,9 +208,10 @@ if __name__ == '__main__':
     # filepathPCE = r"..\data\PnOJan-23-2023 13_15_47.csv"
 
     # showPCEGraphs(filepathPCE)
-    filePathJV = r"..\data\scanlightMar-02-2023 13_26_37.csv"
+    filePathJV = r"..\data\scanlightMar-03-2023 12_07_07.csv"
 
     showJVGraphs(filePathJV)
+    showJVGraphs(filePathJV,[0,1,2,3,21])
 
 
 # %%

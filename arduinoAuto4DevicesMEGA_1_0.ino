@@ -381,14 +381,14 @@ void perturbAndObserve() {
         Serial.print(", ");
 
         // UNCOMMENT TO SHOW VOLTAGE AND CURRENT FOR EVERY PIXEL
-        // for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
-        //     for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-        //         Serial.print(loadvoltageArr[DEVICE][PIXEL], 2);
-        //         Serial.print(", ");
-        //         Serial.print(current_mA_FlippedArr[DEVICE][PIXEL], 2);
-        //         Serial.print(", ");
-        //     }
-        // }
+        for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
+            for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
+                Serial.print(loadvoltageArr[DEVICE][PIXEL], 2);
+                Serial.print(", ");
+                Serial.print(current_mA_FlippedArr[DEVICE][PIXEL], 2);
+                Serial.print(", ");
+            }
+        }
 
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
