@@ -8,7 +8,12 @@ class UserInterface:
     def __init__(self) -> None:
         pass
 
-
+    # defaults
+    # [sg.Text('SCAN_RANGE (V):'), sg.InputText("1.2")],
+    # [sg.Text('SCAN_STEP_SIZE (V):'), sg.InputText("0.03")],
+    # [sg.Text('SCAN_READ_COUNT:'), sg.InputText("3")],
+    # [sg.Text('SCAN_RATE (mV/s):'), sg.InputText("50")],
+    # [sg.Text('SCAN_MODE (0 = dark, 1 = light):'), sg.InputText("1")],
     def make_win1(self):
         layoutScan = [ [sg.Button("Scan"), sg.Button("PNO"), sg.Button("GO")],
                             [sg.Text('SCAN_RANGE (V):'), sg.InputText("1.2")],
@@ -16,16 +21,25 @@ class UserInterface:
                             [sg.Text('SCAN_READ_COUNT:'), sg.InputText("3")],
                             [sg.Text('SCAN_RATE (mV/s):'), sg.InputText("50")],
                             [sg.Text('SCAN_MODE (0 = dark, 1 = light):'), sg.InputText("1")],
+
                             ]
         return sg.Window('Scan', layoutScan, finalize=True)
 
+
+    # defaults
+    # [sg.Button("Scan"), sg.Button("PNO"), sg.Button("GO")],
+    # [sg.Text('PNO_STARTING_VOLTAGE (V):'), sg.InputText("0.09")],
+    # [sg.Text('PNO_STEP_SIZE (V):'), sg.InputText("0.02")],
+    # [sg.Text('PNO_MEASUREMENTS_PER_STEP:'), sg.InputText("5")],
+    # [sg.Text('PNO_MEASUREMENT_DELAY (mV/s):'), sg.InputText("100")],
+    # [sg.Text('Time (mins):'), sg.InputText("120")]
     def make_win2(self):
         layoutPnO = [  [sg.Button("Scan"), sg.Button("PNO"), sg.Button("GO")],
                             [sg.Text('PNO_STARTING_VOLTAGE (V):'), sg.InputText("0.09")],
                             [sg.Text('PNO_STEP_SIZE (V):'), sg.InputText("0.02")],
                             [sg.Text('PNO_MEASUREMENTS_PER_STEP:'), sg.InputText("5")],
                             [sg.Text('PNO_MEASUREMENT_DELAY (mV/s):'), sg.InputText("100")],
-                            [sg.Text('Time (mins):'), sg.InputText("120")]
+                            [sg.Text('Time (hours):'), sg.InputText("120")]
                             ]
         return sg.Window('PNO', layoutPnO, finalize=True)
 

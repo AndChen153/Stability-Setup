@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy_indexed as npi
+from labellines import labelLines
 
 import sys
 np.set_printoptions(threshold=sys.maxsize)
@@ -147,6 +148,7 @@ def showJVGraphs(graphName):
 
     ax = plt.gca()
     ax.spines['bottom'].set_position('zero')
+    labelLines(plt.gca().get_lines(), zorder=2.5)
 
     plt.legend(bbox_to_anchor=(1.18, 0.7))
 
@@ -190,7 +192,7 @@ if __name__ == '__main__':
     # filepathPCE = r"..\data\PnOJan-23-2023 13_15_47.csv"
 
     # showPCEGraphs(filepathPCE)
-    filePathJV = r"..\data\scanlightFeb-21-2023 15_22_36.csv"
+    filePathJV = r"..\data\scanlightMar-02-2023 13_26_37.csv"
 
     showJVGraphs(filePathJV)
 

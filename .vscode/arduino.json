@@ -1,5 +1,6 @@
 {
-    "board": "arduino:avr:uno",
-    "port": "COM5",
-    "sketch": "arduinoCode\\tca9548A_INA_Test.ino"
+    "board": "arduino:avr:mega",
+    "port": "COM12",
+    "sketch": "arduinoAuto4DevicesMEGA_1_0.ino",
+    "configuration": "cpu=atmega2560"
 }
