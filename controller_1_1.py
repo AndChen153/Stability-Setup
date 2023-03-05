@@ -84,6 +84,7 @@ class StabilitySetup:
         fileName
             fileName for file that was just saved
         """
+        
         if not os.path.exists(self.fileName):
             np.savetxt(self.fileName, self.arr, delimiter="," , fmt='%s')
             if (self.mode == "scan"):
@@ -97,7 +98,7 @@ class StabilitySetup:
                 self.arr = np.empty([1, self.scanArrWidth], dtype="object")
             elif (self.mode == "PNO"):
                 self.arr = np.empty([1, self.PNOArrWidth], dtype="object")
-
+        print("SAVED")
         return self.fileName
 
 

@@ -37,7 +37,7 @@ def showPCEGraphs(graphName, pixels = None, divFactor = 50):
     # pceList = np.delete(pceList, [1:headerDict["Pixel 0 PCE"]-1], 1)
 
     # UNCOMMENT LINE IF CSV INCLUDES VOLTAGE AND CURRENT
-    pceList = np.delete(pceList, slice(1,33), axis=1)
+    pceList = np.delete(pceList, slice(1,65), axis=1)
     pceList = pceList[:,0:-1]
     for i in range(len(pceList)):
         pceList[i] = [float(j) if j != " ovf" else 0.0 for j in pceList[i]]
@@ -65,7 +65,7 @@ def showPCEGraphs(graphName, pixels = None, divFactor = 50):
     # a = a[a[:, 0].argsort()])
 
     maxTime = max(time)*1.01
-    maxPCE = 15
+    maxPCE = 35
     print("MAXTIME", maxTime)
     print("MAXPCE", maxPCE)
 
@@ -91,14 +91,14 @@ def showPCEGraphs(graphName, pixels = None, divFactor = 50):
             # print(np.array(pceList[i]))
             plt.plot(time,data[:,i], label = lineName)
 
-
+    labelLines(plt.gca().get_lines(), zorder=2.5)
     plt.legend(bbox_to_anchor=(1.15, 0.65))
     plt.show()
 
 def showJVGraphs(graphName, pixels = None):
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
-    print(arr)
+    # print(arr)
     headers = arr[6,:]
     headerDict = {value: index for index, value in enumerate(headers)}
     # print(headerDict)
@@ -135,11 +135,15 @@ def showJVGraphs(graphName, pixels = None):
     minY *= 1.1
 
 
-    # f = plt.figure()
-    # f.set_figwidth(10)
-    # f.set_figheight(10)
 
-
+    # data = []
+    # jvList = np.array(jvList)
+    # for i in range(1,jvList.shape[1]):
+    #     avg = []
+    #     colSplit = npi.group_by(jvList[:, 0]).split(jvList[:, i])
+    #     for i in colSplit:
+    #         avg.append(np.average(i))
+    #     data.append(avg)
 
     plt.figure(figsize=(10, 8))
     plt.xlim(minX,maxX)
@@ -205,13 +209,16 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 
 
 if __name__ == '__main__':
-    # filepathPCE = r"..\data\PnOJan-23-2023 13_15_47.csv"
+    filepathPCE = r"..\data\PnOMar-03-2023 18_12_02.csv"
 
-    # showPCEGraphs(filepathPCE)
-    filePathJV = r"..\data\scanlightMar-03-2023 12_07_07.csv"
+    showPCEGraphs(filepathPCE)
+    # ,[23,24,25,26,27,28,29,30,31]
 
+    filePathJV = r"..\data\scanlightMar-03-2023 17_16_10.csv"
+
+    # showJVGraphs(filePathJV)
     showJVGraphs(filePathJV)
-    showJVGraphs(filePathJV,[0,1,2,3,21])
+    # ,[23,24,25,26,27,28,29,30,31]
 
 
 # %%

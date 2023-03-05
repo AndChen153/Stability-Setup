@@ -322,7 +322,7 @@ void perturbAndObserve() {
         */
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-
+                    
                 // Vset --------------------------------------------------
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
                 delay(measurement_Delay_PnO);

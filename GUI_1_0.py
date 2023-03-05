@@ -35,10 +35,10 @@ class UserInterface:
     # [sg.Text('Time (mins):'), sg.InputText("120")]
     def make_win2(self):
         layoutPnO = [  [sg.Button("Scan"), sg.Button("PNO"), sg.Button("GO")],
-                            [sg.Text('PNO_STARTING_VOLTAGE (V):'), sg.InputText("0.09")],
-                            [sg.Text('PNO_STEP_SIZE (V):'), sg.InputText("0.02")],
+                            [sg.Text('PNO_STARTING_VOLTAGE (V):'), sg.InputText("0.90")],
+                            [sg.Text('PNO_STEP_SIZE (V):'), sg.InputText("0.05")],
                             [sg.Text('PNO_MEASUREMENTS_PER_STEP:'), sg.InputText("5")],
-                            [sg.Text('PNO_MEASUREMENT_DELAY (mV/s):'), sg.InputText("100")],
+                            [sg.Text('PNO_MEASUREMENT_DELAY (ms):'), sg.InputText("50")],
                             [sg.Text('Time (hours):'), sg.InputText("120")]
                             ]
         return sg.Window('PNO', layoutPnO, finalize=True)
