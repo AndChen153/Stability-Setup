@@ -273,7 +273,33 @@ void loop(void) {
 
 
 // Main Methods =========================================================================
+/*
+Algo to search for maximum PCE along voltage range.
+Find PCE at current voltage,
+find PCE above and below by a set voltage amount,
+then set new voltage to highest PCE
 
+
+
+enter loop (stops when total time is met) {
+    32x set voltage to Vset
+    delay time
+    loop (5x): 32x read voltage
+
+    32x set voltage to Vset + step size
+    delay time
+    loop (5x): 32x read voltage
+
+    32x set voltage to Vset - step size
+    delay time
+    loop (5x): 32x read voltage
+
+    perform calculations
+    (depending on which one has the highest power)
+    vset = vset/vset+/vset-
+
+    return to start of loop
+*/
 void perturbAndObserve() {
     led(true);
     lightControl(1);
@@ -297,8 +323,8 @@ void perturbAndObserve() {
 
 
     float avgPowerCalced[4][8];
-    float avgPowerCalcedUp;
-    float avgPowerCalcedDown;
+    float avgPowerCalcedUp[4][8];
+    float avgPowerCalcedDown[4][8];
     float loadvoltageArr[4][8];
     float current_mA_FlippedArr[4][8];
     float PCE[4][8];
@@ -313,53 +339,82 @@ void perturbAndObserve() {
 
     Serial.print("measurement_Time (days): ");
     Serial.println(measurement_Time/60.0/24.0);
+
+
+
     while((millis()-startMillis)/1000.0 < measurement_Time) { // convert millis to same unit as measurement time input
-        /*
-        Algo to search for maximum PCE along voltage range.
-        Find PCE at current voltage,
-        find PCE above and below by a set voltage amount,
-        then set new voltage to highest PCE
-        */
+        // Vset -------------------------------------------------------------------------------------------------------
+        // 32x set voltage to Vset
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                    
-                // Vset --------------------------------------------------
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
                 delay(measurement_Delay_PnO);
-                for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
-                    // getINA129(&allINA219[ID], ID);
+            }
+        }
+        // delay time
+        delay(measurement_Delay_PnO);
+        // loop (measurements_Per_Step_PnO): 32x read voltage
+        for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
+            // getINA129(&allINA219[ID], ID);
+            for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
+                for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                     getVolCurr(allINA[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
                     avgPowerCalced[DEVICE][PIXEL] += loadvoltage * current_mA_Flipped;
                     loadvoltageArr[DEVICE][PIXEL] += loadvoltage;
                     current_mA_FlippedArr[DEVICE][PIXEL] += current_mA_Flipped;
                 }
+            }
+        }
 
-                // Vset + deltaV -----------------------------------------
+        // Vset + Step Size -------------------------------------------------------------------------------------------
+        // 32x set voltage to Vset + step size
+        for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
+            for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                 VsetUp = Vset[DEVICE][PIXEL] + voltage_Step__Size_PnO;
-                setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
-                delay(measurement_Delay_PnO);
-
-                for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
-                    // getINA129(&allINA219[ID], ID);
+                setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VsetUp);
+            }
+        }
+        // delay time
+        delay(measurement_Delay_PnO);
+        // loop (5x): 32x read voltage
+        for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
+            // getINA129(&allINA219[ID], ID);
+            for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
+                for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                     getVolCurr(allINA[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
-                    avgPowerCalcedUp += loadvoltage * current_mA_Flipped;
+                    avgPowerCalcedUp[DEVICE][PIXEL] += loadvoltage * current_mA_Flipped;
                 }
+            }
+        }
 
-                // Vset - deltaV -----------------------------------------
+
+        // Vset - Step Size -------------------------------------------------------------------------------------------
+        // 32x set voltage to Vset + step size
+        for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
+            for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                 VsetDown = Vset[DEVICE][PIXEL] - voltage_Step__Size_PnO;
-                setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
+                setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VsetDown);
                 delay(measurement_Delay_PnO);
-
-                for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
+            }
+        }
+        // delay time
+        delay(measurement_Delay_PnO);
+        // loop (5x): 32x read voltage
+        for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
+            // getINA129(&allINA219[ID], ID);
+            for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
+                for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                     getVolCurr(allINA[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
-                    avgPowerCalcedDown += loadvoltage * current_mA_Flipped;
+                    avgPowerCalcedDown[DEVICE][PIXEL] += loadvoltage * current_mA_Flipped;
                 }
-
-
-                // Calculations ------------------------------------------
+            }
+        }
+        // Calculations ------------------------------------------
+        for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
+            for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                 avgPowerCalced[DEVICE][PIXEL] = avgPowerCalced[DEVICE][PIXEL]/measurements_Per_Step_PnO;
-                avgPowerCalcedUp = avgPowerCalcedUp/measurements_Per_Step_PnO;
-                avgPowerCalcedDown = avgPowerCalcedDown/measurements_Per_Step_PnO;
+                avgPowerCalcedUp[DEVICE][PIXEL] = avgPowerCalcedUp[DEVICE][PIXEL]/measurements_Per_Step_PnO;
+                avgPowerCalcedDown[DEVICE][PIXEL] = avgPowerCalcedDown[DEVICE][PIXEL]/measurements_Per_Step_PnO;
                 loadvoltageArr[DEVICE][PIXEL] = loadvoltageArr[DEVICE][PIXEL]/measurements_Per_Step_PnO;
                 current_mA_FlippedArr[DEVICE][PIXEL] = current_mA_FlippedArr[DEVICE][PIXEL]/measurements_Per_Step_PnO;
 
@@ -370,8 +425,10 @@ void perturbAndObserve() {
                 }
 
                 PCE[DEVICE][PIXEL] = (avgPowerCalced[DEVICE][PIXEL]/1000)/(0.1*0.128); // PCE calcuation assuming pixel area of 0.128 cm^2
+
             }
         }
+
 
 
         // print out values to send them to PC

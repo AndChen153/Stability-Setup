@@ -9,7 +9,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 
-def showPCEGraphs(graphName, pixels = None, divFactor = 50):
+def showPCEGraphs(graphName, startingPoint = 0, pixels = None, divFactor = 50):
     # num_rows = 0
     # numCols = 0
     # for line in open(graphName):
@@ -41,6 +41,9 @@ def showPCEGraphs(graphName, pixels = None, divFactor = 50):
     pceList = pceList[:,0:-1]
     for i in range(len(pceList)):
         pceList[i] = [float(j) if j != " ovf" else 0.0 for j in pceList[i]]
+        pceList[i] = [float(j) if j != "nan" else 0.0 for j in pceList[i]]
+        # # print(pceList[i])
+        # pceList[i] = [float(30) if float(j) > 30 else j for j in pceList[i]]
     pceList = pceList.astype(float)
     # print(pceList)
 
@@ -79,7 +82,7 @@ def showPCEGraphs(graphName, pixels = None, divFactor = 50):
     plt.xlabel('Time [hrs]')
     plt.ylabel('PCE [%]')
     plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
-    
+
     if pixels == None:
         for i in range(data.shape[1]):
             lineName = "PCE" + str(i)
@@ -93,6 +96,99 @@ def showPCEGraphs(graphName, pixels = None, divFactor = 50):
 
     labelLines(plt.gca().get_lines(), zorder=2.5)
     plt.legend(bbox_to_anchor=(1.15, 0.65))
+    plt.show()
+
+def showJVGraphsSmoothed(graphName, pixels = None):
+    arr = np.loadtxt(graphName, delimiter=",", dtype=str)
+    graphName = graphName.split('\\')
+    # print(arr)
+    headers = arr[6,:]
+    headerDict = {value: index for index, value in enumerate(headers)}
+    # print(headerDict)
+    arr = arr[6:, :]
+    length = (len(headers) - 1)
+    # print(length)
+
+    jvList = []
+
+    for i in range(2, length):
+        jvList.append(arr[:,i])
+
+
+    maxX = 0
+    minX = 0
+    maxY = 0
+    minY = 0
+
+    for i in range(0,len(jvList),2):
+        # print(i)
+        jvList[i] = [float(j) for j in jvList[i]]
+        jvList[i+1] = [float(x) for x in jvList[i+1]]
+        # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
+
+        if max(jvList[i]) > maxX: maxX = max(jvList[i])
+        if min(jvList[i]) < minX: minX = min(jvList[i])
+        if max(jvList[i+1]) > maxY: maxY = max(jvList[i+1])
+        if min(jvList[i+1]) < minY: minY = min(jvList[i+1])
+
+
+    maxX *= 1.1
+    minX *= 1.1
+    maxY *= 1.1
+    minY *= 1.1
+
+
+
+    # data = []
+    # jvList = np.array(jvList)
+    # for i in range(1,jvList.shape[1]):
+    #     avg = []
+    #     colSplit = npi.group_by(jvList[:, 0]).split(jvList[:, i])
+    #     for i in colSplit:
+    #         avg.append(np.average(i))
+    #     data.append(avg)
+    jvList = np.array(jvList).T
+    data = jvList
+
+    print(jvList.shape)
+    # print(len(npi.group_by(pceList[:, 0]).split(pceList[:, 8])))
+    for i in range(0,jvList.shape[1],2):
+        # print(jvList[:, i+1])
+
+        # print(kalmanFilter(jvList[:, i+1]))
+        jvList[:, i+1] = kalmanFilter(jvList[:, i+1])
+        # break
+    # print(np.array(data).T.shape)
+    jvList = np.array(data).T
+
+    plt.figure(figsize=(10, 8))
+    plt.xlim(minX,maxX)
+    plt.ylim(minY, maxY)
+    plt.title(graphName[-1][:-4])
+    plt.xlabel('Bias [V]')
+    plt.ylabel('Current [mA]')
+    # plt.ylabel('Jmeas [mA/cm]')
+    plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
+
+
+    if pixels == None:
+        for i in range(0,len(jvList),2):
+            # print(i)
+            lineName = "Pixel " + str(int(i/2))
+            plt.plot(jvList[i],jvList[i+1], label = lineName)
+    else:
+        for i in pixels:
+            # print(i)
+            i*=2
+            lineName = "Pixel " + str(int(i/2))
+            plt.plot(jvList[i],jvList[i+1], label = lineName)
+
+    ax = plt.gca()
+    ax.spines['bottom'].set_position('zero')
+    labelLines(plt.gca().get_lines(), zorder=2.5)
+
+    plt.legend(bbox_to_anchor=(1.18, 0.7))
+
     plt.show()
 
 def showJVGraphs(graphName, pixels = None):
@@ -128,7 +224,7 @@ def showJVGraphs(graphName, pixels = None):
         if max(jvList[i+1]) > maxY: maxY = max(jvList[i+1])
         if min(jvList[i+1]) < minY: minY = min(jvList[i+1])
 
-        
+
     maxX *= 1.1
     minX *= 1.1
     maxY *= 1.1
@@ -211,14 +307,16 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 if __name__ == '__main__':
     filepathPCE = r"..\data\PnOMar-03-2023 18_12_02.csv"
 
+
     showPCEGraphs(filepathPCE)
     # ,[23,24,25,26,27,28,29,30,31]
 
-    filePathJV = r"..\data\scanlightMar-03-2023 17_16_10.csv"
+    # filePathJV = r"..\data\scanlightMar-03-2023 17_16_10.csv"
 
+    # # showJVGraphs(filePathJV)
     # showJVGraphs(filePathJV)
-    showJVGraphs(filePathJV)
-    # ,[23,24,25,26,27,28,29,30,31]
+    # showJVGraphsSmoothed(filePathJV)
+    # # ,[23,24,25,26,27,28,29,30,31]
 
 
 # %%
