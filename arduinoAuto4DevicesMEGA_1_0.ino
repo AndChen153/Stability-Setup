@@ -335,11 +335,11 @@ void perturbAndObserve() {
     int startMillis = millis();
     Serial.print("measurement_Time (hours): ");
     Serial.println(measurement_Time);
+    Serial.print("measurement_Time (days): ");
+    Serial.println(measurement_Time/24.0);
     measurement_Time *= 60*60;
 
-    Serial.print("measurement_Time (days): ");
-    Serial.println(measurement_Time/60.0/24.0);
-
+    
 
 
     while((millis()-startMillis)/1000.0 < measurement_Time) { // convert millis to same unit as measurement time input
@@ -409,7 +409,7 @@ void perturbAndObserve() {
                 }
             }
         }
-        // Calculations ------------------------------------------
+        // Calculations -----------------------------------------------------------------------------------------------
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                 avgPowerCalced[DEVICE][PIXEL] = avgPowerCalced[DEVICE][PIXEL]/measurements_Per_Step_PnO;
@@ -418,9 +418,9 @@ void perturbAndObserve() {
                 loadvoltageArr[DEVICE][PIXEL] = loadvoltageArr[DEVICE][PIXEL]/measurements_Per_Step_PnO;
                 current_mA_FlippedArr[DEVICE][PIXEL] = current_mA_FlippedArr[DEVICE][PIXEL]/measurements_Per_Step_PnO;
 
-                if (avgPowerCalcedUp > avgPowerCalcedDown && avgPowerCalcedUp > avgPowerCalced[DEVICE][PIXEL]) {
+                if (avgPowerCalcedUp[DEVICE][PIXEL] > avgPowerCalcedDown[DEVICE][PIXEL] && avgPowerCalcedUp[DEVICE][PIXEL] > avgPowerCalced[DEVICE][PIXEL]) {
                     Vset[DEVICE][PIXEL] += voltage_Step__Size_PnO;
-                } else if (avgPowerCalcedDown > avgPowerCalcedUp && avgPowerCalcedDown > avgPowerCalced[DEVICE][PIXEL]) {
+                } else if (avgPowerCalcedDown[DEVICE][PIXEL] > avgPowerCalcedUp[DEVICE][PIXEL] && avgPowerCalcedDown[DEVICE][PIXEL] > avgPowerCalced[DEVICE][PIXEL]) {
                     Vset[DEVICE][PIXEL] -= voltage_Step__Size_PnO;
                 }
 

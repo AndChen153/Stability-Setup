@@ -95,7 +95,7 @@ def showPCEGraphs(graphName, startingPoint = 0, pixels = None, divFactor = 50):
             plt.plot(time,data[:,i], label = lineName)
 
     labelLines(plt.gca().get_lines(), zorder=2.5)
-    plt.legend(bbox_to_anchor=(1.15, 0.65))
+    plt.legend(bbox_to_anchor=(1.15, 1))
     plt.show()
 
 def showJVGraphsSmoothed(graphName, pixels = None):
@@ -266,7 +266,7 @@ def showJVGraphs(graphName, pixels = None):
     ax.spines['bottom'].set_position('zero')
     labelLines(plt.gca().get_lines(), zorder=2.5)
 
-    plt.legend(bbox_to_anchor=(1.18, 0.7))
+    plt.legend(bbox_to_anchor=(1.18, 11))
 
     plt.show()
 
@@ -305,15 +305,15 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 
 
 if __name__ == '__main__':
-    filepathPCE = r"..\data\PnOMar-03-2023 18_12_02.csv"
+    filepathPCE = r"..\data\PnOMar-06-2023 12_52_31.csv"
 
 
     showPCEGraphs(filepathPCE)
     # ,[23,24,25,26,27,28,29,30,31]
 
-    # filePathJV = r"..\data\scanlightMar-03-2023 17_16_10.csv"
+    filePathJV = r"..\data\scanlightMar-06-2023 12_50_20.csv"
 
-    # # showJVGraphs(filePathJV)
+    showJVGraphs(filePathJV)
     # showJVGraphs(filePathJV)
     # showJVGraphsSmoothed(filePathJV)
     # # ,[23,24,25,26,27,28,29,30,31]
