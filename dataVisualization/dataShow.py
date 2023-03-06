@@ -311,9 +311,9 @@ if __name__ == '__main__':
     showPCEGraphs(filepathPCE)
     # ,[23,24,25,26,27,28,29,30,31]
 
-    filePathJV = r"..\data\scanlightMar-06-2023 12_50_20.csv"
+    # filePathJV = r"..\data\scanlightMar-06-2023 12_50_20.csv"
 
-    showJVGraphs(filePathJV)
+    # showJVGraphs(filePathJV)
     # showJVGraphs(filePathJV)
     # showJVGraphsSmoothed(filePathJV)
     # # ,[23,24,25,26,27,28,29,30,31]

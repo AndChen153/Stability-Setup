@@ -333,16 +333,25 @@ void perturbAndObserve() {
     int currentMillis = 0;
     int pm = millis();
     int startMillis = millis();
+    
+    // input time in hours
     Serial.print("measurement_Time (hours): ");
     Serial.println(measurement_Time);
     Serial.print("measurement_Time (days): ");
     Serial.println(measurement_Time/24.0);
-    measurement_Time *= 60*60;
+    measurement_Time *= 60*60; 
+
+    // // input time in minutes
+    // Serial.print("measurement_Time (hours): ");
+    // Serial.println(measurement_Time/60);
+    // Serial.print("measurement_Time (days): ");
+    // Serial.println(measurement_Time/60/24.0);
+    // measurement_Time *= 60; 
 
     
 
 
-    while((millis()-startMillis)/1000.0 < measurement_Time) { // convert millis to same unit as measurement time input
+    while((millis()-startMillis)/1000.0 < measurement_Time) { // convert millis to seconds
         // Vset -------------------------------------------------------------------------------------------------------
         // 32x set voltage to Vset
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
