@@ -305,18 +305,18 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 
 
 if __name__ == '__main__':
-    filepathPCE = r"..\data\PnOMar-06-2023 12_52_31.csv"
+    filepathPCE = r"..\data\PnOMar-06-2023 14_52_59.csv"
 
 
     showPCEGraphs(filepathPCE)
     # ,[23,24,25,26,27,28,29,30,31]
 
-    # filePathJV = r"..\data\scanlightMar-06-2023 12_50_20.csv"
+    filePathJV = r"..\data\scanlightMar-06-2023 12_50_20.csv"
 
     # showJVGraphs(filePathJV)
     # showJVGraphs(filePathJV)
-    # showJVGraphsSmoothed(filePathJV)
-    # # ,[23,24,25,26,27,28,29,30,31]
+    showJVGraphsSmoothed(filePathJV ,[25])
+   
 
 
 # %%

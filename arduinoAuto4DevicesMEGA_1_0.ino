@@ -343,10 +343,10 @@ void perturbAndObserve() {
 
     // input time in minutes
     Serial.print("measurement_Time (hours): ");
-    Serial.println(measurement_Time/60);
+    Serial.println(measurement_Time/60.0);
     Serial.print("measurement_Time (days): ");
-    Serial.println(measurement_Time/60/24.0);
-    measurement_Time *= 60; 
+    Serial.println(measurement_Time/60.0/24.0);
+    measurement_Time *= 60.0; 
 
     
 
