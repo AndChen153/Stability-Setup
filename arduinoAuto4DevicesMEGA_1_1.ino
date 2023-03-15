@@ -121,12 +121,12 @@ float val2;
 int val3;
 int val4;
 int val5;
-const byte numChars = 32;
+const byte numChars = 1000;
 char receivedChars[numChars];
 char tempChars[numChars];        // temporary array for use when parsing
 
 // used to aid in parsing through input data
-char messageFromPC[numChars] = {0};
+char modeFromPC[numChars] = {0};
 boolean newData = false;
 
 // Perturb and Observe  Variables -------------------------------------------------------
@@ -137,7 +137,7 @@ int measurement_Delay_PnO       = 0;
 int measurements_Per_Step_PnO   = 0;
 unsigned long measurement_Time  = 0;
 int dummy;
-float vset[4][8];
+float Vset[4][8];
 
 
 // Tracking and Scanning Variables ------------------------------------------------------
@@ -223,19 +223,19 @@ void setup(void) {
 
 void loop(void) {
     recvWithStartEndMarkers(); // get data from computer
-    if (newData == true && scanDone && tracking_And_ScanningDone) {
+    if (newData == true && scanDone && perturb_And_ObserveDone) {
         strcpy(tempChars, receivedChars);
         parseData();
         showParsedData();
         // zero();
 
         newData = false;
-        String mode = String(messageFromPC);
+        String mode = String(modeFromPC);
 
         if (mode.equals("scan")) {
             scanDone = false;
         } else if (mode.equals("PnO")) {
-            parseVMPPforPNO();
+            
             perturb_And_ObserveDone = false;
 
         }
@@ -259,9 +259,16 @@ void loop(void) {
         scanDone = true;
         Serial.println("Done!");
 
-    } else if (!perturb_And_ObserveDone) {
-        Serial.println("Perturb and Observe");
+        // const byte numChars = 32;
+        // char receivedChars[numChars];
+        // char tempChars[numChars];        // temporary array for use when parsing
 
+        // // used to aid in parsing through input data
+        // char modeFromPC[numChars] = {0};
+        // boolean newData = false;
+
+    } else if (!perturb_And_ObserveDone) {
+        Serial.println("Perturb and Observe");           
 
         voltage_Starting_PnO = val1;
         voltage_Step__Size_PnO = val2;
@@ -271,6 +278,13 @@ void loop(void) {
 
         perturbAndObserve();
         Serial.println("Done!");
+        // const byte numChars = 32;
+        // char receivedChars[numChars];
+        // char tempChars[numChars];        // temporary array for use when parsing
+
+        // // used to aid in parsing through input data
+        // char modeFromPC[numChars] = {0};
+        // boolean newData = false;
     }
 
 
@@ -301,7 +315,7 @@ enter loop (stops when total time is met) {
 
     perform calculations
     (depending on which one has the highest power)
-    vset = vset/vset+/vset-
+    Vset = Vset/Vset+/Vset-
 
     return to start of loop
 */
@@ -317,15 +331,11 @@ void perturbAndObserve() {
     int count;
 
     // Set starting voltage level on each dac
-    for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
-        for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-            Vset[DEVICE][PIXEL] = voltage_Starting_PnO;
-        }
-    }
-    // for (int ID = 0; ID < 8; ID ++) {
-    //     Vset[ID] = voltage_Starting_PnO;
+    // for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
+    //     for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
+    //         Vset[DEVICE][PIXEL] = voltage_Starting_PnO;
+    //     }
     // }
-
 
     float avgPowerCalced[4][8];
     float avgPowerCalcedUp[4][8];
@@ -340,19 +350,25 @@ void perturbAndObserve() {
     int startMillis = millis();
 
     // // input time in hours
-    Serial.print("measurement_Time (hours): ");
-    Serial.println(measurement_Time);
-    Serial.print("measurement_Time (days): ");
-    Serial.println(measurement_Time/24.0);
-    measurement_Time *= 60*60;
-
-    // input time in minutes
     // Serial.print("measurement_Time (hours): ");
-    // Serial.println(measurement_Time/60.0);
+    // Serial.println(measurement_Time);
     // Serial.print("measurement_Time (days): ");
-    // Serial.println(measurement_Time/60.0/24.0);
-    // measurement_Time *= 60.0;
+    // Serial.println(measurement_Time/24.0);
+    // measurement_Time *= 60*60;
 
+    // // input time in minutes
+    Serial.print("measurement_Time (mins): ");
+    Serial.println(measurement_Time);
+    Serial.print("measurement_Time (hours): ");
+    Serial.println(measurement_Time/60.0);
+    measurement_Time *= 60.0;
+
+    
+    // for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
+    //     for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
+    //         Serial.println(Vset[DEVICE][PIXEL]);
+    //     }
+    // }
 
 
 
@@ -361,6 +377,7 @@ void perturbAndObserve() {
         // 32x set voltage to Vset
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
+                // Serial.println(Vset[DEVICE][PIXEL]);
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
                 delay(measurement_Delay_PnO);
             }
@@ -489,10 +506,11 @@ void scan(String dir) {
 
     // amount of time it takes to take measurement from all 8 ina219 on ARDUINO UNO
     // must change this on different setup
-    uint8_t OFFSET = 35;
+    uint8_t OFFSET = 35*8;
 
-    int delayTimeMS = (s*1000)/steps - (OFFSET * measurements_Per_Step_Scan);
+    int delayTimeMS = 20; //(s*1000)/steps - (OFFSET * measurements_Per_Step_Scan);
     if (delayTimeMS < 0) {delayTimeMS = 0;}
+    
 
     Serial.print("started scan with delay time: "); Serial.println(delayTimeMS);
 
@@ -573,39 +591,6 @@ void scan(String dir) {
 
 
 // Helper Methods =======================================================================
-
-void recvWithStartEndMarkers() {
-    static boolean recvInProgress = false;
-    static byte ndx = 0;
-    char startMarker = '<';
-    char endMarker = '>';
-    char rc;
-
-    while (Serial.available() > 0 && newData == false) {
-        rc = Serial.read();
-
-        if (recvInProgress == true) {
-            if (rc != endMarker) {
-                receivedChars[ndx] = rc;
-                ndx++;
-                if (ndx >= numChars) {
-                    ndx = numChars - 1;
-                }
-            }
-            else {
-                receivedChars[ndx] = '\0'; // terminate the string
-                recvInProgress = false;
-                ndx = 0;
-                newData = true;
-            }
-        }
-
-        else if (rc == startMarker) {
-            recvInProgress = true;
-        }
-    }
-}
-
 void setupSensor_INA219(Adafruit_INA219 *ina219, uint8_t PIXEL, uint8_t tcaADDR) {
     // Serial.print("ina219 setup started");
     // PIXEL = PIXEL%8;
@@ -695,13 +680,71 @@ void showParsedData() {
     Serial.println("");
 }
 
+
+void recvWithStartEndMarkers() {
+    static boolean recvInProgress = false;
+    static byte ndx = 0;
+    char startMarker = '<';
+    char endMarker = '>';
+    char rc;
+
+    while (Serial.available() > 0 && newData == false) {
+        rc = Serial.read();
+
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+                receivedChars[ndx] = rc;
+                ndx++;
+                if (ndx >= numChars) {
+                    ndx = numChars - 1;
+                }
+            }
+            else {
+                receivedChars[ndx] = '\0'; // terminate the string
+                recvInProgress = false;
+                ndx = 0;
+                newData = true;
+            }
+        }
+
+        else if (rc == startMarker) {
+            recvInProgress = true;
+        }
+    }
+}
+
 // split the data into its parts
+// void parseData() {
+
+//     char * strtokIndx; // this is used by strtok() as an index
+    
+//     strtokIndx = strtok(tempChars,",");      // get the first part - the string
+//     strcpy(modeFromPC, strtokIndx); // copy it to modeFromPC
+//     Serial.println(modeFromPC);
+
+//     strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
+//     val1 = atof(strtokIndx);     // convert this part to an float
+
+//     strtokIndx = strtok(NULL, ",");
+//     val2 = atof(strtokIndx);     // convert this part to a float
+
+//     strtokIndx = strtok(NULL, ",");
+//     val3 = atoi(strtokIndx);     // convert this part to a int
+
+//     strtokIndx = strtok(NULL, ",");
+//     val4 = atoi(strtokIndx);     // convert this part to a int
+
+//     strtokIndx = strtok(NULL, ",");
+//     val5 = atoi(strtokIndx);     // convert this part to a int
+
+// }
+
+// takes input of vmpp points from jv curve for pno
 void parseData() {
-
     char * strtokIndx; // this is used by strtok() as an index
-
+    
     strtokIndx = strtok(tempChars,",");      // get the first part - the string
-    strcpy(messageFromPC, strtokIndx); // copy it to messageFromPC
+    strcpy(modeFromPC, strtokIndx); // copy it to the mode
 
     strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
     val1 = atof(strtokIndx);     // convert this part to an float
@@ -718,114 +761,14 @@ void parseData() {
     strtokIndx = strtok(NULL, ",");
     val5 = atoi(strtokIndx);     // convert this part to a int
 
-}
-
-// takes input of vmpp points from jv curve for pno
-void parseVMPPforPNO() {
-
-    char * strtokIndx; // this is used by strtok() as an index
-
-    strtokIndx = strtok(tempChars,",");      // get the first part - the string
-    strcpy(messageFromPC, strtokIndx); // copy it to messageFromPC
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[0][0] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[0][1] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[0][2] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[0][3] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[0][4] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[0][5] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[0][6] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[0][7] = atof(strtokIndx);     // convert this part to an float
-
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[1][0] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[1][1] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[1][2] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[1][3] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[1][4] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[1][5] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[1][6] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[1][7] = atof(strtokIndx);     // convert this part to an float
-
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[2][0] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[2][1] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[2][2] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[2][3] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[2][4] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[2][5] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[2][6] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[2][7] = atof(strtokIndx);     // convert this part to an float
-
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[3][0] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[3][1] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[3][2] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[3][3] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[3][4] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[3][5] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[3][6] = atof(strtokIndx);     // convert this part to an float
-
-    strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
-    vset[3][7] = atof(strtokIndx);     // convert this part to an float
+    for (uint8_t DEVICE = 0; DEVICE < 4; DEVICE++) {
+        for (uint8_t PIXEL = 0; PIXEL < 8; PIXEL++) {
+            strtokIndx = strtok(NULL, ",");
+            // Serial.print("MESSSAGE,");
+            // Serial.println(atof(strtokIndx));
+            Vset[DEVICE][PIXEL] = atof(strtokIndx);     // convert this part to a float
+        }
+    } 
 
 }
 

@@ -71,6 +71,7 @@ class StabilitySetup:
                     timeOrig = time.time()
 
                 if line == "Done!":
+                    self.saveData()
                     done = True
 
 
@@ -145,7 +146,7 @@ class StabilitySetup:
         self.fileName = "./data/scan" + light + today + ".csv"
         self.mode = "scan"
 
-        self.parameters = "<scan," + str(SCAN_RANGE) + "," + str(SCAN_STEP_SIZE) + "," + str(SCAN_READ_COUNT) + "," + str(SCAN_RATE) + "," + str(LIGHT_STATUS) + ">"
+        self.parameters = "<scan," + str(SCAN_RANGE) + "," + str(SCAN_STEP_SIZE) + "," + str(SCAN_READ_COUNT) + "," + str(SCAN_RATE) + "," + str(LIGHT_STATUS) + ",0.7148,0.6797,0.5118,0.2118,0.4197,0.7367,0.3238,0.5358,0.7077,1.092,0.6237,0.5957,0.82,0.913,0.676,0.6437,0.7076,0.5567,0.7357,0.1439,0.6436,-0.0,0.6666,0.6438,0.4729,0.5639,0.6069,0.0,0.1189,0.2299,0.752,1.096>"
 
 
         headerArr = ["Time","Volts_output",
@@ -199,7 +200,7 @@ class StabilitySetup:
         self.readData()
         print(self.arr)
         # self.printTime()
-        self.saveData()
+        # self.saveData()
         return self.fileName
 
 
@@ -236,7 +237,7 @@ class StabilitySetup:
         self.fileName = "./data/PnO" + today + ".csv"
         self.mode = "PNO"
 
-        self.parameters = "<PnO," + str(PNO_STARTING_VOLTAGE) + "," + str(PNO_STEP_SIZE) + "," + str(PNO_MEASUREMENTS_PER_STEP) + "," + str(PNO_MEASUREMENT_DELAY) + "," + str(PNO_MEASUREMENT_TIME) + ">"
+        self.parameters = "<PnO," + str(PNO_STARTING_VOLTAGE) + "," + str(PNO_STEP_SIZE) + "," + str(PNO_MEASUREMENTS_PER_STEP) + "," + str(PNO_MEASUREMENT_DELAY) + "," + str(PNO_MEASUREMENT_TIME) + ","
 
         headerArr  = ["Time",
                        "Pixel 0_0 V","Pixel 0_0 mA",
@@ -315,19 +316,24 @@ class StabilitySetup:
         self.arr[4][0], self.arr[4][1] = "Voltage Measurement Time: ", PNO_MEASUREMENT_TIME
         self.arr[5] = headerArr
         # print(headerArr)
+
+
         VMPP = self.findVmpp(SCAN_FILE_NAME)
+        # VMPP = "<0.7148,0.6797,0.5118,0.2118,0.4197,0.7367,0.3238,0.5358,0.7077,1.092,0.6237,0.5957,0.82,0.913,0.676,0.6437,0.7076,0.5567,0.7357,0.1439,0.6436,-0.0,0.6666,0.6438,0.4729,0.5639,0.6069,0.0,0.1189,0.2299,0.752,1.096>"
+        self.parameters += VMPP
         print(self.parameters)
-        print(VMPP)
+
+
         self.ser.write(self.parameters.encode())  # send data to arduino
         self.ser.write(VMPP.encode())
         self.readData()
         print(self.arr)
         self.printTime()
-        self.saveData()
+        # self.saveData()
 
         return self.fileName
 
-    def findVmpp(self,scanFileName):
+    def findVmpp(self, scanFileName):
         arr = np.loadtxt(scanFileName, delimiter=",", dtype=str)
         scanFileName = scanFileName.split('\\')
         # print(arr)
@@ -355,15 +361,19 @@ class StabilitySetup:
         jList = np.array(jList).T
         vList = np.array(vList).T
         pceList = jList*vList
-        VMPPList = []
-        maxVIdx = np.argmax(pceList, axis=0)
-        for i in range(len(maxVIdx)):
-            VMPPList.append(vList[maxVIdx[i],i])
-        return VMPPList
+        VMPPEncodeString = ""
+        maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
+
+        for i in range(len(maxVIdx)-1):
+            VMPPEncodeString += str(vList[maxVIdx[i],i]) + "," # vList is 84x32, vmaxIDx contains the i in 84 that is the best voltage per pixel
+
+        VMPPEncodeString += str(vList[maxVIdx[len(maxVIdx)-1],len(maxVIdx)-1]) + ">" # proper encoding for string to send to arduino
+        
+        return VMPPEncodeString
 
 
 # if __name__ == '__main__':
-#     findVmpp(".\data\scanlightMar-06-2023 12_50_20.csv")
+#     print(findVmpp(".\data\scanlightMar-15-2023 12_36_52.csv"))
 
 
 

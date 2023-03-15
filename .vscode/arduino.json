@@ -1,6 +1,6 @@
 {
     "board": "arduino:avr:mega",
     "port": "COM25",
-    "sketch": "arduinoAuto4DevicesMEGA_1_0.ino",
+    "sketch": "arduinoAuto4DevicesMEGA_1_1.ino",
     "configuration": "cpu=atmega2560"
 }

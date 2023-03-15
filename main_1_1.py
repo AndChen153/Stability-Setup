@@ -13,13 +13,14 @@ arduino_ports = [
 ]
 if not arduino_ports:
     raise IOError("No Arduino found")
-if len(arduino_ports) > 1:
-    print('Multiple Arduinos found - using the first')
-print(arduino_ports[0])
+elif len(arduino_ports) > 1:
+    COM = "COM25"
+    print(f'Multiple Arduinos found, com port set manually to {COM}')
+    arduinoController = controller.StabilitySetup(COM, 115200)
+else:
+    print("One Aruino found, using port:", arduino_ports[0])
+    arduinoController = controller.StabilitySetup(arduino_ports[0], 115200)
 
-
-# arduinoController = controller_1_1.StabilitySetup(arduino_ports[0], 115200)
-arduinoController = controller.StabilitySetup("COM25", 115200)
 
 
 gui = GUI_1_0.UserInterface()
@@ -44,15 +45,15 @@ if __name__ == '__main__':
         params,mode = gui.open()
 
         if mode == "Scan":
-            print(params, "JV")
+            # print(params, "JV")
             fileName = arduinoController.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
             dataShow.showJVGraphs(fileName)
         elif mode == "PNO":
-            print(params, "PNO")
+            # print(params,)
             NUMBLOCKS = 10
             timePerBlock = int(int(params[4])/NUMBLOCKS)
             totalFiles = []
-            for i in NUMBLOCKS:
+            for i in range(NUMBLOCKS):
                 scanFileName = arduinoController.scan(1.2, 0.03, 3, 50, 1)
                 pnoFileName = arduinoController.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), timePerBlock, scanFileName)
                 totalFiles.append(pnoFileName)
