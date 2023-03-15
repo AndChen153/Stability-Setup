@@ -1,12 +1,8 @@
-from statistics import mode
 import controller_1_1
 import GUI_1_0
 from dataVisualization import dataShow
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+import math
 import serial.tools.list_ports
-import multiprocessing
 
 
 arduino_ports = [
@@ -52,6 +48,6 @@ if __name__ == '__main__':
             dataShow.showJVGraphs(fileName)
         elif mode == "PNO":
             print(params, "PNO")
-            fileName = arduinoController.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
+            fileName = arduinoController.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))1
             dataShow.showPCEGraphs(fileName)
 

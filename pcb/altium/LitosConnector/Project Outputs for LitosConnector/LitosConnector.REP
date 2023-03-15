@@ -2,26 +2,22 @@
 FileName = LitosConnector.GBR
 AutoAperture = True
 *************************************************************
-Generating : Mechanical 15
-      File : LitosConnector.GM15
+Generating : Top Layer
+      File : LitosConnector.GTL
 
-    Adding Layer      : Mechanical 15
+    Adding Layer      : Top Layer
 
-
-Used DCodes :
-    D27
-*************************************************************
-
-*************************************************************
-Generating : Mechanical 13
-      File : LitosConnector.GM13
-
-    Adding Layer      : Mechanical 13
+    Adding Layer      : Multi-Layer
 
 
 Used DCodes :
     D10
-    D26
+    D11
+    D12
+    D13
+    D14
+    D15
+    D16
 *************************************************************
 
 *************************************************************
@@ -34,31 +30,12 @@ Generating : Bottom Layer
 
 
 Used DCodes :
-    D20
-    D21
-    D22
-    D23
-    D24
-    D25
-*************************************************************
-
-*************************************************************
-Generating : Bottom Solder
-      File : LitosConnector.GBS
-
-    Adding Layer      : Bottom Solder
-
-    Adding Layer      : Bottom Layer
-
-    Adding Layer      : Multi-Layer
-
-
-Used DCodes :
+    D11
+    D12
+    D13
+    D14
     D15
     D16
-    D17
-    D18
-    D19
 *************************************************************
 
 *************************************************************
@@ -71,10 +48,39 @@ Generating : Bottom Pad Master
 
 
 Used DCodes :
-    D21
-    D22
-    D23
-    D24
+    D12
+    D13
+    D14
+    D15
+*************************************************************
+
+*************************************************************
+Generating : Top Pad Master
+      File : LitosConnector.GPT
+
+    Adding Layer      : Top Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D12
+    D13
+    D14
+    D15
+*************************************************************
+
+*************************************************************
+Generating : Top Overlay
+      File : LitosConnector.GTO
+
+    Adding Layer      : Top Overlay
+
+
+Used DCodes :
+    D17
+    D18
 *************************************************************
 
 *************************************************************
@@ -89,31 +95,31 @@ Generating : Top Solder
 
 
 Used DCodes :
-    D14
-    D15
-    D16
-    D17
-    D18
     D19
-*************************************************************
-
-*************************************************************
-Generating : Top Layer
-      File : LitosConnector.GTL
-
-    Adding Layer      : Top Layer
-
-    Adding Layer      : Multi-Layer
-
-
-Used DCodes :
-    D13
     D20
     D21
     D22
     D23
     D24
-    D25
+*************************************************************
+
+*************************************************************
+Generating : Bottom Solder
+      File : LitosConnector.GBS
+
+    Adding Layer      : Bottom Solder
+
+    Adding Layer      : Bottom Layer
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D20
+    D21
+    D22
+    D23
+    D24
 *************************************************************
 
 *************************************************************
@@ -128,37 +134,60 @@ Generating : Top Paste
 
 
 Used DCodes :
-    D12
-    D13
-*************************************************************
-
-*************************************************************
-Generating : Top Pad Master
-      File : LitosConnector.GPT
-
-    Adding Layer      : Top Layer
-
-    Adding Layer      : Multi-Layer
-
-
-Used DCodes :
-    D13
-    D21
-    D22
-    D23
-    D24
-*************************************************************
-
-*************************************************************
-Generating : Top Overlay
-      File : LitosConnector.GTO
-
-    Adding Layer      : Top Overlay
-
-
-Used DCodes :
     D10
-    D11
+    D25
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 13
+      File : LitosConnector.GM13
+
+    Adding Layer      : Mechanical 13
+
+
+Used DCodes :
+    D17
+    D26
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 15
+      File : LitosConnector.GM15
+
+    Adding Layer      : Mechanical 15
+
+
+Used DCodes :
+    D27
+*************************************************************
+
+*************************************************************
+Generating : Profile
+      File : LitosConnector.GM
+
+
+Used DCodes :
+    D28
+*************************************************************
+
+*************************************************************
+Generating : Non-plated through-hole drill file
+      File : LitosConnector.GD1
+
+
+Used DCodes :
+    D29
+*************************************************************
+
+*************************************************************
+Generating : Plated through-hole drill file
+      File : LitosConnector.GD2
+
+
+Used DCodes :
+    D30
+    D31
+    D32
 *************************************************************
 
 *************************************************************
@@ -171,8 +200,8 @@ Generating : Drill Drawing
 
 
 Used DCodes :
-    D28
-    D29
+    D34
+    D35
 *************************************************************
 
 *************************************************************
@@ -185,15 +214,6 @@ Generating : Drill Guide
 
 
 Used DCodes :
-    D28
-*************************************************************
-
-*************************************************************
-Generating : Profile
-      File : LitosConnector.GM
-
-
-Used DCodes :
-    D30
+    D34
 *************************************************************
 
