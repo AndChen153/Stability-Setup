@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from controller_1_1 import StabilitySetup
+from pythonCode.controller_1_1 import StabilitySetup
 
 # Create an event loop
 
@@ -39,7 +39,8 @@ class UserInterface:
                             [sg.Text('PNO_STEP_SIZE (V):'), sg.InputText("0.05")],
                             [sg.Text('PNO_MEASUREMENTS_PER_STEP:'), sg.InputText("5")],
                             [sg.Text('PNO_MEASUREMENT_DELAY (ms):'), sg.InputText("50")],
-                            [sg.Text('Time (mins):'), sg.InputText("25")]
+                            [sg.Text('Time (hours):'), sg.InputText("100")]
+                            # [sg.Text('Time (mins):'), sg.InputText("25")]
                             ]
         return sg.Window('PNO', layoutPnO, finalize=True)
 
