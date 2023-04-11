@@ -1,7 +1,7 @@
 # from statistics import mode
 import controller_1_2 as controller
 import GUI_1_0
-from dataVisualization import dataShow
+from dataVisualization import dataShow_1_0 as dataShow
 import math
 import serial.tools.list_ports
 
@@ -52,12 +52,13 @@ if __name__ == '__main__':
             # print(params,)
             NUMBLOCKS = 10
             timePerBlock = int(int(params[4])/NUMBLOCKS)
-            totalFiles = []
+            totalPnoFiles = []
+            totalScanFiles = []
             for i in range(NUMBLOCKS):
                 scanFileName = arduinoController.scan(1.2, 0.03, 3, 50, 1)
                 pnoFileName = arduinoController.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), timePerBlock, scanFileName)
-                totalFiles.append(pnoFileName)
-
-            for i in totalFiles:
+                totalScanFiles.append(scanFileName)
+                totalPnoFiles.append(pnoFileName)
+            for i in totalPnoFiles:
                 dataShow.showPCEGraphs(i)
 

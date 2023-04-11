@@ -136,6 +136,7 @@ float voltage_Step__Size_PnO    = 0.000;
 int measurement_Delay_PnO       = 0;
 int measurements_Per_Step_PnO   = 0;
 unsigned long measurement_Time  = 0;
+const int MAXVOLTAGEPNO = 2;
 int dummy;
 float Vset[4][8];
 
@@ -235,7 +236,7 @@ void loop(void) {
         if (mode.equals("scan")) {
             scanDone = false;
         } else if (mode.equals("PnO")) {
-            
+
             perturb_And_ObserveDone = false;
 
         }
@@ -268,7 +269,7 @@ void loop(void) {
         // boolean newData = false;
 
     } else if (!perturb_And_ObserveDone) {
-        Serial.println("Perturb and Observe");           
+        Serial.println("Perturb and Observe");
 
         voltage_Starting_PnO = val1;
         voltage_Step__Size_PnO = val2;
@@ -363,7 +364,7 @@ void perturbAndObserve() {
     Serial.println(measurement_Time/60.0);
     measurement_Time *= 60.0;
 
-    
+
     // for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
     //     for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
     //         Serial.println(Vset[DEVICE][PIXEL]);
@@ -378,6 +379,9 @@ void perturbAndObserve() {
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                 // Serial.println(Vset[DEVICE][PIXEL]);
+                if (MAXVOLTAGEPNO < Vset[DEVICE][PIXEL]) {
+                    Vset[DEVICE][PIXEL] = MAXVOLTAGEPNO
+                }
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
                 delay(measurement_Delay_PnO);
             }
@@ -510,7 +514,7 @@ void scan(String dir) {
 
     int delayTimeMS = 20; //(s*1000)/steps - (OFFSET * measurements_Per_Step_Scan);
     if (delayTimeMS < 0) {delayTimeMS = 0;}
-    
+
 
     Serial.print("started scan with delay time: "); Serial.println(delayTimeMS);
 
@@ -717,7 +721,7 @@ void recvWithStartEndMarkers() {
 // void parseData() {
 
 //     char * strtokIndx; // this is used by strtok() as an index
-    
+
 //     strtokIndx = strtok(tempChars,",");      // get the first part - the string
 //     strcpy(modeFromPC, strtokIndx); // copy it to modeFromPC
 //     Serial.println(modeFromPC);
@@ -742,7 +746,7 @@ void recvWithStartEndMarkers() {
 // takes input of vmpp points from jv curve for pno
 void parseData() {
     char * strtokIndx; // this is used by strtok() as an index
-    
+
     strtokIndx = strtok(tempChars,",");      // get the first part - the string
     strcpy(modeFromPC, strtokIndx); // copy it to the mode
 
@@ -768,7 +772,7 @@ void parseData() {
             // Serial.println(atof(strtokIndx));
             Vset[DEVICE][PIXEL] = atof(strtokIndx);     // convert this part to a float
         }
-    } 
+    }
 
 }
 

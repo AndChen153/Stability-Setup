@@ -1,7 +1,7 @@
 # from statistics import mode
 import pythonCode.controller_1_1 as controller_1_1
 import GUI_1_0
-from dataVisualization import dataShow
+from dataVisualization import dataShow_1_0
 import math
 import serial.tools.list_ports
 
@@ -46,10 +46,10 @@ if __name__ == '__main__':
         if mode == "Scan":
             print(params, "JV")
             fileName = arduinoController.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
-            dataShow.showJVGraphs(fileName)
+            dataShow_1_0.showJVGraphs(fileName)
         elif mode == "PNO":
             print(params, "PNO")
             fileName = arduinoController.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
 
-            dataShow.showPCEGraphs(fileName)
+            dataShow_1_0.showPCEGraphs(fileName)
 
