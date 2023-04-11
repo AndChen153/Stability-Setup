@@ -44,23 +44,22 @@ class StabilitySetup:
         self.ser.flush()
         self.mode = ""
         self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
-        self.folderPath = "./data/" + datetime.now().strftime("%b-%d-%Y") + "/"
+        self.folderPath = "./data/" + self.today + "/"
+        if not os.path.exists(self.folderPath):
+            os.mkdir(self.folderPath)
         self.start = time.time()
 
-        # self.pnoCount = 0
-        # self.scanLightCount = 0
-        # self.scanDarkCount = 0
 
     def readData(self):
         """
         * Reads data outputed on serial bus by arduino
-        * Saves data after certain interval of time
+        * Saves data after certain interval of time to prevent ram overusage on lower end systems
         * Does not need to manage mode because that is taken care of on the arduino
         """
         done = False
         line = ""
         timeOrig = time.time()
-        timeSave = 0.5 # time between saves in minutes
+        timeSave = 3 # time between saves in minutes
         while not done:
             if self.ser.in_waiting > 0:
                 line = self.ser.readline().decode('unicode_escape').rstrip()
@@ -141,7 +140,6 @@ class StabilitySetup:
 
         self.fileName = self.folderPath + datetime.now().strftime("%b-%d-%Y %H_%M_%S") + lightStatus + "scan.csv"
 
-
         self.mode = "scan"
 
         self.parameters = "<scan," + str(SCAN_RANGE) + "," + str(SCAN_STEP_SIZE) + "," + str(SCAN_READ_COUNT) + "," + str(SCAN_RATE) + "," + str(LIGHT_STATUS) + ",0.7148,0.6797,0.5118,0.2118,0.4197,0.7367,0.3238,0.5358,0.7077,1.092,0.6237,0.5957,0.82,0.913,0.676,0.6437,0.7076,0.5567,0.7357,0.1439,0.6436,-0.0,0.6666,0.6438,0.4729,0.5639,0.6069,0.0,0.1189,0.2299,0.752,1.096>"
@@ -190,7 +188,7 @@ class StabilitySetup:
         self.arr[1][0], self.arr[1][1] = "Voltage Step Size: ", SCAN_STEP_SIZE
         self.arr[2][0], self.arr[2][1] = "Voltage Read Count: " , SCAN_READ_COUNT
         self.arr[3][0], self.arr[3][1] = "Voltage Delay Time: ", SCAN_RATE
-        self.arr[4][0], self.arr[4][1] = "Light Status: ",  light
+        self.arr[4][0], self.arr[4][1] = "Light Status: ",  lightStatus
         self.arr[5][0], self.arr[5][1] = "Start Date: ", self.today
         # self.arr[6][0], self.arr[6][1] = "End Date: ", datetime.now().strftime("%b-%d-%Y")
         self.arr[6] = headerArr
@@ -334,50 +332,8 @@ class StabilitySetup:
 
         return self.fileName
 
-    def findVmpp(self, scanFileName):
-        arr = np.loadtxt(scanFileName, delimiter=",", dtype=str)
-        scanFileName = scanFileName.split('\\')
-        # print(arr)
-        headers = arr[6,:]
-        headerDict = {value: index for index, value in enumerate(headers)}
-        # print(headerDict)
-        arr = arr[6:, :]
-        length = (len(headers) - 1)
-        # print(length)
+def findVmpp(scanFileName):
 
-        jvList = []
-
-        for i in range(2, length):
-            jvList.append(arr[:,i])
-
-        jList = [] #current
-        vList = [] #voltage
-        for i in range(0,len(jvList),2):
-            # print(i)
-            jList.append([float(j) for j in jvList[i+1]])
-            vList.append([float(x) for x in jvList[i]])
-            # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
-
-
-        jList = np.array(jList).T
-        vList = np.array(vList).T
-        pceList = jList*vList
-        VMPPEncodeString = ""
-        maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
-
-        for i in range(len(maxVIdx)-1):
-            VMPPEncodeString += str(vList[maxVIdx[i],i]) + "," # vList is 84x32, vmaxIDx contains the i in 84 that is the best voltage per pixel
-
-        VMPPEncodeString += str(vList[maxVIdx[len(maxVIdx)-1],len(maxVIdx)-1]) + ">" # proper encoding for string to send to arduino
-
-        return VMPPEncodeString
-
-    def printTime(self):
-        end = time.time()
-        total_time = end - self.start
-        print("\n"+ str(total_time))
-
-def scanCalcs(scanFileName):
     arr = np.loadtxt(scanFileName, delimiter=",", dtype=str)
     scanFileName = scanFileName.split('\\')
     # print(arr)
@@ -407,23 +363,25 @@ def scanCalcs(scanFileName):
     pceList = jList*vList
     VMPPEncodeString = ""
     maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
-    vmppList = []
-    jmppList = []
+
     for i in range(len(maxVIdx)-1):
-        if vList[maxVIdx[i],i]>0:
-            vmppList.append(vList[maxVIdx[i],i])
-            jmppList.append(jList[maxVIdx[i],i])
-    vmppList = np.array(vmppList)
-    jmppList = np.array(jmppList)
-    vmppAvg = np.mean(np.array(vmppList))
-    fillFactorList = vmppList*jmppList
-    fillFactorAvg = np.mean(fillFactorList)
-    print(jList.shape)
+        VMPPEncodeString += str(vList[maxVIdx[i],i]) + "," # vList is 84x32, vmaxIDx contains the i in 84 that is the best voltage per pixel
+
+    VMPPEncodeString += str(vList[maxVIdx[len(maxVIdx)-1],len(maxVIdx)-1]) + ">" # proper encoding for string to send to arduino
+
+    return VMPPEncodeString
+
+    def printTime(self):
+        end = time.time()
+        total_time = end - self.start
+        print("\n"+ str(total_time))
+
+
 
 
 if __name__ == '__main__':
-    scanCalcs(".\data\March-15-2023 goodTests\scanlightMar-15-2023 13_28_50.csv")
-    # print(findVmpp(".\data\scanlightMar-15-2023 12_36_52.csv"))
+    # scanCalcs(".\data\March-15-2023 goodTests\scanlightMar-15-2023 13_28_50.csv")
+    print(findVmpp(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Mar-15-2023\scandarkMar-15-2023 13_34_51.csv"))
 
 
 

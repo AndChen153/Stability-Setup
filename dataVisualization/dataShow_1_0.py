@@ -3,25 +3,35 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy_indexed as npi
 from labellines import labelLines
-
+import os
 import sys
+
 np.set_printoptions(threshold=sys.maxsize)
 
 
 
-def showPCEGraphs(graphName, startingPoint = 0, divFactor = 50, pixels = None, devices = None):
+def showPCEGraphs(graphName, lightScanName, startingPoint = 0, divFactor = 50, showDeadPixels = False, pixels = None, devices = None):
+    plotSize = (12,8)
+    deviceToPixels = {0:[0,1,2,3,4,5,6,7],
+                      1:[8,9,10,11,12,13,14,15],
+                      2:[16,17,18,19,20,21,22,23],
+                      3:[24,25,26,27,28,29,30,31]}
+
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
-    pngTitle = graphName[:-4]
-    graphName = graphName.split('\\')
+    deadPixels = getDeadPixels(lightScanName)
     headers = arr[5,:]
     headerDict = {value: index for index, value in enumerate(headers)}
     arr = arr[6:, :]
-
 
     time = arr[:,headerDict["Time"]]
     pceList = np.array(arr)
     average = pceList.shape[0]/divFactor
 
+    pngSaveLocation = graphName[:-4]
+    plotTitleOrig = pngSaveLocation.split("\\")[-1]
+    pngSaveLocation = pngSaveLocation + "\\"
+    if not os.path.exists(pngSaveLocation):
+        os.mkdir(pngSaveLocation)
 
     # UNCOMMENT LINE IF CSV INCLUDES VOLTAGE AND CURRENT
     pceList = np.delete(pceList, slice(1,65), axis=1)
@@ -29,8 +39,7 @@ def showPCEGraphs(graphName, startingPoint = 0, divFactor = 50, pixels = None, d
     for i in range(len(pceList)):
         pceList[i] = [float(j) if j != " ovf" else 0.0 for j in pceList[i]]
         pceList[i] = [float(j) if j != "nan" else 0.0 for j in pceList[i]]
-        # # print(pceList[i])
-        # pceList[i] = [float(30) if float(j) > 30 else j for j in pceList[i]]
+
     pceList = pceList.astype(float)
     # print(pceList)
 
@@ -60,39 +69,113 @@ def showPCEGraphs(graphName, startingPoint = 0, divFactor = 50, pixels = None, d
     print("MAXPCE", maxPCE)
 
 
+    if pixels is None and devices is None:  # if no specific pixels have been selected
+        plt.figure(figsize=plotSize)
+        plt.xlim(0,maxTime)
 
-    plt.figure(figsize=(10, 8))
-    plt.xlim(0,maxTime)
-
-    plt.ylim(bottom = -0, top = maxPCE)
-    plt.title(graphName[-1][:-4])
-    plt.xlabel('Time [hrs]')
-    plt.ylabel('PCE [%]')
-    plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
-
-    if pixels == None:  # if no specific pixels have been selected
+        plt.ylim(bottom = -0, top = maxPCE)
+        plt.title(plotTitleOrig + "ALLDEVICES")
+        plt.xlabel('Time [hrs]')
+        plt.ylabel('PCE [%]')
+        plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
         for i in range(data.shape[1]):
-            avg = np.mean(data[5:,i])
-            print(avg)
-            if avg < 0.3 or avg > 500:  # skip this pixel if average is outside of certain range
+            if i in deadPixels and not showDeadPixels:
                 continue
 
             lineName = "PCE" + str(i)
             # print(np.array(pceList[i]))
             plt.plot(time,data[:,i], label = lineName)
+
+        labelLines(plt.gca().get_lines(), zorder=2.5)
+        plt.legend(bbox_to_anchor=(1.15, 1))
+        plotTitle = plotTitleOrig + "ALLDEVICES"
+        plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
+    elif devices is not None:
+
+        for i in devices:
+            plotTitle = plotTitleOrig + " DEVICE_" + str(i)
+
+            plt.figure(figsize=plotSize)
+            plt.xlim(0,maxTime)
+            plt.ylim(bottom = -0, top = maxPCE)
+            plt.title(plotTitle)
+            plt.xlabel('Time [hrs]')
+            plt.ylabel('PCE [%]')
+            plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
+
+            pixels = deviceToPixels[i]
+            for i in pixels:
+                if i in deadPixels and not showDeadPixels:
+                    continue
+                lineName = "PCE" + str(i)
+                # print(np.array(pceList[i]))
+                plt.plot(time,data[:,i], label = lineName)
+
+            labelLines(plt.gca().get_lines(), zorder=2.5)
+            plt.legend(bbox_to_anchor=(1.15, 1))
+            plt.savefig(pngSaveLocation+plotTitle, dpi=300, bbox_inches='tight')
     else:
+        plotTitle = plotTitleOrig + " DEVICE_" + str(pixels)
+
+        plt.figure(figsize=plotSize)
+        plt.xlim(0,maxTime)
+        plt.ylim(bottom = -0, top = maxPCE)
+        plt.title(plotTitle)
+        plt.xlabel('Time [hrs]')
+        plt.ylabel('PCE [%]')
+        plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
+
         for i in pixels:
+            if i in deadPixels and not showDeadPixels:
+                    continue
             lineName = "PCE" + str(i)
             # print(np.array(pceList[i]))
             plt.plot(time,data[:,i], label = lineName)
 
-    labelLines(plt.gca().get_lines(), zorder=2.5)
-    plt.legend(bbox_to_anchor=(1.15, 1))
-    plt.savefig(pngTitle, dpi=300, bbox_inches='tight')
+        labelLines(plt.gca().get_lines(), zorder=2.5)
+        plt.legend(bbox_to_anchor=(1.15, 1))
+        plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
 
-    plt.show()
+    # save all graphs
+    for i in [0,1,2,3]:
+        plotTitle = plotTitleOrig + " DEVICE_" + str(i)
+        # plotTitle = plotTitleOrig + " DEVICE_AVG_" + str(i)
+
+        print("SAVED IMAGE", plotTitle)
+        plt.figure(figsize=plotSize)
+        plt.xlim(0,maxTime)
+        plt.ylim(bottom = -0, top = maxPCE)
+        plt.title(plotTitle)
+        plt.xlabel('Time [hrs]')
+        plt.ylabel('PCE [%]')
+        plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
+
+        pixels = deviceToPixels[i]
+        for i in pixels:
+            if i in deadPixels and not showDeadPixels:
+                    continue
+            lineName = "PCE" + str(i)
+            # print(np.array(pceList[i]))
+            plt.plot(time,data[:,i], label = lineName)
+
+        # averagePCE = np.zeros_like(np.array(data[:,i]))
+        # count = 0
+        # for i in pixels:
+        #     if i in deadPixels and not showDeadPixels:
+        #             continue
+        #     lineName = "PCE" + str(i)
+        #     averagePCE += np.array(data[:,i])
+        #     count += 1
+        #     # print(np.array(pceList[i]))
+        # averagePCE/=count
+        # plt.plot(time,averagePCE, label = lineName)
+
+        labelLines(plt.gca().get_lines(), zorder=2.5)
+        plt.legend(bbox_to_anchor=(1.15, 1))
+        plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
 
 def showJVGraphsSmoothed(graphName, pixels = None):
+    plotSize = (10,8)
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
     # print(arr)
@@ -155,7 +238,7 @@ def showJVGraphsSmoothed(graphName, pixels = None):
     # print(np.array(data).T.shape)
     jvList = np.array(data).T
 
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=plotSize)
     plt.xlim(minX,maxX)
     plt.ylim(minY, maxY)
     plt.title(graphName[-1][:-4])
@@ -185,14 +268,22 @@ def showJVGraphsSmoothed(graphName, pixels = None):
 
     plt.show()
 
-def showJVGraphs(graphName, pixels = None, devices = None):
+def showJVGraphs(graphName, showDeadPixels = False, pixels = None, devices = None):
+    plotSize = (10,8)
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     deviceToPixels = {0:[0,1,2,3,4,5,6,7],
                       1:[8,9,10,11,12,13,14,15],
                       2:[16,17,18,19,20,21,22,23],
                       3:[24,25,26,27,28,29,30,31]}
-    pngTitle = graphName[:-4]
-    graphName = graphName.split('\\')
+    pngSaveLocation = graphName[:-4]
+
+    plotTitleOrig = pngSaveLocation.split("\\")[-1]
+
+    pngSaveLocation = pngSaveLocation + "\\"
+    if not os.path.exists(pngSaveLocation):
+        os.mkdir(pngSaveLocation)
+    deadPixels = getDeadPixels(graphName)
+    # graphName = graphName.split('\\')
     headers = arr[6,:]
     headerDict = {value: index for index, value in enumerate(headers)}
     arr = arr[6:, :]
@@ -200,7 +291,7 @@ def showJVGraphs(graphName, pixels = None, devices = None):
 
 
     jvList = []
-    for i in range(2, length):
+    for i in range(2, length): #remove timing and voltage output from array
         jvList.append(arr[:,i])
 
 
@@ -223,15 +314,17 @@ def showJVGraphs(graphName, pixels = None, devices = None):
 
     # generate graphs
     if pixels is None and devices is None: # show all pixels
-        plt.figure(figsize=(10, 8))
+        plt.figure(figsize=plotSize)
         plt.xlim(minX,maxX)
         plt.ylim(minY, maxY)
-        plt.title(graphName[-1][:-4])
+        plt.title(plotTitleOrig + "ALLDEVICES")
         plt.xlabel('Bias [V]')
         plt.ylabel('Current [mA]')
         # plt.ylabel('Jmeas [mA/cm]')
         plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
         for i in range(0,len(jvList),2):
+            if int(i/2) in deadPixels and not showDeadPixels:
+                    continue
             # print(i)
             lineName = "Pixel " + str(int(i/2))
             plt.plot(jvList[i],jvList[i+1], label = lineName)
@@ -241,16 +334,15 @@ def showJVGraphs(graphName, pixels = None, devices = None):
         labelLines(plt.gca().get_lines(), zorder=2.5)
 
         plt.legend(bbox_to_anchor=(1.18, 1))
-        plotTitle = pngTitle + "ALLDEVICES"
-        plt.savefig(plotTitle, dpi=300, bbox_inches='tight')
-        plt.show()
+        plotTitle = plotTitleOrig + "ALLDEVICES"
+        plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
 
     elif devices is not None: # show certain devices
         print(" DEVICES")
 
         for i in devices:
-            plotTitle = pngTitle.split("\\")[-1] + " DEVICE_" + str(i)
-            plt.figure(figsize=(10, 8))
+            plotTitle = plotTitleOrig + " DEVICE_" + str(i)
+            plt.figure(figsize=plotSize)
             plt.xlim(minX,maxX)
             plt.ylim(minY, maxY)
             plt.title(plotTitle)
@@ -261,6 +353,8 @@ def showJVGraphs(graphName, pixels = None, devices = None):
 
             pixels = deviceToPixels[i]
             for i in pixels:
+                if i in deadPixels and not showDeadPixels:
+                    continue
                 # print(i)
                 i*=2
                 lineName = "Pixel " + str(int(i/2))
@@ -269,44 +363,40 @@ def showJVGraphs(graphName, pixels = None, devices = None):
             ax = plt.gca()
             ax.spines['bottom'].set_position('zero')
             labelLines(plt.gca().get_lines(), zorder=2.5)
-
             plt.legend(bbox_to_anchor=(1.18, 1))
-            print(pngTitle)
-
-            plt.savefig(plotTitle, dpi=300, bbox_inches='tight')
-            plt.show()
+            plt.savefig(pngSaveLocation+plotTitle, dpi=300, bbox_inches='tight')
 
     elif pixels is not None: # show certain pixels
-        pngTitle += " PIXELS" + "_".join(str(x) for x in pixels)
-        for i in pixels:
-            # print(i)
-            i*=2
-            lineName = "Pixel " + str(int(i/2))
-            plt.plot(jvList[i],jvList[i+1], label = lineName)
-        plt.figure(figsize=(10, 8))
+        plotTitle = plotTitleOrig + " DEVICE_" + str(pixels)
+        # pngTitle += " PIXELS" + "_".join(str(x) for x in pixels)
+        plt.figure(figsize=plotSize)
         plt.xlim(minX,maxX)
         plt.ylim(minY, maxY)
-        plt.title(graphName[-1][:-4])
+        plt.title(plotTitle)
         plt.xlabel('Bias [V]')
         plt.ylabel('Current [mA]')
         # plt.ylabel('Jmeas [mA/cm]')
         plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
+
+        for i in pixels:
+            if i in deadPixels and not showDeadPixels:
+                    continue
+            i*=2
+            lineName = "Pixel " + str(int(i/2))
+            plt.plot(jvList[i],jvList[i+1], label = lineName)
+
         ax = plt.gca()
         ax.spines['bottom'].set_position('zero')
         labelLines(plt.gca().get_lines(), zorder=2.5)
-
         plt.legend(bbox_to_anchor=(1.18, 1))
-
-        plt.savefig(pngTitle, dpi=300, bbox_inches='tight')
-        plt.show()
+        plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
 
 
-    # save all 4 devices
-    devices = [0,1,2,3]
-    for i in devices:
-        plotTitle = pngTitle.split("\\")[-1] + " DEVICE_" + str(i)
+    for i in [0,1,2,3]: # save all 4 devices
+        plotTitle = plotTitleOrig + " DEVICE_" + str(i)
+
         print("SAVED IMAGE", plotTitle)
-        plt.figure(figsize=(10, 8))
+        plt.figure(figsize=plotSize)
         plt.xlim(minX,maxX)
         plt.ylim(minY, maxY)
         plt.title(plotTitle)
@@ -317,7 +407,8 @@ def showJVGraphs(graphName, pixels = None, devices = None):
 
         pixels = deviceToPixels[i]
         for i in pixels:
-            # print(i)
+            if i in deadPixels and not showDeadPixels:
+                    continue
             i*=2
             lineName = "Pixel " + str(int(i/2))
             plt.plot(jvList[i],jvList[i+1], label = lineName)
@@ -326,13 +417,66 @@ def showJVGraphs(graphName, pixels = None, devices = None):
         ax.spines['bottom'].set_position('zero')
         labelLines(plt.gca().get_lines(), zorder=2.5)
         plt.legend(bbox_to_anchor=(1.18, 1))
-        plt.savefig(plotTitle, dpi=300, bbox_inches='tight')
+        plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
+
+    # generate boxplots
+    FF, jsc, voc = scanCalcs(graphName)
+    FF = np.delete(FF, deadPixels)
+    jsc = np.delete(jsc, deadPixels)
+    voc = np.delete(voc, deadPixels)
+
+    plotTitle = "Γ_JSC_BoxPlot"
+    plt.figure(figsize=plotSize)
+    plt.title(plotTitle)
+    plt.xlabel('Time (hr)')
+    plt.ylabel('Jsc (mA)')
+    plt.boxplot(jsc)
+    plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
+
+    plotTitle = "Γ_VOC_BoxPlot"
+    plt.figure(figsize=plotSize)
+    plt.title(plotTitle)
+    plt.xlabel('Time (hr)')
+    plt.ylabel('Voc (V)')
+    plt.boxplot(voc)
+    plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
+
+    plotTitle = "Γ_FF_BoxPlot"
+    plt.figure(figsize=plotSize)
+    plt.title(plotTitle)
+    plt.xlabel('Time (hr)')
+    plt.ylabel('FF (%)')
+    plt.boxplot(FF)
+    plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
 
 
 
-def scanCalcs(scanFileName):
-    arr = np.loadtxt(scanFileName, delimiter=",", dtype=str)
-    scanFileName = scanFileName.split('\\')
+def getDeadPixels(graphName):
+    arr = np.loadtxt(graphName, delimiter=",", dtype=str)
+    headers = arr[6,:]
+    arr = arr[6:, :]
+    length = (len(headers) - 1)
+
+
+    jvList = []
+    for i in range(2, length): # remove timing and volts output
+        jvList.append(arr[:,i])
+
+    deadPixels = []
+    for i in range(0,len(jvList),2):
+        # print(i)
+        jvList[i] = [float(j) for j in jvList[i]]
+        jvList[i+1] = [float(x) for x in jvList[i+1]]
+        if np.mean(np.absolute(np.array(jvList[i]))) < 0.2 or np.mean(np.absolute(np.array(jvList[i+1]))) < 0.2:
+            deadPixels.append(int(i/2))#[9, 12, 13, 19, 21, 27, 30, 31]
+
+
+    return deadPixels
+
+
+def scanCalcs(graphName):
+    arr = np.loadtxt(graphName, delimiter=",", dtype=str)
+    graphName = graphName.split('\\')
     # print(arr)
     headers = arr[6,:]
     headerDict = {value: index for index, value in enumerate(headers)}
@@ -357,21 +501,38 @@ def scanCalcs(scanFileName):
 
     jList = np.array(jList).T
     vList = np.array(vList).T
+
+
+
+    # find Jsc (V = 0)
+    jscList = np.zeros((vList.shape[1]))
+    for i in range(vList.shape[1]):
+        difference_array = np.absolute(vList[:,i])
+        idx = difference_array.argmin()
+        jscList[i] = jList[idx,i]
+
+    # find Voc (J = 0)
+    vocList = np.zeros((jList.shape[1]))
+    for i in range(jList.shape[1]):
+        difference_array = np.absolute(jList[:,i])
+        idx = difference_array.argmin()
+        vocList[i] = vList[idx,i]
+
+    # find Fill Factor
     pceList = jList*vList
-    VMPPEncodeString = ""
     maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
     vmppList = []
     jmppList = []
-    for i in range(len(maxVIdx)-1):
+    for i in range(len(maxVIdx)):
         if vList[maxVIdx[i],i]>0:
             vmppList.append(vList[maxVIdx[i],i])
             jmppList.append(jList[maxVIdx[i],i])
     vmppList = np.array(vmppList)
     jmppList = np.array(jmppList)
-    vmppAvg = np.mean(np.array(vmppList))
-    fillFactorList = vmppList*jmppList
-    fillFactorAvg = np.mean(fillFactorList)
-    print(jList.shape)
+    fillFactorList = vmppList*jmppList/(jscList*vocList)
+
+
+    return fillFactorList, jscList, vocList
 
 def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var = 0.1) -> np.ndarray:
         '''
@@ -410,12 +571,14 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 if __name__ == '__main__':
     # arr = np.loadtxt(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\PnOMar-15-2023 13_29_55.csv", delimiter=",", dtype=str)[0:5,0:2]
     # print(arr)
-    showPCEGraphs(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\March-15-2023 goodTests\PnOMar-15-2023 13_29_55.csv", pixels= None, devices= None)
+    PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Mar-15-2023\PnOMar-15-2023 13_29_55.csv"
+    Scan = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Mar-15-2023\scandarkMar-15-2023 13_34_51.csv"
+    # showPCEGraphs(PCE, Scan, showDeadPixels = False, pixels= None, devices= None)
     # ,[23,24,25,26,27,28,29,30,31]
+    # print(scanCalcs(Scan))
 
 
-    showJVGraphs(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\March-15-2023 goodTests\scanlightMar-15-2023 13_28_50.csv", pixels= None, devices=None)
-    # showJVGraphsSmoothed(filePathJV ,[25])
+    showJVGraphs(Scan, showDeadPixels=False,pixels= None, devices=None)
 
 
 
