@@ -19,9 +19,9 @@ def showPCEGraphs(graphName, lightScanName, startingPoint = 0, divFactor = 50, s
 
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     deadPixels = getDeadPixels(lightScanName)
-    headers = arr[5,:]
+    headers = arr[6,:]
     headerDict = {value: index for index, value in enumerate(headers)}
-    arr = arr[6:, :]
+    arr = arr[7:, :]
 
     time = arr[:,headerDict["Time"]]
     pceList = np.array(arr)
@@ -286,13 +286,15 @@ def showJVGraphs(graphName, showDeadPixels = False, pixels = None, devices = Non
     # graphName = graphName.split('\\')
     headers = arr[6,:]
     headerDict = {value: index for index, value in enumerate(headers)}
-    arr = arr[6:, :]
+    arr = arr[7:, :]
     length = (len(headers) - 1)
 
 
     jvList = []
     for i in range(2, length): #remove timing and voltage output from array
         jvList.append(arr[:,i])
+
+
 
 
     maxX,minX,maxY,minY= 0,0,0,0
@@ -306,10 +308,12 @@ def showJVGraphs(graphName, showDeadPixels = False, pixels = None, devices = Non
         if min(jvList[i]) < minX: minX = min(jvList[i])
         if max(jvList[i+1]) > maxY: maxY = max(jvList[i+1])
         if min(jvList[i+1]) < minY: minY = min(jvList[i+1])
+    # print(jvList)
     maxX *= 1.1
     minX *= 1.1
     maxY *= 1.1
     minY *= 1.1
+    # print(maxX,minX,maxY,minY)
 
 
     # generate graphs
@@ -323,10 +327,12 @@ def showJVGraphs(graphName, showDeadPixels = False, pixels = None, devices = Non
         # plt.ylabel('Jmeas [mA/cm]')
         plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
         for i in range(0,len(jvList),2):
+            # print(deadPixels, showDeadPixels)
             if int(i/2) in deadPixels and not showDeadPixels:
                     continue
             # print(i)
             lineName = "Pixel " + str(int(i/2))
+            # print(jvList[i],jvList[i+1])
             plt.plot(jvList[i],jvList[i+1], label = lineName)
 
         ax = plt.gca()
@@ -451,10 +457,13 @@ def showJVGraphs(graphName, showDeadPixels = False, pixels = None, devices = Non
 
 
 
+
 def getDeadPixels(graphName):
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     headers = arr[6,:]
-    arr = arr[6:, :]
+    arr = arr[7:, :]
+
+    # print(arr)
     length = (len(headers) - 1)
 
 
@@ -465,6 +474,7 @@ def getDeadPixels(graphName):
     deadPixels = []
     for i in range(0,len(jvList),2):
         # print(i)
+        # print(jvList[i], jvList[i+1])
         jvList[i] = [float(j) for j in jvList[i]]
         jvList[i+1] = [float(x) for x in jvList[i+1]]
         if np.mean(np.absolute(np.array(jvList[i]))) < 0.2 or np.mean(np.absolute(np.array(jvList[i+1]))) < 0.2:
@@ -478,10 +488,12 @@ def scanCalcs(graphName):
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
     graphName = graphName.split('\\')
     # print(arr)
+
     headers = arr[6,:]
+
     headerDict = {value: index for index, value in enumerate(headers)}
     # print(headerDict)
-    arr = arr[6:, :]
+    arr = arr[7:, :]
     length = (len(headers) - 1)
     # print(length)
 
@@ -520,15 +532,21 @@ def scanCalcs(graphName):
 
     # find Fill Factor
     pceList = jList*vList
+    print(np.array(pceList).shape)
     maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
+    print(np.array(maxVIdx).shape)
     vmppList = []
     jmppList = []
-    for i in range(len(maxVIdx)):
-        if vList[maxVIdx[i],i]>0:
-            vmppList.append(vList[maxVIdx[i],i])
-            jmppList.append(jList[maxVIdx[i],i])
+    for i in range(len(maxVIdx)): # for i in number of pixels
+        # if vList[maxVIdx[i],i]>0:
+        vmppList.append(vList[maxVIdx[i],i])
+        jmppList.append(jList[maxVIdx[i],i])
     vmppList = np.array(vmppList)
     jmppList = np.array(jmppList)
+    print(vmppList.shape)
+    print(jmppList.shape)
+    print(jscList.shape)
+    print(vocList.shape)
     fillFactorList = vmppList*jmppList/(jscList*vocList)
 
 
@@ -571,9 +589,9 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 if __name__ == '__main__':
     # arr = np.loadtxt(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\PnOMar-15-2023 13_29_55.csv", delimiter=",", dtype=str)[0:5,0:2]
     # print(arr)
-    PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Mar-15-2023\PnOMar-15-2023 13_29_55.csv"
-    Scan = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Mar-15-2023\scandarkMar-15-2023 13_34_51.csv"
-    # showPCEGraphs(PCE, Scan, showDeadPixels = False, pixels= None, devices= None)
+    PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Apr-25-2023 15_50_01\Apr-25-2023 15_51_12PnO.csv"
+    Scan = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Apr-25-2023 15_50_01\Apr-25-2023 15_50_06lightscan.csv"
+    showPCEGraphs(PCE, Scan, showDeadPixels = False, pixels= None, devices= None)
     # ,[23,24,25,26,27,28,29,30,31]
     # print(scanCalcs(Scan))
 

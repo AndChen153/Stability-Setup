@@ -380,7 +380,7 @@ void perturbAndObserve() {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                 // Serial.println(Vset[DEVICE][PIXEL]);
                 if (MAXVOLTAGEPNO < Vset[DEVICE][PIXEL]) {
-                    Vset[DEVICE][PIXEL] = MAXVOLTAGEPNO
+                    Vset[DEVICE][PIXEL] = MAXVOLTAGEPNO;
                 }
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
                 delay(measurement_Delay_PnO);
@@ -510,7 +510,7 @@ void scan(String dir) {
 
     // amount of time it takes to take measurement from all 8 ina219 on ARDUINO UNO
     // must change this on different setup
-    uint8_t OFFSET = 35*8;
+    // uint8_t OFFSET = 35*8;
 
     int delayTimeMS = 20; //(s*1000)/steps - (OFFSET * measurements_Per_Step_Scan);
     if (delayTimeMS < 0) {delayTimeMS = 0;}

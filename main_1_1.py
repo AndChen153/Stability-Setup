@@ -47,7 +47,7 @@ if __name__ == '__main__':
         if mode == "Scan":
             # print(params, "JV")
             fileName = arduinoController.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
-            dataShow.showJVGraphs(fileName)
+            # dataShow.showJVGraphs(fileName)
         elif mode == "PNO":
             # print(params,)
             NUMBLOCKS = 10
@@ -59,6 +59,6 @@ if __name__ == '__main__':
                 pnoFileName = arduinoController.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), timePerBlock, scanFileName)
                 totalScanFiles.append(scanFileName)
                 totalPnoFiles.append(pnoFileName)
-            for i in totalPnoFiles:
-                dataShow.showPCEGraphs(i)
+            # for i in totalPnoFiles:
+            #     dataShow.showPCEGraphs(i)
 

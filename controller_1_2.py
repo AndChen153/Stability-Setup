@@ -59,7 +59,7 @@ class StabilitySetup:
         done = False
         line = ""
         timeOrig = time.time()
-        timeSave = 3 # time between saves in minutes
+        timeSave = 1 # time between saves in minutes
         while not done:
             if self.ser.in_waiting > 0:
                 line = self.ser.readline().decode('unicode_escape').rstrip()
@@ -183,7 +183,7 @@ class StabilitySetup:
 
         self.scanArrWidth = len(headerArr)
 
-        self.arr = np.empty([6, len(headerArr)], dtype="object")
+        self.arr = np.empty([7, len(headerArr)], dtype="object")
         self.arr[0][0], self.arr[0][1] = "Voltage Range: ", SCAN_RANGE
         self.arr[1][0], self.arr[1][1] = "Voltage Step Size: ", SCAN_STEP_SIZE
         self.arr[2][0], self.arr[2][1] = "Voltage Read Count: " , SCAN_READ_COUNT
@@ -197,7 +197,7 @@ class StabilitySetup:
         self.ser.write(self.parameters.encode())  # send data to arduino
         self.readData()
         print(self.arr)
-        self.printTime()
+        # self.printTime()
         # self.saveData()
         return self.fileName
 
@@ -230,7 +230,7 @@ class StabilitySetup:
         filename
             name of file that data will be saved to
         """
-        self.fileName = self.folderPath + datetime.now().strftime("%b-%d-%Y %H_%M_%S") + "scan.csv"
+        self.fileName = self.folderPath + datetime.now().strftime("%b-%d-%Y %H_%M_%S") + "PnO.csv"
         # self.fileName = "./data/PnO" + self.today + ".csv"
         self.mode = "PNO"
 
@@ -305,7 +305,7 @@ class StabilitySetup:
 
         self.PNOArrWidth = len(headerArr)
 
-        self.arr = np.empty([6, len(headerArr)], dtype="object")
+        self.arr = np.empty([7, len(headerArr)], dtype="object")
         self.arr[0][0], self.arr[0][1] = "Voltage Range (V): ", PNO_STARTING_VOLTAGE
         self.arr[1][0], self.arr[1][1] = "Voltage Step Size (V): ", PNO_STEP_SIZE
         self.arr[2][0], self.arr[2][1] = "Voltage Read Count: ", PNO_MEASUREMENTS_PER_STEP
@@ -327,49 +327,49 @@ class StabilitySetup:
         self.ser.write(VMPP.encode())               # send pno starting voltages to arduino
         self.readData()
         print(self.arr)
-        self.printTime()
+        # self.printTime()
         # self.saveData()
 
         return self.fileName
 
-def findVmpp(scanFileName):
+    def findVmpp(self, scanFileName):
 
-    arr = np.loadtxt(scanFileName, delimiter=",", dtype=str)
-    scanFileName = scanFileName.split('\\')
-    # print(arr)
-    headers = arr[6,:]
-    headerDict = {value: index for index, value in enumerate(headers)}
-    # print(headerDict)
-    arr = arr[6:, :]
-    length = (len(headers) - 1)
-    # print(length)
+        arr = np.loadtxt(scanFileName, delimiter=",", dtype=str)
+        scanFileName = scanFileName.split('\\')
+        # print(arr)
+        headers = arr[6,:]
+        headerDict = {value: index for index, value in enumerate(headers)}
+        # print(headerDict)
+        arr = arr[7:, :]
+        length = (len(headers) - 1)
+        # print(length)
 
-    jvList = []
+        jvList = []
 
-    for i in range(2, length):
-        jvList.append(arr[:,i])
+        for i in range(2, length):
+            jvList.append(arr[:,i])
 
-    jList = [] #current
-    vList = [] #voltage
-    for i in range(0,len(jvList),2):
-        # print(i)
-        jList.append([float(j) for j in jvList[i+1]])
-        vList.append([float(x) for x in jvList[i]])
-        # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
+        jList = [] #current
+        vList = [] #voltage
+        for i in range(0,len(jvList),2):
+            # print(i)
+            jList.append([float(j) for j in jvList[i+1]])
+            vList.append([float(x) for x in jvList[i]])
+            # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
 
 
-    jList = np.array(jList).T
-    vList = np.array(vList).T
-    pceList = jList*vList
-    VMPPEncodeString = ""
-    maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
+        jList = np.array(jList).T
+        vList = np.array(vList).T
+        pceList = jList*vList
+        VMPPEncodeString = ""
+        maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
 
-    for i in range(len(maxVIdx)-1):
-        VMPPEncodeString += str(vList[maxVIdx[i],i]) + "," # vList is 84x32, vmaxIDx contains the i in 84 that is the best voltage per pixel
+        for i in range(len(maxVIdx)-1):
+            VMPPEncodeString += str(vList[maxVIdx[i],i]) + "," # vList is 84x32, vmaxIDx contains the i in 84 that is the best voltage per pixel
 
-    VMPPEncodeString += str(vList[maxVIdx[len(maxVIdx)-1],len(maxVIdx)-1]) + ">" # proper encoding for string to send to arduino
+        VMPPEncodeString += str(vList[maxVIdx[len(maxVIdx)-1],len(maxVIdx)-1]) + ">" # proper encoding for string to send to arduino
 
-    return VMPPEncodeString
+        return VMPPEncodeString
 
     def printTime(self):
         end = time.time()
@@ -379,9 +379,9 @@ def findVmpp(scanFileName):
 
 
 
-if __name__ == '__main__':
-    # scanCalcs(".\data\March-15-2023 goodTests\scanlightMar-15-2023 13_28_50.csv")
-    print(findVmpp(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Mar-15-2023\scandarkMar-15-2023 13_34_51.csv"))
+# if __name__ == '__main__':
+#     # scanCalcs(".\data\March-15-2023 goodTests\scanlightMar-15-2023 13_28_50.csv")
+#     print(findVmpp(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Mar-15-2023\scandarkMar-15-2023 13_34_51.csv"))
 
 
 
