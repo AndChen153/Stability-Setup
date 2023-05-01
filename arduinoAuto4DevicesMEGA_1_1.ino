@@ -383,11 +383,12 @@ void perturbAndObserve() {
                     Vset[DEVICE][PIXEL] = MAXVOLTAGEPNO;
                 }
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
-                delay(measurement_Delay_PnO);
+                // delay(measurement_Delay_PnO);
             }
+            delay(measurement_Delay_PnO);
         }
         // delay time
-        delay(measurement_Delay_PnO);
+        // delay(measurement_Delay_PnO);
         // loop (measurements_Per_Step_PnO): 32x read voltage
         for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
             // getINA129(&allINA219[ID], ID);
@@ -407,10 +408,12 @@ void perturbAndObserve() {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                 VsetUp = Vset[DEVICE][PIXEL] + voltage_Step__Size_PnO;
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VsetUp);
+                // delay(measurement_Delay_PnO);
             }
+            delay(measurement_Delay_PnO);
         }
         // delay time
-        delay(measurement_Delay_PnO);
+        // delay(measurement_Delay_PnO);
         // loop (5x): 32x read voltage
         for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
             // getINA129(&allINA219[ID], ID);
@@ -429,11 +432,12 @@ void perturbAndObserve() {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                 VsetDown = Vset[DEVICE][PIXEL] - voltage_Step__Size_PnO;
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VsetDown);
-                delay(measurement_Delay_PnO);
+                // delay(measurement_Delay_PnO);
             }
+            delay(measurement_Delay_PnO);
         }
         // delay time
-        delay(measurement_Delay_PnO);
+        // delay(measurement_Delay_PnO);
         // loop (5x): 32x read voltage
         for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
             // getINA129(&allINA219[ID], ID);
@@ -513,7 +517,9 @@ void scan(String dir) {
     // uint8_t OFFSET = 35*8;
 
     int delayTimeMS = 20; //(s*1000)/steps - (OFFSET * measurements_Per_Step_Scan);
-    if (delayTimeMS < 0) {delayTimeMS = 0;}
+    if (delayTimeMS < 0) {
+        delayTimeMS = 0;
+    }
 
 
     Serial.print("started scan with delay time: "); Serial.println(delayTimeMS);

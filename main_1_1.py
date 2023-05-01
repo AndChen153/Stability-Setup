@@ -50,15 +50,16 @@ if __name__ == '__main__':
             # dataShow.showJVGraphs(fileName)
         elif mode == "PNO":
             # print(params,)
-            NUMBLOCKS = 10
-            timePerBlock = int(int(params[4])/NUMBLOCKS)
+            timePerBlock = 30 # minutes
+            NUMBLOCKS = int(int(params[4])/timePerBlock)
             totalPnoFiles = []
             totalScanFiles = []
             for i in range(NUMBLOCKS):
-                scanFileName = arduinoController.scan(1.2, 0.03, 3, 50, 1)
+                scanFileName = arduinoController.scan(1.2, 0.03, 2, 50, 1)
                 pnoFileName = arduinoController.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), timePerBlock, scanFileName)
                 totalScanFiles.append(scanFileName)
                 totalPnoFiles.append(pnoFileName)
             # for i in totalPnoFiles:
             #     dataShow.showPCEGraphs(i)
+
 

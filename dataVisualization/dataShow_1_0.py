@@ -58,13 +58,14 @@ def showPCEGraphs(graphName, lightScanName, startingPoint = 0, divFactor = 50, s
         data.append(avg)
     time = np.array(time)
     data = np.array(data).T
+    # data *= 2.048 # comment line if not using mask
     time*=average
     time/=3600
 
     # a = a[a[:, 0].argsort()])
 
     maxTime = max(time)*1.01
-    maxPCE = 35
+    maxPCE = 20
     print("MAXTIME", maxTime)
     print("MAXPCE", maxPCE)
 
@@ -173,6 +174,15 @@ def showPCEGraphs(graphName, lightScanName, startingPoint = 0, divFactor = 50, s
         labelLines(plt.gca().get_lines(), zorder=2.5)
         plt.legend(bbox_to_anchor=(1.15, 1))
         plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
+
+    plotTitle = "Γ_PCE_BoxPlot_(last values)"
+    fig = plt.figure(figsize=plotSize)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_title(plotTitle)
+    ax.set_ylabel('PCE (%)')
+    ax.set_xticklabels(["Reverse","Forward"])
+    bp = ax.boxplot(data[-1,:])
+    plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
 
 def showJVGraphsSmoothed(graphName, pixels = None):
     plotSize = (10,8)
@@ -301,18 +311,23 @@ def showJVGraphs(graphName, showDeadPixels = False, pixels = None, devices = Non
     for i in range(0,len(jvList),2):
         # print(i)
         jvList[i] = [float(j) for j in jvList[i]]
-        jvList[i+1] = [float(x) for x in jvList[i+1]]
-        # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
+        jvList[i+1] = [float(x)/0.128 for x in jvList[i+1]]
+        # jvList[i+1] = [float(x) / 0.0625 for x in jvList[i+1]]
 
         if max(jvList[i]) > maxX: maxX = max(jvList[i])
         if min(jvList[i]) < minX: minX = min(jvList[i])
         if max(jvList[i+1]) > maxY: maxY = max(jvList[i+1])
         if min(jvList[i+1]) < minY: minY = min(jvList[i+1])
     # print(jvList)
-    maxX *= 1.1
-    minX *= 1.1
-    maxY *= 1.1
-    minY *= 1.1
+    # maxX *= 1.1
+
+    # minX *= 1.1
+    # maxY *= 1.1
+    # minY *= 1.1
+    maxX = 1.3
+    minX = 0
+    maxY = 26
+    minY = -2
     # print(maxX,minX,maxY,minY)
 
 
@@ -426,34 +441,56 @@ def showJVGraphs(graphName, showDeadPixels = False, pixels = None, devices = Non
         plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
 
     # generate boxplots
-    FF, jsc, voc = scanCalcs(graphName)
-    FF = np.delete(FF, deadPixels)
-    jsc = np.delete(jsc, deadPixels)
-    voc = np.delete(voc, deadPixels)
+    reverse, forward = scanCalcs(graphName)
+    # returns: reverse:[fillFactorListSplit, jscListSplit, vocListSplit], forward:[fillFactorListSplit, jscListSplit, vocListSplit]
+    reverseFF = reverse[0]
+    forwardFF = forward[0]
+    reverseJSC = reverse[1]
+    forwardJSC = forward[1]
+    reverseVOC = reverse[2]
+    forwardVOC = forward[2]
+    print("reverseFF", np.median(reverseFF))
+    print("forwardFF", np.median(forwardFF))
+    print("reverseJSC", np.median(reverseJSC))
+    print("forwardJSC", np.median(forwardJSC))
+    print("reverseVOC", np.median(reverseVOC))
+    print("forwardVOC", np.median(forwardVOC))
+
+    FF = [np.array(reverseFF).flatten(), np.array(forwardFF).flatten()]
+    JSC = [np.array(reverseJSC).flatten(), np.array(forwardJSC).flatten()]
+    VOC = [np.array(reverseVOC).flatten(), np.array(forwardVOC).flatten()]
+
+    plotTitle = "Γ_FF_BoxPlot"
+    fig = plt.figure(figsize=plotSize)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_title(plotTitle)
+    ax.set_ylabel('FF (%)')
+    ax.set_xticklabels(["Reverse","Forward"])
+    bp = ax.boxplot(FF)
+    plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
+
 
     plotTitle = "Γ_JSC_BoxPlot"
-    plt.figure(figsize=plotSize)
-    plt.title(plotTitle)
-    plt.xlabel('Time (hr)')
-    plt.ylabel('Jsc (mA)')
-    plt.boxplot(jsc)
+    fig = plt.figure(figsize=plotSize)
+    # Creating axes instance
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_title(plotTitle)
+    ax.set_ylabel('Jsc (mA/cm2)')
+    ax.set_xticklabels(["Reverse","Forward"])
+    bp = ax.boxplot(JSC)
     plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
 
     plotTitle = "Γ_VOC_BoxPlot"
-    plt.figure(figsize=plotSize)
-    plt.title(plotTitle)
-    plt.xlabel('Time (hr)')
-    plt.ylabel('Voc (V)')
-    plt.boxplot(voc)
+    fig = plt.figure(figsize=plotSize)
+    # Creating axes instance
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_title(plotTitle)
+    ax.set_ylabel('Voc (V)')
+    ax.set_xticklabels(["Reverse","Forward"])
+    bp = ax.boxplot(VOC)
     plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
 
-    plotTitle = "Γ_FF_BoxPlot"
-    plt.figure(figsize=plotSize)
-    plt.title(plotTitle)
-    plt.xlabel('Time (hr)')
-    plt.ylabel('FF (%)')
-    plt.boxplot(FF)
-    plt.savefig(pngSaveLocation + plotTitle, dpi=300, bbox_inches='tight')
+
 
 
 
@@ -485,7 +522,12 @@ def getDeadPixels(graphName):
 
 
 def scanCalcs(graphName):
+    '''
+    returns: reverse:[fillFactorListSplit, jscListSplit, vocListSplit], forward:[fillFactorListSplit, jscListSplit, vocListSplit]
+    '''
     arr = np.loadtxt(graphName, delimiter=",", dtype=str)
+    deadPixels = getDeadPixels(graphName)
+    # print(deadPixels)
     graphName = graphName.split('\\')
     # print(arr)
 
@@ -502,6 +544,7 @@ def scanCalcs(graphName):
     for i in range(2, length):
         jvList.append(arr[:,i])
 
+
     jList = [] #current
     vList = [] #voltage
     for i in range(0,len(jvList),2):
@@ -510,47 +553,76 @@ def scanCalcs(graphName):
         vList.append([float(x) for x in jvList[i]])
         # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
 
-
     jList = np.array(jList).T
     vList = np.array(vList).T
+    jListReverse, jListForward = np.split(jList, 2)
+    vListReverse, vListForward = np.split(vList, 2)
+
+    def calc(jList, vList):
 
 
 
-    # find Jsc (V = 0)
-    jscList = np.zeros((vList.shape[1]))
-    for i in range(vList.shape[1]):
-        difference_array = np.absolute(vList[:,i])
-        idx = difference_array.argmin()
-        jscList[i] = jList[idx,i]
+        # find Jsc (V = 0)
+        jscList = np.zeros((vList.shape[1]))
+        for i in range(vList.shape[1]):
+            difference_array = np.absolute(vList[:,i])
+            idx = difference_array.argmin()
+            jscList[i] = jList[idx,i]
 
-    # find Voc (J = 0)
-    vocList = np.zeros((jList.shape[1]))
-    for i in range(jList.shape[1]):
-        difference_array = np.absolute(jList[:,i])
-        idx = difference_array.argmin()
-        vocList[i] = vList[idx,i]
+        # find Voc (J = 0)
+        vocList = np.zeros((jList.shape[1]))
+        for i in range(jList.shape[1]):
+            difference_array = np.absolute(jList[:,i])
+            idx = difference_array.argmin()
+            vocList[i] = vList[idx,i]
 
-    # find Fill Factor
-    pceList = jList*vList
-    print(np.array(pceList).shape)
-    maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
-    print(np.array(maxVIdx).shape)
-    vmppList = []
-    jmppList = []
-    for i in range(len(maxVIdx)): # for i in number of pixels
-        # if vList[maxVIdx[i],i]>0:
-        vmppList.append(vList[maxVIdx[i],i])
-        jmppList.append(jList[maxVIdx[i],i])
-    vmppList = np.array(vmppList)
-    jmppList = np.array(jmppList)
-    print(vmppList.shape)
-    print(jmppList.shape)
-    print(jscList.shape)
-    print(vocList.shape)
-    fillFactorList = vmppList*jmppList/(jscList*vocList)
+        # find Fill Factor
+        pceList = jList*vList
+        # print(np.array(pceList).shape)
+        maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
+        # print(np.array(maxVIdx).shape)
+        vmppList = []
+        jmppList = []
+        for i in range(len(maxVIdx)): # for i in number of pixels
+            # if vList[maxVIdx[i],i]>0:
+            vmppList.append(vList[maxVIdx[i],i])
+            jmppList.append(jList[maxVIdx[i],i])
+        vmppList = np.array(vmppList)
+        jmppList = np.array(jmppList)
+
+        fillFactorList = 100*vmppList*jmppList/(jscList*vocList)
+        jscList = jscList/0.128
+        # jscList = jscList/0.0625
+
+        deviceToPixels = {0:[0,1,2,3,4,5,6,7],
+                        1:[8,9,10,11,12,13,14,15],
+                        2:[16,17,18,19,20,21,22,23],
+                        3:[24,25,26,27,28,29,30,31]}
 
 
-    return fillFactorList, jscList, vocList
+        fillFactorList = np.delete(fillFactorList, deadPixels)
+        jscList = np.delete(jscList, deadPixels)
+        vocList = np.delete(vocList, deadPixels)
+
+
+        # fillFactorListSplit = []
+        # jscListSplit = []
+        # vocListSplit = []
+
+        # for i in [0,1,2,3]:
+        #     alive = []
+        #     for i in deviceToPixels[i]:
+        #         # if i not in deadPixels:
+        #         alive.append(i)
+        #     # print(alive)
+        #     fillFactorListSplit.append([fillFactorList[alive]])
+        #     jscListSplit.append([jscList[alive]])
+        #     vocListSplit.append([vocList[alive]])
+
+        # fillFactorList, jscList, vocList
+        return (fillFactorList, jscList, vocList)
+
+    return calc(jListReverse, vListReverse), calc(jListForward, vListForward)
 
 def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var = 0.1) -> np.ndarray:
         '''
@@ -590,13 +662,10 @@ if __name__ == '__main__':
     # arr = np.loadtxt(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\PnOMar-15-2023 13_29_55.csv", delimiter=",", dtype=str)[0:5,0:2]
     # print(arr)
     PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Apr-25-2023 15_50_01\Apr-25-2023 15_51_12PnO.csv"
+
     Scan = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Apr-25-2023 15_50_01\Apr-25-2023 15_50_06lightscan.csv"
-    showPCEGraphs(PCE, Scan, showDeadPixels = False, pixels= None, devices= None)
-    # ,[23,24,25,26,27,28,29,30,31]
-    # print(scanCalcs(Scan))
-
-
     showJVGraphs(Scan, showDeadPixels=False,pixels= None, devices=None)
+    showPCEGraphs(PCE, Scan, showDeadPixels = False, pixels= None, devices= None)
 
 
 

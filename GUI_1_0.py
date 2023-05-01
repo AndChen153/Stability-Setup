@@ -18,7 +18,7 @@ class UserInterface:
         layoutScan = [ [sg.Button("Scan"), sg.Button("PNO"), sg.Button("GO")],
                             [sg.Text('SCAN_RANGE (V):'), sg.InputText("1.2")],
                             [sg.Text('SCAN_STEP_SIZE (V):'), sg.InputText("0.03")],
-                            [sg.Text('SCAN_READ_COUNT:'), sg.InputText("3")],
+                            [sg.Text('SCAN_READ_COUNT:'), sg.InputText("2")],
                             [sg.Text('SCAN_RATE (mV/s):'), sg.InputText("50")],
                             [sg.Text('SCAN_MODE (0 = dark, 1 = light):'), sg.InputText("1")],
 
@@ -40,7 +40,7 @@ class UserInterface:
                             [sg.Text('PNO_MEASUREMENTS_PER_STEP:'), sg.InputText("5")],
                             [sg.Text('PNO_MEASUREMENT_DELAY (ms):'), sg.InputText("20")],
                             # [sg.Text('Time (hours):'), sg.InputText("100")]
-                            [sg.Text('Time (mins):'), sg.InputText("60")]
+                            [sg.Text('Time (mins):'), sg.InputText("600")]
                             ]
         return sg.Window('PNO', layoutPnO, finalize=True)
 
