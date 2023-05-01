@@ -659,14 +659,9 @@ def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var 
 
 
 if __name__ == '__main__':
-    # arr = np.loadtxt(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\PnOMar-15-2023 13_29_55.csv", delimiter=",", dtype=str)[0:5,0:2]
-    # print(arr)
     PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Apr-25-2023 15_50_01\Apr-25-2023 15_51_12PnO.csv"
-
     Scan = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Apr-25-2023 15_50_01\Apr-25-2023 15_50_06lightscan.csv"
     showJVGraphs(Scan, showDeadPixels=False,pixels= None, devices=None)
     showPCEGraphs(PCE, Scan, showDeadPixels = False, pixels= None, devices= None)
-
-
 
 # %%
