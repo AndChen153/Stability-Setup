@@ -25,7 +25,7 @@ start = time.time()
 
 
 
-class StabilitySetup:
+class stability_setup:
 
     # def __init__(self) -> None:
     #     pass
@@ -45,7 +45,7 @@ class StabilitySetup:
         self.ser.flush()
         self.mode = ""
 
-    def readData(self):
+    def read_data(self):
         """
         * Reads data outputed on serial bus by arduino
         * Saves data after certain interval of time
@@ -67,7 +67,7 @@ class StabilitySetup:
                     self.arr = np.append(self.arr, np.array([data_list]),axis = 0)
 
                 if abs(time.time() - timeOrig) > timeSave * 60:
-                    self.saveData()
+                    self.save_data()
                     timeOrig = time.time()
 
                 if line == "Done!":
@@ -75,7 +75,7 @@ class StabilitySetup:
 
 
 
-    def saveData(self) -> str:
+    def save_data(self) -> str:
         """
         saves numpy array to csv file with the option to save at different time intervals
 
@@ -196,10 +196,10 @@ class StabilitySetup:
         # print(headerArr)
 
         self.ser.write(self.parameters.encode())  # send data to arduino
-        self.readData()
+        self.read_data()
         print(self.arr)
         # self.printTime()
-        self.saveData()
+        self.save_data()
         return self.fileName
 
 
@@ -320,9 +320,9 @@ class StabilitySetup:
 
         print(self.parameters)
         self.ser.write(self.parameters.encode())  # send data to arduino
-        self.readData()
+        self.read_data()
         print(self.arr)
         self.printTime()
-        self.saveData()
+        self.save_data()
 
         return self.fileName

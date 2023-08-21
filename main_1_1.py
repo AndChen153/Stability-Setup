@@ -1,7 +1,7 @@
 # from statistics import mode
 import controller_1_2 as controller
 import GUI_1_0
-from dataVisualization import dataShow_1_0 as dataShow
+from data_visualization import data_show_1_0 as data_show
 import math
 import serial.tools.list_ports
 
@@ -16,10 +16,10 @@ if not arduino_ports:
 elif len(arduino_ports) > 1:
     COM = "COM25"
     print(f'Multiple Arduinos found, com port set manually to {COM}')
-    arduinoController = controller.StabilitySetup(COM, 115200)
+    arduino_controller = controller.stability_setup(COM, 115200)
 else:
     print("One Aruino found, using port:", arduino_ports[0])
-    arduinoController = controller.StabilitySetup(arduino_ports[0], 115200)
+    arduino_controller = controller.stability_setup(arduino_ports[0], 115200)
 
 
 
@@ -27,15 +27,15 @@ gui = GUI_1_0.UserInterface()
 
 def scanMAP(object, inputs):
     print("STARTED SCAN", object, inputs)
-    fileName = object.scan(float(inputs[0]), float(inputs[1]), int(inputs[2]), int(inputs[3]), int(inputs[4]))
+    file_name = object.scan(float(inputs[0]), float(inputs[1]), int(inputs[2]), int(inputs[3]), int(inputs[4]))
     print("DONE SCAN", object, inputs)
-    return fileName
+    return file_name
 
 def pnoMAP(object, inputs):
     print("STARTED PNO", object, inputs)
-    fileName = object.pno(float(inputs[0]), float(inputs[1]), int(inputs[2]), int(inputs[3]), int(inputs[4]))
+    file_name = object.pno(float(inputs[0]), float(inputs[1]), int(inputs[2]), int(inputs[3]), int(inputs[4]))
     print("DONE PNO", object, inputs)
-    return fileName
+    return file_name
 
 
 #TODO implement light status for PNO to throw error whenever light status turns off
@@ -46,20 +46,21 @@ if __name__ == '__main__':
 
         if mode == "Scan":
             # print(params, "JV")
-            fileName = arduinoController.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
-            # dataShow.showJVGraphs(fileName)
+            file_name = arduino_controller.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
+            print(file_name)
+            # data_show.showJVGraphs(file_name) // find absolute file path
         elif mode == "PNO":
             # print(params,)
-            timePerBlock = 30 # minutes
-            NUMBLOCKS = int(int(params[4])/timePerBlock)
-            totalPnoFiles = []
-            totalScanFiles = []
+            time_per_block = 30 # minutes
+            NUMBLOCKS = int(int(params[4])/time_per_block)
+            total_pno_files = []
+            total_scan_files = []
             for i in range(NUMBLOCKS):
-                scanFileName = arduinoController.scan(1.2, 0.03, 2, 50, 1)
-                pnoFileName = arduinoController.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), timePerBlock, scanFileName)
-                totalScanFiles.append(scanFileName)
-                totalPnoFiles.append(pnoFileName)
-            # for i in totalPnoFiles:
-            #     dataShow.showPCEGraphs(i)
+                scan_file_name = arduino_controller.scan(1.2, 0.03, 2, 50, 1)
+                pno_file_name = arduino_controller.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), time_per_block, scan_file_name)
+                total_scan_files.append(scan_file_name)
+                total_pno_files.append(pno_file_name)
+            # for i in total_pno_files:
+            #     data_show.show_pce_graphs(i)
 
 

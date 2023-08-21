@@ -47,10 +47,10 @@ Adafruit_INA219 ina219_29;
 Adafruit_INA219 ina219_30;
 Adafruit_INA219 ina219_31;
 
-// Adafruit_INA219 allINA[] = {ina219_0, ina219_1, ina219_2, ina219_3, ina219_4, ina219_5, ina219_6, ina219_7};
+// Adafruit_INA219 all_ina[] = {ina219_0, ina219_1, ina219_2, ina219_3, ina219_4, ina219_5, ina219_6, ina219_7};
 
-// Adafruit_INA219 allINA[] =  {ina219_0, ina219_1, ina219_2, ina219_3, ina219_4, ina219_5, ina219_6, ina219_7, ina219_8, ina219_9, ina219_10, ina219_11, ina219_12, ina219_13, ina219_14, ina219_15, ina219_16, ina219_17, ina219_18, ina219_19, ina219_20, ina219_21, ina219_22, ina219_23, ina219_24, ina219_25, ina219_26, ina219_27, ina219_28, ina219_29, ina219_30, ina219_31};
-Adafruit_INA219 *allINA[] =  {&ina219_0, &ina219_1, &ina219_2, &ina219_3, &ina219_4, &ina219_5, &ina219_6, &ina219_7,
+// Adafruit_INA219 all_ina[] =  {ina219_0, ina219_1, ina219_2, ina219_3, ina219_4, ina219_5, ina219_6, ina219_7, ina219_8, ina219_9, ina219_10, ina219_11, ina219_12, ina219_13, ina219_14, ina219_15, ina219_16, ina219_17, ina219_18, ina219_19, ina219_20, ina219_21, ina219_22, ina219_23, ina219_24, ina219_25, ina219_26, ina219_27, ina219_28, ina219_29, ina219_30, ina219_31};
+Adafruit_INA219 *all_ina[] =  {&ina219_0, &ina219_1, &ina219_2, &ina219_3, &ina219_4, &ina219_5, &ina219_6, &ina219_7,
                             &ina219_8, &ina219_9, &ina219_10, &ina219_11, &ina219_12, &ina219_13, &ina219_14, &ina219_15,
                             &ina219_16, &ina219_17, &ina219_18, &ina219_19, &ina219_20, &ina219_21, &ina219_22, &ina219_23,
                             &ina219_24, &ina219_25, &ina219_26, &ina219_27, &ina219_28, &ina219_29, &ina219_30, &ina219_31};
@@ -88,11 +88,11 @@ Adafruit_MCP4725 dac_28;
 Adafruit_MCP4725 dac_29;
 Adafruit_MCP4725 dac_30;
 Adafruit_MCP4725 dac_31;
-// Adafruit_MCP4725 allDAC[] = {dac_0, dac_1, dac_2, dac_3, dac_4, dac_5, dac_6, dac_7};
+// Adafruit_MCP4725 all_dac[] = {dac_0, dac_1, dac_2, dac_3, dac_4, dac_5, dac_6, dac_7};
 
-// Adafruit_MCP4725 allDAC [] = {dac_0, dac_1, dac_2, dac_3, dac_4, dac_5, dac_6, dac_7}; //, dac_8, dac_9, dac_10, dac_11, dac_12, dac_13, dac_14, dac_15, dac_16, dac_17, dac_18, dac_19, dac_20, dac_21, dac_22, dac_23,dac_24, dac_25, dac_26, dac_27, dac_28, dac_29, dac_30, dac_31};
+// Adafruit_MCP4725 all_dac [] = {dac_0, dac_1, dac_2, dac_3, dac_4, dac_5, dac_6, dac_7}; //, dac_8, dac_9, dac_10, dac_11, dac_12, dac_13, dac_14, dac_15, dac_16, dac_17, dac_18, dac_19, dac_20, dac_21, dac_22, dac_23,dac_24, dac_25, dac_26, dac_27, dac_28, dac_29, dac_30, dac_31};
 
-Adafruit_MCP4725 *allDAC [] = {&dac_0, &dac_1, &dac_2, &dac_3, &dac_4, &dac_5, &dac_6, &dac_7,
+Adafruit_MCP4725 *all_dac [] = {&dac_0, &dac_1, &dac_2, &dac_3, &dac_4, &dac_5, &dac_6, &dac_7,
                             &dac_8, &dac_9, &dac_10, &dac_11, &dac_12, &dac_13, &dac_14, &dac_15,
                             &dac_16, &dac_17, &dac_18, &dac_19, &dac_20, &dac_21, &dac_22, &dac_23,
                             &dac_24, &dac_25, &dac_26, &dac_27, &dac_28, &dac_29, &dac_30, &dac_31,};
@@ -108,10 +108,10 @@ int MULTALL[] = {0x70, 0x72, 0x74, 0x76,0x71, 0x73, 0x75, 0x77};
 int ARUDINOID = 0;
 
 // INA219 Variables ---------------------------------------------------------------------
-float shuntvoltage;
-float busvoltage;
+float shunt_voltage;
+float bus_voltage;
 float current_mA;
-float loadvoltage;
+float load_voltage;
 float power_mW;
 float current_mA_Flipped;
 
@@ -121,46 +121,37 @@ float val2;
 int val3;
 int val4;
 int val5;
-const byte numChars = 1000;
-char receivedChars[numChars];
-char tempChars[numChars];        // temporary array for use when parsing
+const byte num_chars = 1000;
+char receivedChars[num_chars];
+char tempChars[num_chars];        // temporary array for use when parsing
 
 // used to aid in parsing through input data
-char modeFromPC[numChars] = {0};
-boolean newData = false;
+char mode_from_pc[num_chars] = {0};
+boolean new_data = false;
 
 // Perturb and Observe  Variables -------------------------------------------------------
-boolean perturb_And_ObserveDone = true;
-float voltage_Starting_PnO      = 0.0;
-float voltage_Step__Size_PnO    = 0.000;
-int measurement_Delay_PnO       = 0;
-int measurements_Per_Step_PnO   = 0;
-unsigned long measurement_Time  = 0;
+boolean pno_done = true;
+float pno_starting_voltage      = 0.0;
+float pno_voltage_step_size    = 0.000;
+int pno_measurement_delay       = 0;
+int pno_measurements_per_step   = 0;
+unsigned long pno_measurement_time  = 0;
 const int MAXVOLTAGEPNO = 2;
 int dummy;
 float Vset[4][8];
 
-
-// Tracking and Scanning Variables ------------------------------------------------------
-boolean tracking_And_ScanningDone = true;
-
-float voltage_Starting_TaS    = 0.0;
-float voltage_Step__Size_TaS  = 0.000;
-int measurement_Delay_TaS     = 0;
-int measurements_Per_Step_TaS = 0;
-
 // Scan Variables -----------------------------------------------------------------------
-boolean scanDone = true;
-float avgVolt[4][8];
-float avgCurr[4][8];
-int volt_Step_Count = 0;
+boolean scan_done = true;
+float avg_volt[4][8];
+float avg_curr[4][8];
+int volt_step_count = 0;
 float VOLTAGE_SET_VAL   = 0;
 uint16_t dac_val    = 0;
-float voltage_Range_Scan       = 0.0;
-float voltage_Step_Size_Scan   = 0.000;
-int measurements_Per_Step_Scan = 0;
-int measurement_Rate_Scan      = 0;
-int light_Status = 0;
+float scan_voltage_range       = 0.0;
+float scan_voltage_step_size   = 0.000;
+int scan_measurements_per_step = 0;
+int scan_measurement_rate      = 0;
+int light_status = 0;
 
 
 void setup(void) {
@@ -200,8 +191,8 @@ void setup(void) {
             // Serial.print(PIXEL);
             // Serial.print(",");
             // Serial.println(TCAADR_INA[DEVICE]);
-            setupSensor_INA219(allINA[PIXEL+8*DEVICE], PIXEL, TCAADR_INA[DEVICE]);
-            // setupSensor_INA219(allINA[PIXEL+8*DEVICE], PIXEL, 0x70);
+            setup_ina219(all_ina[PIXEL+8*DEVICE], PIXEL, TCAADR_INA[DEVICE]);
+            // setup_ina219(all_ina[PIXEL+8*DEVICE], PIXEL, 0x70);
         }
     }
 
@@ -210,8 +201,8 @@ void setup(void) {
             // Serial.print(PIXEL);
             // Serial.print(",");
             // Serial.println(TCAADR_DAC[DEVICE]);
-            setupSensor_Dac(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE]);
-            // setupSensor_Dac(allDAC[PIXEL+8*DEVICE], PIXEL, 0x70);
+            setup_dac(all_dac[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE]);
+            // setup_dac(all_dac[PIXEL+8*DEVICE], PIXEL, 0x70);
         }
     }
 
@@ -223,69 +214,69 @@ void setup(void) {
 
 
 void loop(void) {
-    recvWithStartEndMarkers(); // get data from computer
-    if (newData == true && scanDone && perturb_And_ObserveDone) {
+    recv_with_start_end_markers(); // get data from computer
+    if (new_data == true && scan_done && pno_done) {
         strcpy(tempChars, receivedChars);
-        parseData();
-        showParsedData();
+        parse_data();
+        show_parsed_data();
         // zero();
 
-        newData = false;
-        String mode = String(modeFromPC);
+        new_data = false;
+        String mode = String(mode_from_pc);
 
         if (mode.equals("scan")) {
-            scanDone = false;
+            scan_done = false;
         } else if (mode.equals("PnO")) {
 
-            perturb_And_ObserveDone = false;
+            pno_done = false;
 
         }
     }
 
-    if (!scanDone) {
+    if (!scan_done) {
         // Serial.println("Scanning");
-        // voltage_Range_Scan = 1.2;
-        // voltage_Step_Size_Scan = 0.01;
-        // measurements_Per_Step_Scan= 5;
-        // measurement_Rate_Scan = 50;
+        // scan_voltage_range = 1.2;
+        // scan_voltage_step_size = 0.01;
+        // scan_measurements_per_step= 5;
+        // scan_measurement_rate = 50;
         // scan("backward");
-        voltage_Range_Scan = val1;
-        voltage_Step_Size_Scan = val2;
-        measurements_Per_Step_Scan = val3;
-        measurement_Rate_Scan = val4;
-        light_Status = val5;
-        lightControl(light_Status);
+        scan_voltage_range = val1;
+        scan_voltage_step_size = val2;
+        scan_measurements_per_step = val3;
+        scan_measurement_rate = val4;
+        light_status = val5;
+        light_control(light_status);
         scan("backward");
         scan("forward");
-        scanDone = true;
+        scan_done = true;
         Serial.println("Done!");
 
-        // const byte numChars = 32;
-        // char receivedChars[numChars];
-        // char tempChars[numChars];        // temporary array for use when parsing
+        // const byte num_chars = 32;
+        // char receivedChars[num_chars];
+        // char tempChars[num_chars];        // temporary array for use when parsing
 
         // // used to aid in parsing through input data
-        // char modeFromPC[numChars] = {0};
-        // boolean newData = false;
+        // char mode_from_pc[num_chars] = {0};
+        // boolean new_data = false;
 
-    } else if (!perturb_And_ObserveDone) {
+    } else if (!pno_done) {
         Serial.println("Perturb and Observe");
 
-        voltage_Starting_PnO = val1;
-        voltage_Step__Size_PnO = val2;
-        measurements_Per_Step_PnO= val3;
-        measurement_Delay_PnO = val4;
-        measurement_Time = val5;
+        pno_starting_voltage = val1;
+        pno_voltage_step_size = val2;
+        pno_measurements_per_step= val3;
+        pno_measurement_delay = val4;
+        pno_measurement_time = val5;
 
-        perturbAndObserve();
+        pertube_and_observe();
         Serial.println("Done!");
-        // const byte numChars = 32;
-        // char receivedChars[numChars];
-        // char tempChars[numChars];        // temporary array for use when parsing
+        // const byte num_chars = 32;
+        // char receivedChars[num_chars];
+        // char tempChars[num_chars];        // temporary array for use when parsing
 
         // // used to aid in parsing through input data
-        // char modeFromPC[numChars] = {0};
-        // boolean newData = false;
+        // char mode_from_pc[num_chars] = {0};
+        // boolean new_data = false;
     }
 
 
@@ -320,9 +311,9 @@ enter loop (stops when total time is met) {
 
     return to start of loop
 */
-void perturbAndObserve() {
+void pertube_and_observe() {
     led(true);
-    lightControl(1);
+    light_control(1);
 
     // float Vset[4][8];
     float VsetUp;
@@ -334,35 +325,35 @@ void perturbAndObserve() {
     // Set starting voltage level on each dac
     // for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
     //     for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-    //         Vset[DEVICE][PIXEL] = voltage_Starting_PnO;
+    //         Vset[DEVICE][PIXEL] = pno_starting_voltage;
     //     }
     // }
 
     float avgPowerCalced[4][8];
     float avgPowerCalcedUp[4][8];
     float avgPowerCalcedDown[4][8];
-    float loadvoltageArr[4][8];
+    float load_voltageArr[4][8];
     float current_mA_FlippedArr[4][8];
     float PCE[4][8];
-    measurements_Per_Step_PnO++; //average not working correctly
+    pno_measurements_per_step++; //average not working correctly
 
     int currentMillis = 0;
     int pm = millis();
     int startMillis = millis();
 
     // // input time in hours
-    // Serial.print("measurement_Time (hours): ");
-    // Serial.println(measurement_Time);
-    // Serial.print("measurement_Time (days): ");
-    // Serial.println(measurement_Time/24.0);
-    // measurement_Time *= 60*60;
+    // Serial.print("pno_measurement_time (hours): ");
+    // Serial.println(pno_measurement_time);
+    // Serial.print("pno_measurement_time (days): ");
+    // Serial.println(pno_measurement_time/24.0);
+    // pno_measurement_time *= 60*60;
 
     // // input time in minutes
-    Serial.print("measurement_Time (mins): ");
-    Serial.println(measurement_Time);
-    Serial.print("measurement_Time (hours): ");
-    Serial.println(measurement_Time/60.0);
-    measurement_Time *= 60.0;
+    Serial.print("pno_measurement_time (mins): ");
+    Serial.println(pno_measurement_time);
+    Serial.print("pno_measurement_time (hours): ");
+    Serial.println(pno_measurement_time/60.0);
+    pno_measurement_time *= 60.0;
 
 
     // for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
@@ -373,7 +364,7 @@ void perturbAndObserve() {
 
 
 
-    while((millis()-startMillis)/1000.0 < measurement_Time) { // convert millis to seconds
+    while((millis()-startMillis)/1000.0 < pno_measurement_time) { // convert millis to seconds
         // Vset -------------------------------------------------------------------------------------------------------
         // 32x set voltage to Vset
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
@@ -382,21 +373,21 @@ void perturbAndObserve() {
                 if (MAXVOLTAGEPNO < Vset[DEVICE][PIXEL]) {
                     Vset[DEVICE][PIXEL] = MAXVOLTAGEPNO;
                 }
-                setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
-                // delay(measurement_Delay_PnO);
+                set_voltage(all_dac[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
+                // delay(pno_measurement_delay);
             }
-            delay(measurement_Delay_PnO);
+            delay(pno_measurement_delay);
         }
         // delay time
-        // delay(measurement_Delay_PnO);
-        // loop (measurements_Per_Step_PnO): 32x read voltage
-        for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
-            // getINA129(&allINA219[ID], ID);
+        // delay(pno_measurement_delay);
+        // loop (pno_measurements_per_step): 32x read voltage
+        for (int i = 0; i < pno_measurements_per_step; ++i) {
+            // getINA129(&all_ina219[ID], ID);
             for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
                 for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                    getVolCurr(allINA[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
-                    avgPowerCalced[DEVICE][PIXEL] += loadvoltage * current_mA_Flipped;
-                    loadvoltageArr[DEVICE][PIXEL] += loadvoltage;
+                    get_volt_and_curr(all_ina[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
+                    avgPowerCalced[DEVICE][PIXEL] += load_voltage * current_mA_Flipped;
+                    load_voltageArr[DEVICE][PIXEL] += load_voltage;
                     current_mA_FlippedArr[DEVICE][PIXEL] += current_mA_Flipped;
                 }
             }
@@ -406,21 +397,21 @@ void perturbAndObserve() {
         // 32x set voltage to Vset + step size
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                VsetUp = Vset[DEVICE][PIXEL] + voltage_Step__Size_PnO;
-                setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VsetUp);
-                // delay(measurement_Delay_PnO);
+                VsetUp = Vset[DEVICE][PIXEL] + pno_voltage_step_size;
+                set_voltage(all_dac[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VsetUp);
+                // delay(pno_measurement_delay);
             }
-            delay(measurement_Delay_PnO);
+            delay(pno_measurement_delay);
         }
         // delay time
-        // delay(measurement_Delay_PnO);
+        // delay(pno_measurement_delay);
         // loop (5x): 32x read voltage
-        for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
-            // getINA129(&allINA219[ID], ID);
+        for (int i = 0; i < pno_measurements_per_step; ++i) {
+            // getINA129(&all_ina219[ID], ID);
             for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
                 for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                    getVolCurr(allINA[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
-                    avgPowerCalcedUp[DEVICE][PIXEL] += loadvoltage * current_mA_Flipped;
+                    get_volt_and_curr(all_ina[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
+                    avgPowerCalcedUp[DEVICE][PIXEL] += load_voltage * current_mA_Flipped;
                 }
             }
         }
@@ -430,37 +421,37 @@ void perturbAndObserve() {
         // 32x set voltage to Vset + step size
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                VsetDown = Vset[DEVICE][PIXEL] - voltage_Step__Size_PnO;
-                setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VsetDown);
-                // delay(measurement_Delay_PnO);
+                VsetDown = Vset[DEVICE][PIXEL] - pno_voltage_step_size;
+                set_voltage(all_dac[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VsetDown);
+                // delay(pno_measurement_delay);
             }
-            delay(measurement_Delay_PnO);
+            delay(pno_measurement_delay);
         }
         // delay time
-        // delay(measurement_Delay_PnO);
+        // delay(pno_measurement_delay);
         // loop (5x): 32x read voltage
-        for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
-            // getINA129(&allINA219[ID], ID);
+        for (int i = 0; i < pno_measurements_per_step; ++i) {
+            // getINA129(&all_ina219[ID], ID);
             for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
                 for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                    getVolCurr(allINA[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
-                    avgPowerCalcedDown[DEVICE][PIXEL] += loadvoltage * current_mA_Flipped;
+                    get_volt_and_curr(all_ina[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
+                    avgPowerCalcedDown[DEVICE][PIXEL] += load_voltage * current_mA_Flipped;
                 }
             }
         }
         // Calculations -----------------------------------------------------------------------------------------------
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                avgPowerCalced[DEVICE][PIXEL] = avgPowerCalced[DEVICE][PIXEL]/measurements_Per_Step_PnO;
-                avgPowerCalcedUp[DEVICE][PIXEL] = avgPowerCalcedUp[DEVICE][PIXEL]/measurements_Per_Step_PnO;
-                avgPowerCalcedDown[DEVICE][PIXEL] = avgPowerCalcedDown[DEVICE][PIXEL]/measurements_Per_Step_PnO;
-                loadvoltageArr[DEVICE][PIXEL] = loadvoltageArr[DEVICE][PIXEL]/measurements_Per_Step_PnO;
-                current_mA_FlippedArr[DEVICE][PIXEL] = current_mA_FlippedArr[DEVICE][PIXEL]/measurements_Per_Step_PnO;
+                avgPowerCalced[DEVICE][PIXEL] = avgPowerCalced[DEVICE][PIXEL]/pno_measurements_per_step;
+                avgPowerCalcedUp[DEVICE][PIXEL] = avgPowerCalcedUp[DEVICE][PIXEL]/pno_measurements_per_step;
+                avgPowerCalcedDown[DEVICE][PIXEL] = avgPowerCalcedDown[DEVICE][PIXEL]/pno_measurements_per_step;
+                load_voltageArr[DEVICE][PIXEL] = load_voltageArr[DEVICE][PIXEL]/pno_measurements_per_step;
+                current_mA_FlippedArr[DEVICE][PIXEL] = current_mA_FlippedArr[DEVICE][PIXEL]/pno_measurements_per_step;
 
                 if (avgPowerCalcedUp[DEVICE][PIXEL] > avgPowerCalcedDown[DEVICE][PIXEL] && avgPowerCalcedUp[DEVICE][PIXEL] > avgPowerCalced[DEVICE][PIXEL]) {
-                    Vset[DEVICE][PIXEL] += voltage_Step__Size_PnO;
+                    Vset[DEVICE][PIXEL] += pno_voltage_step_size;
                 } else if (avgPowerCalcedDown[DEVICE][PIXEL] > avgPowerCalcedUp[DEVICE][PIXEL] && avgPowerCalcedDown[DEVICE][PIXEL] > avgPowerCalced[DEVICE][PIXEL]) {
-                    Vset[DEVICE][PIXEL] -= voltage_Step__Size_PnO;
+                    Vset[DEVICE][PIXEL] -= pno_voltage_step_size;
                 }
 
                 PCE[DEVICE][PIXEL] = (avgPowerCalced[DEVICE][PIXEL]/1000)/(0.1*0.128); // PCE calcuation assuming pixel area of 0.128 cm^2
@@ -479,7 +470,7 @@ void perturbAndObserve() {
         // UNCOMMENT TO SHOW VOLTAGE AND CURRENT FOR EVERY PIXEL
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                Serial.print(loadvoltageArr[DEVICE][PIXEL], 2);
+                Serial.print(load_voltageArr[DEVICE][PIXEL], 2);
                 Serial.print(", ");
                 Serial.print(current_mA_FlippedArr[DEVICE][PIXEL], 2);
                 Serial.print(", ");
@@ -498,7 +489,7 @@ void perturbAndObserve() {
     }
 
 
-    perturb_And_ObserveDone = true;
+    pno_done = true;
     led(false);
 
 }
@@ -507,8 +498,8 @@ void perturbAndObserve() {
 void scan(String dir) {
     led(true);
 
-    int s = (voltage_Range_Scan*1000)/measurement_Rate_Scan;
-    int steps = (voltage_Range_Scan*1000)/(voltage_Step_Size_Scan*1000);
+    int s = (scan_voltage_range*1000)/scan_measurement_rate;
+    int steps = (scan_voltage_range*1000)/(scan_voltage_step_size*1000);
     // Serial.print(s); Serial.print(" "); Serial.println (steps);
 
 
@@ -516,7 +507,7 @@ void scan(String dir) {
     // must change this on different setup
     // uint8_t OFFSET = 35*8;
 
-    int delayTimeMS = 20; //(s*1000)/steps - (OFFSET * measurements_Per_Step_Scan);
+    int delayTimeMS = 20; //(s*1000)/steps - (OFFSET * scan_measurements_per_step);
     if (delayTimeMS < 0) {
         delayTimeMS = 0;
     }
@@ -526,16 +517,16 @@ void scan(String dir) {
 
     float upperVoltageLimit;
     if (dir == "backward") {
-        VOLTAGE_SET_VAL = voltage_Range_Scan + voltage_Step_Size_Scan;
-        upperVoltageLimit = voltage_Range_Scan + voltage_Step_Size_Scan;
+        VOLTAGE_SET_VAL = scan_voltage_range + scan_voltage_step_size;
+        upperVoltageLimit = scan_voltage_range + scan_voltage_step_size;
     } else if (dir == "forward") {
         VOLTAGE_SET_VAL = 0;
-        upperVoltageLimit = voltage_Range_Scan - voltage_Step_Size_Scan;
+        upperVoltageLimit = scan_voltage_range - scan_voltage_step_size;
     }
 
     for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
         for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-            setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VOLTAGE_SET_VAL);
+            set_voltage(all_dac[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VOLTAGE_SET_VAL);
         }
     }
 
@@ -543,17 +534,17 @@ void scan(String dir) {
     unsigned long startMillis = millis();
 
     while (upperVoltageLimit >= VOLTAGE_SET_VAL && VOLTAGE_SET_VAL >= 0) {
-        // Serial.print(millis()); Serial.print(" "); Serial.println(volt_Step_Count); // used to measure offset
-        if (volt_Step_Count > measurements_Per_Step_Scan) {
+        // Serial.print(millis()); Serial.print(" "); Serial.println(volt_step_count); // used to measure offset
+        if (volt_step_count > scan_measurements_per_step) {
             if (dir == "backward") {
-                VOLTAGE_SET_VAL -= voltage_Step_Size_Scan;
+                VOLTAGE_SET_VAL -= scan_voltage_step_size;
             } else if (dir == "forward") {
-                VOLTAGE_SET_VAL += voltage_Step_Size_Scan;
+                VOLTAGE_SET_VAL += scan_voltage_step_size;
             }
 
             for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
                 for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                    setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VOLTAGE_SET_VAL);
+                    set_voltage(all_dac[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], VOLTAGE_SET_VAL);
                 }
             }
 
@@ -567,9 +558,9 @@ void scan(String dir) {
             Serial.print(",");
             for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
                 for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                    Serial.print(avgVolt[DEVICE][PIXEL]/volt_Step_Count, 4);
+                    Serial.print(avg_volt[DEVICE][PIXEL]/volt_step_count, 4);
                     Serial.print(",");
-                    Serial.print(avgCurr[DEVICE][PIXEL]/volt_Step_Count, 4);
+                    Serial.print(avg_curr[DEVICE][PIXEL]/volt_step_count, 4);
                     Serial.print(",");
                 }
             }
@@ -577,31 +568,31 @@ void scan(String dir) {
             Serial.println("");
 
             // reset all values in array to 0
-            memset(avgVolt, 0.0, sizeof(avgVolt));
-            memset(avgCurr, 0.0, sizeof(avgCurr));
-            volt_Step_Count = 0;
+            memset(avg_volt, 0.0, sizeof(avg_volt));
+            memset(avg_curr, 0.0, sizeof(avg_curr));
+            volt_step_count = 0;
         } else {
             for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
                 for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                    getVolCurr(allINA[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
-                    avgVolt[DEVICE][PIXEL] += loadvoltage;
-                    avgCurr[DEVICE][PIXEL] += current_mA_Flipped;
+                    get_volt_and_curr(all_ina[PIXEL+8*DEVICE], TCAADR_INA[DEVICE], PIXEL);
+                    avg_volt[DEVICE][PIXEL] += load_voltage;
+                    avg_curr[DEVICE][PIXEL] += current_mA_Flipped;
                 }
             }
-            volt_Step_Count++;
+            volt_step_count++;
 
 
 
         }
     }
 
-    scanDone = true;
+    scan_done = true;
     led(false);
 }
 
 
 // Helper Methods =======================================================================
-void setupSensor_INA219(Adafruit_INA219 *ina219, uint8_t PIXEL, uint8_t tcaADDR) {
+void setup_ina219(Adafruit_INA219 *ina219, uint8_t PIXEL, uint8_t tcaADDR) {
     // Serial.print("ina219 setup started");
     // PIXEL = PIXEL%8;
     // Serial.print(PIXEL);
@@ -619,7 +610,7 @@ void setupSensor_INA219(Adafruit_INA219 *ina219, uint8_t PIXEL, uint8_t tcaADDR)
     // Serial.print("INA219_"); Serial.print(ID); Serial.println(" is setup");
 }
 
-void setupSensor_Dac(Adafruit_MCP4725 *dac, uint8_t PIXEL, uint8_t tcaADDR) {
+void setup_dac(Adafruit_MCP4725 *dac, uint8_t PIXEL, uint8_t tcaADDR) {
     // Serial.print("mcp4725 setup started");
     // PIXEL = PIXEL%8;
     TCA9548Access(PIXEL, tcaADDR);
@@ -676,7 +667,7 @@ void led(boolean status) {
     }
 }
 
-void showParsedData() {
+void show_parsed_data() {
     Serial.print("Val1: ");
     Serial.print(val1);
     Serial.print(", Val2: ");
@@ -691,29 +682,29 @@ void showParsedData() {
 }
 
 
-void recvWithStartEndMarkers() {
+void recv_with_start_end_markers() {
     static boolean recvInProgress = false;
     static byte ndx = 0;
     char startMarker = '<';
     char endMarker = '>';
     char rc;
 
-    while (Serial.available() > 0 && newData == false) {
+    while (Serial.available() > 0 && new_data == false) {
         rc = Serial.read();
 
         if (recvInProgress == true) {
             if (rc != endMarker) {
                 receivedChars[ndx] = rc;
                 ndx++;
-                if (ndx >= numChars) {
-                    ndx = numChars - 1;
+                if (ndx >= num_chars) {
+                    ndx = num_chars - 1;
                 }
             }
             else {
                 receivedChars[ndx] = '\0'; // terminate the string
                 recvInProgress = false;
                 ndx = 0;
-                newData = true;
+                new_data = true;
             }
         }
 
@@ -724,13 +715,13 @@ void recvWithStartEndMarkers() {
 }
 
 // split the data into its parts
-// void parseData() {
+// void parse_data() {
 
 //     char * strtokIndx; // this is used by strtok() as an index
 
 //     strtokIndx = strtok(tempChars,",");      // get the first part - the string
-//     strcpy(modeFromPC, strtokIndx); // copy it to modeFromPC
-//     Serial.println(modeFromPC);
+//     strcpy(mode_from_pc, strtokIndx); // copy it to mode_from_pc
+//     Serial.println(mode_from_pc);
 
 //     strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
 //     val1 = atof(strtokIndx);     // convert this part to an float
@@ -750,11 +741,11 @@ void recvWithStartEndMarkers() {
 // }
 
 // takes input of vmpp points from jv curve for pno
-void parseData() {
+void parse_data() {
     char * strtokIndx; // this is used by strtok() as an index
 
     strtokIndx = strtok(tempChars,",");      // get the first part - the string
-    strcpy(modeFromPC, strtokIndx); // copy it to the mode
+    strcpy(mode_from_pc, strtokIndx); // copy it to the mode
 
     strtokIndx = strtok(NULL, ","); // this continues where the previous call left off
     val1 = atof(strtokIndx);     // convert this part to an float
@@ -796,41 +787,41 @@ uint16_t convert_to_12bit(float val) {
 void zero() {
     for (uint8_t DEVICE = 0; DEVICE < 4; DEVICE++) {
         for (uint8_t PIXEL = 0; PIXEL < 8; PIXEL++) {
-            setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], 0);
+            set_voltage(all_dac[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], 0);
         }
     }
 
 }
 
 // set the DAC voltage output
-void setVoltage(Adafruit_MCP4725 *dac,
+void set_voltage(Adafruit_MCP4725 *dac,
                 uint8_t PIXEL,
                 uint8_t tcaADDR,
                 float VOLTAGE_SET_VAL) {
     // for (int i = 0; i < 4; i++) {
     //     for (int j = 0; j < 8; j++) {
     TCA9548Access(PIXEL, tcaADDR);
-    dac -> setVoltage(convert_to_12bit(VOLTAGE_SET_VAL), false);
+    dac -> set_voltage(convert_to_12bit(VOLTAGE_SET_VAL), false);
         // }
     // }
 }
 
 // get new values from ina219
-void getVolCurr(Adafruit_INA219 *ina219, uint8_t tcaADDR, uint8_t PIXEL) {
+void get_volt_and_curr(Adafruit_INA219 *ina219, uint8_t tcaADDR, uint8_t PIXEL) {
     TCA9548Access(PIXEL, tcaADDR);
-    shuntvoltage       = ina219 -> getShuntVoltage_mV();
-    busvoltage         = ina219 -> getBusVoltage_V();
+    shunt_voltage       = ina219 -> getshunt_voltage_mV();
+    bus_voltage         = ina219 -> getbus_voltage_V();
     current_mA         = ina219 -> getCurrent_mA();
     power_mW           = ina219 -> getPower_mW();
     current_mA_Flipped = current_mA * -1;
-    loadvoltage        = busvoltage + (shuntvoltage / 1000);
+    load_voltage        = bus_voltage + (shunt_voltage / 1000);
 }
 
 // TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-void lightControl(int light_Status) {
-    if (light_Status == 0) {
+void light_control(int light_status) {
+    if (light_status == 0) {
         Serial.println("turned light off");
-    } else if (light_Status == 1) {
+    } else if (light_status == 1) {
         Serial.println("turned light on");
     }
 

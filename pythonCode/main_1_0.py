@@ -18,8 +18,8 @@ if len(arduino_ports) > 1:
 print(arduino_ports[0])
 
 
-# arduinoController = controller_1_1.StabilitySetup(arduino_ports[0], 115200)
-arduinoController = controller_1_1.StabilitySetup("COM25", 115200)
+# arduinoController = controller_1_1.stability_setup(arduino_ports[0], 115200)
+arduinoController = controller_1_1.stability_setup("COM25", 115200)
 
 
 gui = GUI_1_0.UserInterface()
@@ -51,5 +51,5 @@ if __name__ == '__main__':
             print(params, "PNO")
             fileName = arduinoController.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
 
-            dataShow_1_0.showPCEGraphs(fileName)
+            dataShow_1_0.show_pce_graphs(fileName)
 

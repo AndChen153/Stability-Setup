@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from email import header
-from fileinput import filename
+from fileinput import file_name
 import serial
 import time
 from datetime import datetime
@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 
 
 
-class StabilitySetup:
+class stability_setup:
 
     # def __init__(self) -> None:
     #     pass
@@ -44,13 +44,13 @@ class StabilitySetup:
         self.ser.flush()
         self.mode = ""
         self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
-        self.folderPath = "./data/" + self.today + "/"
-        if not os.path.exists(self.folderPath):
-            os.mkdir(self.folderPath)
+        self.folder_path = "./data/" + self.today + "/"
+        if not os.path.exists(self.folder_path):
+            os.mkdir(self.folder_path)
         self.start = time.time()
 
 
-    def readData(self):
+    def read_data(self):
         """
         * Reads data outputed on serial bus by arduino
         * Saves data after certain interval of time to prevent ram overusage on lower end systems
@@ -58,8 +58,8 @@ class StabilitySetup:
         """
         done = False
         line = ""
-        timeOrig = time.time()
-        timeSave = 1 # time between saves in minutes
+        time_orig = time.time()
+        time_save = 1 # time between saves in minutes
         while not done:
             if self.ser.in_waiting > 0:
                 line = self.ser.readline().decode('unicode_escape').rstrip()
@@ -71,39 +71,39 @@ class StabilitySetup:
                 if len(data_list) > 10:
                     self.arr = np.append(self.arr, np.array([data_list]),axis = 0)
 
-                if abs(time.time() - timeOrig) > timeSave * 60:
-                    self.saveData()
-                    timeOrig = time.time()
+                if abs(time.time() - time_orig) > time_save * 60:
+                    self.save_data()
+                    time_orig = time.time()
 
                 if line == "Done!":
-                    self.saveData()
+                    self.save_data()
                     done = True
 
-    def saveData(self) -> str:
+    def save_data(self) -> str:
         """
         saves numpy array to csv file with the option to save at different time intervals
 
         Returns
         -------
-        fileName
-            fileName for file that was just saved
+        file_name
+            file_name for file that was just saved
         """
 
-        if not os.path.exists(self.fileName):
-            np.savetxt(self.fileName, self.arr, delimiter="," , fmt='%s')
+        if not os.path.exists(self.file_name):
+            np.savetxt(self.file_name, self.arr, delimiter="," , fmt='%s')
             if (self.mode == "scan"):
-                self.arr = np.empty([1, self.scanArrWidth], dtype="object")
+                self.arr = np.empty([1, self.scan_arr_width], dtype="object")
             elif (self.mode == "PNO"):
-                self.arr = np.empty([1, self.PNOArrWidth], dtype="object")
+                self.arr = np.empty([1, self.pno_arr_width], dtype="object")
         else:
-            with open(self.fileName,'ab') as f:
+            with open(self.file_name,'ab') as f:
                 np.savetxt(f, self.arr[1:, :], delimiter="," , fmt='%s')
             if (self.mode == "scan"):
-                self.arr = np.empty([1, self.scanArrWidth], dtype="object")
+                self.arr = np.empty([1, self.scan_arr_width], dtype="object")
             elif (self.mode == "PNO"):
-                self.arr = np.empty([1, self.PNOArrWidth], dtype="object")
+                self.arr = np.empty([1, self.pno_arr_width], dtype="object")
         print("SAVED")
-        return self.fileName
+        return os.path.abspath(self.file_name)
 
     def scan(self, SCAN_RANGE: float, SCAN_STEP_SIZE: float, SCAN_READ_COUNT: int, SCAN_RATE: int, LIGHT_STATUS: int) -> np.ndarray:
         """
@@ -129,23 +129,23 @@ class StabilitySetup:
         -------
         arr
             numpy array setup for a scan
-        filename
+        file_name
             name of file that data will be saved to
         """
 
         if LIGHT_STATUS == 0:
-            lightStatus = "dark"
+            light_status = "dark"
         else:
-            lightStatus = "light"
+            light_status = "light"
 
-        self.fileName = self.folderPath + datetime.now().strftime("%b-%d-%Y %H_%M_%S") + lightStatus + "scan.csv"
+        self.file_name = self.folder_path + datetime.now().strftime("%b-%d-%Y %H_%M_%S") + light_status + "scan.csv"
 
         self.mode = "scan"
 
         self.parameters = "<scan," + str(SCAN_RANGE) + "," + str(SCAN_STEP_SIZE) + "," + str(SCAN_READ_COUNT) + "," + str(SCAN_RATE) + "," + str(LIGHT_STATUS) + ",0.7148,0.6797,0.5118,0.2118,0.4197,0.7367,0.3238,0.5358,0.7077,1.092,0.6237,0.5957,0.82,0.913,0.676,0.6437,0.7076,0.5567,0.7357,0.1439,0.6436,-0.0,0.6666,0.6438,0.4729,0.5639,0.6069,0.0,0.1189,0.2299,0.752,1.096>"
 
 
-        headerArr = ["Time","Volts_output",
+        header_arr = ["Time","Volts_output",
                        "Pixel 0_0 V","Pixel 0_0 mA",
                        "Pixel 0_1 V","Pixel 0_1 mA",
                        "Pixel 0_2 V","Pixel 0_2 mA",
@@ -181,25 +181,25 @@ class StabilitySetup:
 
                        "ARDUINOID"]
 
-        self.scanArrWidth = len(headerArr)
+        self.scan_arr_width = len(header_arr)
 
-        self.arr = np.empty([7, len(headerArr)], dtype="object")
+        self.arr = np.empty([7, len(header_arr)], dtype="object")
         self.arr[0][0], self.arr[0][1] = "Voltage Range: ", SCAN_RANGE
         self.arr[1][0], self.arr[1][1] = "Voltage Step Size: ", SCAN_STEP_SIZE
         self.arr[2][0], self.arr[2][1] = "Voltage Read Count: " , SCAN_READ_COUNT
         self.arr[3][0], self.arr[3][1] = "Voltage Delay Time: ", SCAN_RATE
-        self.arr[4][0], self.arr[4][1] = "Light Status: ",  lightStatus
+        self.arr[4][0], self.arr[4][1] = "Light Status: ",  light_status
         self.arr[5][0], self.arr[5][1] = "Start Date: ", self.today
         # self.arr[6][0], self.arr[6][1] = "End Date: ", datetime.now().strftime("%b-%d-%Y")
-        self.arr[6] = headerArr
-        # print(headerArr)
+        self.arr[6] = header_arr
+        # print(header_arr)
 
         self.ser.write(self.parameters.encode())  # send data to arduino
-        self.readData()
-        print(self.arr)
+        self.read_data()
+        # print(self.arr)
         # self.printTime()
-        # self.saveData()
-        return self.fileName
+        # self.save_data()
+        return os.path.abspath(self.file_name)
 
 
     def pno(self, PNO_STARTING_VOLTAGE: float, PNO_STEP_SIZE: float, PNO_MEASUREMENTS_PER_STEP: int, PNO_MEASUREMENT_DELAY: int, PNO_MEASUREMENT_TIME: int, SCAN_FILE_NAME: str) -> np.ndarray:
@@ -227,16 +227,16 @@ class StabilitySetup:
         -------
         arr
             numpy array filled with data
-        filename
+        file_name
             name of file that data will be saved to
         """
-        self.fileName = self.folderPath + datetime.now().strftime("%b-%d-%Y %H_%M_%S") + "PnO.csv"
-        # self.fileName = "./data/PnO" + self.today + ".csv"
+        self.file_name = self.folder_path + datetime.now().strftime("%b-%d-%Y %H_%M_%S") + "PnO.csv"
+        # self.file_name = "./data/PnO" + self.today + ".csv"
         self.mode = "PNO"
 
         self.parameters = "<PnO," + str(PNO_STARTING_VOLTAGE) + "," + str(PNO_STEP_SIZE) + "," + str(PNO_MEASUREMENTS_PER_STEP) + "," + str(PNO_MEASUREMENT_DELAY) + "," + str(PNO_MEASUREMENT_TIME) + ","
 
-        headerArr  = ["Time",
+        header_arr  = ["Time",
                        "Pixel 0_0 V","Pixel 0_0 mA",
                        "Pixel 0_1 V","Pixel 0_1 mA",
                        "Pixel 0_2 V","Pixel 0_2 mA",
@@ -303,9 +303,9 @@ class StabilitySetup:
                        "Pixel 3_7 PCE",
                        "ARDUINOID"]
 
-        self.PNOArrWidth = len(headerArr)
+        self.pno_arr_width = len(header_arr)
 
-        self.arr = np.empty([7, len(headerArr)], dtype="object")
+        self.arr = np.empty([7, len(header_arr)], dtype="object")
         self.arr[0][0], self.arr[0][1] = "Voltage Range (V): ", PNO_STARTING_VOLTAGE
         self.arr[1][0], self.arr[1][1] = "Voltage Step Size (V): ", PNO_STEP_SIZE
         self.arr[2][0], self.arr[2][1] = "Voltage Read Count: ", PNO_MEASUREMENTS_PER_STEP
@@ -313,11 +313,11 @@ class StabilitySetup:
         self.arr[4][0], self.arr[4][1] = "Voltage Measurement Time (Hrs): ", PNO_MEASUREMENT_TIME
         self.arr[5][0], self.arr[5][1] = "Start Date: ", self.today
         # self.arr[6][0], self.arr[6][1] = "End Date: ", datetime.now().strftime("%b-%d-%Y")
-        self.arr[6] = headerArr
-        # print(headerArr)
+        self.arr[6] = header_arr
+        # print(header_arr)
 
 
-        VMPP = self.findVmpp(SCAN_FILE_NAME)
+        VMPP = self.find_vmpp(SCAN_FILE_NAME)
         # VMPP = "<0.7148,0.6797,0.5118,0.2118,0.4197,0.7367,0.3238,0.5358,0.7077,1.092,0.6237,0.5957,0.82,0.913,0.676,0.6437,0.7076,0.5567,0.7357,0.1439,0.6436,-0.0,0.6666,0.6438,0.4729,0.5639,0.6069,0.0,0.1189,0.2299,0.752,1.096>"
         self.parameters += VMPP
         print(self.parameters)
@@ -325,17 +325,17 @@ class StabilitySetup:
 
         self.ser.write(self.parameters.encode())    # send data to arduino
         self.ser.write(VMPP.encode())               # send pno starting voltages to arduino
-        self.readData()
+        self.read_data()
         print(self.arr)
         # self.printTime()
-        # self.saveData()
+        # self.save_data()
 
-        return self.fileName
+        return os.path.abspath(self.file_name)
 
-    def findVmpp(self, scanFileName):
+    def find_vmpp(self, scan_file_name):
 
-        arr = np.loadtxt(scanFileName, delimiter=",", dtype=str)
-        scanFileName = scanFileName.split('\\')
+        arr = np.loadtxt(scan_file_name, delimiter=",", dtype=str)
+        scan_file_name = scan_file_name.split('\\')
         # print(arr)
         headers = arr[6,:]
         headerDict = {value: index for index, value in enumerate(headers)}
@@ -344,32 +344,32 @@ class StabilitySetup:
         length = (len(headers) - 1)
         # print(length)
 
-        jvList = []
+        jv_list = []
 
         for i in range(2, length):
-            jvList.append(arr[:,i])
+            jv_list.append(arr[:,i])
 
-        jList = [] #current
-        vList = [] #voltage
-        for i in range(0,len(jvList),2):
+        j_list = [] #current
+        v_list = [] #voltage
+        for i in range(0,len(jv_list),2):
             # print(i)
-            jList.append([float(j) for j in jvList[i+1]])
-            vList.append([float(x) for x in jvList[i]])
-            # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
+            j_list.append([float(j) for j in jv_list[i+1]])
+            v_list.append([float(x) for x in jv_list[i]])
+            # jv_list[i+1] = [float(x) / 0.128 for x in jv_list[i+1]]
 
 
-        jList = np.array(jList).T
-        vList = np.array(vList).T
-        pceList = jList*vList
-        VMPPEncodeString = ""
-        maxVIdx = np.argmax(pceList, axis=0) # find index of max pce value
+        j_list = np.array(j_list).T
+        v_list = np.array(v_list).T
+        pceList = j_list*v_list
+        vmpp_encode_string = ""
+        max_V_idx = np.argmax(pceList, axis=0) # find index of max pce value
 
-        for i in range(len(maxVIdx)-1):
-            VMPPEncodeString += str(vList[maxVIdx[i],i]) + "," # vList is 84x32, vmaxIDx contains the i in 84 that is the best voltage per pixel
+        for i in range(len(max_V_idx)-1):
+            vmpp_encode_string += str(v_list[max_V_idx[i],i]) + "," # v_list is 84x32, vmaxIDx contains the i in 84 that is the best voltage per pixel
 
-        VMPPEncodeString += str(vList[maxVIdx[len(maxVIdx)-1],len(maxVIdx)-1]) + ">" # proper encoding for string to send to arduino
+        vmpp_encode_string += str(v_list[max_V_idx[len(max_V_idx)-1],len(max_V_idx)-1]) + ">" # proper encoding for string to send to arduino
 
-        return VMPPEncodeString
+        return vmpp_encode_string
 
     def printTime(self):
         end = time.time()
@@ -380,8 +380,8 @@ class StabilitySetup:
 
 
 # if __name__ == '__main__':
-#     # scanCalcs(".\data\March-15-2023 goodTests\scanlightMar-15-2023 13_28_50.csv")
-#     print(findVmpp(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Mar-15-2023\scandarkMar-15-2023 13_34_51.csv"))
+#     # scan_calcs(".\data\March-15-2023 goodTests\scanlightMar-15-2023 13_28_50.csv")
+#     print(find_vmpp(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Mar-15-2023\scandarkMar-15-2023 13_34_51.csv"))
 
 
 

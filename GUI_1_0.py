@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from pythonCode.controller_1_1 import StabilitySetup
+from pythonCode.controller_1_1 import stability_setup
 
 # Create an event loop
 
@@ -60,11 +60,11 @@ class UserInterface:
         #     if event == "Scan":
         #         print("runscan")
         #         self.window.close()
-        #         self.window = sg.Window("StabilitySetup", self.layoutScan)
+        #         self.window = sg.Window("stability_setup", self.layoutScan)
         #     elif event == "PNO":
         #         print("pnoset")
         #         self.window.close()
-        #         self.window = sg.Window("StabilitySetup", self.layoutPnO)
+        #         self.window = sg.Window("stability_setup", self.layoutPnO)
         #     elif event == "GO":
         #         print("RUN")
         #     elif event == sg.WIN_CLOSED:
