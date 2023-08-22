@@ -697,9 +697,9 @@ def show_jv_graphsSmoothed(graph_name, pixels = None):
 
 if __name__ == '__main__':
     # PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Apr-25-2023 15_50_01\Apr-25-2023 15_51_12PnO.csv"
-    Scan = r"..\data\Aug-20-2023 23_45_43\Aug-20-2023 23_45_48lightscan.csv"
+    Scan = r"C:\Users\Andrew Chen\Dropbox\code\Stability-Setup\data\Aug-22-2023 00_08_28\Aug-22-2023 00_10_18lightscan.csv"
 
-    show_jv_graphs(str(os.path.abspath(Scan)), show_dead_pixels=True,pixels= None, devices=None, fixed_window=True)
+    show_jv_graphs(Scan, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
     # show_pce_graphs(PCE, Scan, show_dead_pixels = False, pixels= None, devices= None)
 
 # %%

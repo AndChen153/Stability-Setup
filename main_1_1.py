@@ -11,6 +11,7 @@ arduino_ports = [
     for p in serial.tools.list_ports.comports()
     if 'Arduino' in p.description  # may need tweaking to match new arduinos
 ]
+
 if not arduino_ports:
     raise IOError("No Arduino found")
 elif len(arduino_ports) > 1:
@@ -25,17 +26,17 @@ else:
 
 gui = GUI_1_0.UserInterface()
 
-def scanMAP(object, inputs):
-    print("STARTED SCAN", object, inputs)
-    file_name = object.scan(float(inputs[0]), float(inputs[1]), int(inputs[2]), int(inputs[3]), int(inputs[4]))
-    print("DONE SCAN", object, inputs)
-    return file_name
+# def scanMAP(object, inputs):
+#     print("STARTED SCAN", object, inputs)
+#     filename = object.scan(float(inputs[0]), float(inputs[1]), int(inputs[2]), int(inputs[3]), int(inputs[4]))
+#     print("DONE SCAN", object, inputs)
+#     return filename
 
-def pnoMAP(object, inputs):
-    print("STARTED PNO", object, inputs)
-    file_name = object.pno(float(inputs[0]), float(inputs[1]), int(inputs[2]), int(inputs[3]), int(inputs[4]))
-    print("DONE PNO", object, inputs)
-    return file_name
+# def pnoMAP(object, inputs):
+#     print("STARTED PNO", object, inputs)
+#     filename = object.pno(float(inputs[0]), float(inputs[1]), int(inputs[2]), int(inputs[3]), int(inputs[4]))
+#     print("DONE PNO", object, inputs)
+#     return filename
 
 
 #TODO implement light status for PNO to throw error whenever light status turns off
@@ -46,9 +47,8 @@ if __name__ == '__main__':
 
         if mode == "Scan":
             # print(params, "JV")
-            file_name = arduino_controller.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
-            print(file_name)
-            # data_show.showJVGraphs(file_name) // find absolute file path
+            scan_filename = arduino_controller.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
+            data_show.show_jv_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
         elif mode == "PNO":
             # print(params,)
             time_per_block = 30 # minutes
@@ -56,10 +56,10 @@ if __name__ == '__main__':
             total_pno_files = []
             total_scan_files = []
             for i in range(NUMBLOCKS):
-                scan_file_name = arduino_controller.scan(1.2, 0.03, 2, 50, 1)
-                pno_file_name = arduino_controller.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), time_per_block, scan_file_name)
-                total_scan_files.append(scan_file_name)
-                total_pno_files.append(pno_file_name)
+                scan_filename = arduino_controller.scan(1.2, 0.03, 2, 50, 1)
+                pno_filename = arduino_controller.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), time_per_block, scan_filename)
+                total_scan_files.append(scan_filename)
+                total_pno_files.append(pno_filename)
             # for i in total_pno_files:
             #     data_show.show_pce_graphs(i)
 

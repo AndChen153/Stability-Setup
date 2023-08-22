@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from pythonCode.controller_1_1 import stability_setup
+from python_code.controller_1_1 import stability_setup
 
 # Create an event loop
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from email import header
-from fileinput import file_name
+from fileinput import filename
 import serial
 import time
 from datetime import datetime
@@ -103,7 +103,7 @@ class stability_setup:
             elif (self.mode == "PNO"):
                 self.arr = np.empty([1, self.pno_arr_width], dtype="object")
         print("SAVED")
-        return os.path.abspath(self.file_name)
+        return str(os.path.abspath(self.file_name))
 
     def scan(self, SCAN_RANGE: float, SCAN_STEP_SIZE: float, SCAN_READ_COUNT: int, SCAN_RATE: int, LIGHT_STATUS: int) -> np.ndarray:
         """
@@ -199,7 +199,7 @@ class stability_setup:
         # print(self.arr)
         # self.printTime()
         # self.save_data()
-        return os.path.abspath(self.file_name)
+        return str(os.path.abspath(self.file_name))
 
 
     def pno(self, PNO_STARTING_VOLTAGE: float, PNO_STEP_SIZE: float, PNO_MEASUREMENTS_PER_STEP: int, PNO_MEASUREMENT_DELAY: int, PNO_MEASUREMENT_TIME: int, SCAN_FILE_NAME: str) -> np.ndarray:
@@ -330,7 +330,7 @@ class stability_setup:
         # self.printTime()
         # self.save_data()
 
-        return os.path.abspath(self.file_name)
+        return str(os.path.abspath(self.file_name))
 
     def find_vmpp(self, scan_file_name):
 
