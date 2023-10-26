@@ -6,6 +6,9 @@ from labellines import labelLines
 import os
 import sys
 
+import logging
+log_name = "data_show"
+
 np.set_printoptions(threshold=sys.maxsize)
 
 
@@ -17,20 +20,22 @@ def show_pce_graphs(graph_name,
                     pixels = None,
                     devices = None):
     plot_size = (12,8)
-    device_to_pixels = {0:[0,1,2,3,4,5,6,7],
-                      1:[8,9,10,11,12,13,14,15],
-                      2:[16,17,18,19,20,21,22,23],
-                      3:[24,25,26,27,28,29,30,31]}
-
     arr = np.loadtxt(graph_name,
                      delimiter=",",
                      dtype=str)
+
+    NUM_DEVICES = int((arr.shape[1]-2)/16)
+    device_to_pixels = {}
+    for i in range(NUM_DEVICES):
+        device_to_pixels[i] = [j + 8*i for j in range(8)]
+
     dead_pixels = get_dead_pixels(lightScanName)
     headers = arr[6,:]
     header_dict = {value: index for index, value in enumerate(headers)}
+    pce_indicies = [header_dict[value] for value in header_dict if "PCE" in value]
     arr = arr[7:, :]
 
-    time = arr[:,header_dict["Time"]]
+    time = np.array(arr[:,header_dict["Time"]]).astype('float')
     pce_list = np.array(arr)
     average = pce_list.shape[0]/divFactor
 
@@ -40,49 +45,38 @@ def show_pce_graphs(graph_name,
     if not os.path.exists(png_save_location):
         os.mkdir(png_save_location)
 
-    # UNCOMMENT LINE IF CSV INCLUDES VOLTAGE AND CURRENT
-    pce_list = np.delete(pce_list, slice(1,65), axis=1)
-    pce_list = pce_list[:,0:-1]
+    pce_list = pce_list[:, pce_indicies]
+    # pce_list = pce_list[:,0:-1]
     for i in range(len(pce_list)):
         pce_list[i] = [float(j) if j != " ovf" else 0.0 for j in pce_list[i]]
         pce_list[i] = [float(j) if j != "nan" else 0.0 for j in pce_list[i]]
 
     pce_list = pce_list.astype(float)
-    # print(pce_list)
 
-    pce_list[:,0] = np.floor(pce_list[:,0]/average)
-    time = np.unique(pce_list[:,0])
     data = []
-    # print(len(time))
 
 
-    # print(len(npi.group_by(pce_list[:, 0]).split(pce_list[:, 8])))
-    for i in range(1,pce_list.shape[1]):
-        avg = []
-        col_split = npi.group_by(pce_list[:, 0]).split(pce_list[:, i])
-        for i in col_split:
-            avg.append(np.average(i))
-        data.append(avg)
-    time = np.array(time)
-    data = np.array(data).T
+
+    data = pce_list #np.array(data).T
     # data *= 2.048 # comment line if not using mask
-    time*=average
     time/=3600
 
-    # a = a[a[:, 0].argsort()])
-
+    min_time = min(time)*0.99
     max_time = max(time)*1.01
     max_pce = 20
-    print("max_time", max_time)
-    print("max_pce", max_pce)
+    logging.info(f"PC: max_time, {max_time}")
+    logging.info(f"PC: max_pce, {max_pce}")
 
 
-    if pixels is None and devices is None:  # if no specific pixels have been selected
+    if pixels is None and devices is None and NUM_DEVICES > 1:  # if no specific pixels have been selected
+        plot_title = plot_title_orig + "ALLDEVICES"
         plt.figure(figsize=plot_size)
-        plt.xlim(0,max_time)
+        plt.xlim(min_time,max_time)
 
         plt.ylim(bottom = -0, top = max_pce)
-        plt.title(plot_title_orig + "ALLDEVICES")
+        plt.title(plot_title)
+        logging.info(f"PC: SAVED IMAGE {plot_title}")
+
         plt.xlabel('Time [hrs]')
         plt.ylabel('PCE [%]')
         plt.subplots_adjust(left=0.086,
@@ -91,7 +85,7 @@ def show_pce_graphs(graph_name,
                             top=0.927,
                             wspace=0.2,
                             hspace=0.2)
-        for i in range(data.shape[1]):
+        for i in range(NUM_DEVICES):
             if i in dead_pixels and not show_dead_pixels:
                 continue
 
@@ -110,9 +104,9 @@ def show_pce_graphs(graph_name,
 
         for i in devices:
             plot_title = plot_title_orig + " DEVICE_" + str(i)
-
+            logging.info(f"PC: SAVED IMAGE {plot_title}")
             plt.figure(figsize=plot_size)
-            plt.xlim(0,max_time)
+            plt.xlim(min_time,max_time)
             plt.ylim(bottom = -0, top = max_pce)
             plt.title(plot_title)
             plt.xlabel('Time [hrs]')
@@ -143,7 +137,7 @@ def show_pce_graphs(graph_name,
         plot_title = plot_title_orig + " DEVICE_" + str(pixels)
 
         plt.figure(figsize=plot_size)
-        plt.xlim(0,max_time)
+        plt.xlim(min_time,max_time)
         plt.ylim(bottom = -0, top = max_pce)
         plt.title(plot_title)
         plt.xlabel('Time [hrs]')
@@ -154,44 +148,45 @@ def show_pce_graphs(graph_name,
                             top=0.927,
                             wspace=0.2,
                             hspace=0.2)
+        for i in range(NUM_DEVICES):
+            pixels = device_to_pixels[i]
+            for i in pixels:
+                if i in dead_pixels and not show_dead_pixels:
+                        continue
+                lineName = "PCE" + str(i)
+                # print(np.array(pce_list[i]))
+                plt.plot(time,data[:,i], label = lineName)
 
-        for i in pixels:
-            if i in dead_pixels and not show_dead_pixels:
-                    continue
-            lineName = "PCE" + str(i)
-            # print(np.array(pce_list[i]))
-            plt.plot(time,data[:,i], label = lineName)
-
-        labelLines(plt.gca().get_lines(), zorder=2.5)
-        plt.legend(bbox_to_anchor=(1.15, 1))
-        plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
+            labelLines(plt.gca().get_lines(), zorder=2.5)
+            plt.legend(bbox_to_anchor=(1.15, 1))
+            plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
 
     # save all graphs
-    for i in [0,1,2,3]:
-        plot_title = plot_title_orig + " DEVICE_" + str(i)
-        # plot_title = plot_title_orig + " DEVICE_AVG_" + str(i)
+    if NUM_DEVICES > 1:
+        for i in range(NUM_DEVICES):
+            plot_title = plot_title_orig + " DEVICE_" + str(i)
+            # plot_title = plot_title_orig + " DEVICE_AVG_" + str(i)
 
-        print("SAVED IMAGE", plot_title)
-        plt.figure(figsize=plot_size)
-        plt.xlim(0,max_time)
-        plt.ylim(bottom = -0, top = max_pce)
-        plt.title(plot_title)
-        plt.xlabel('Time [hrs]')
-        plt.ylabel('PCE [%]')
-        plt.subplots_adjust(left=0.086,
-                            bottom=0.06,
-                            right=0.844,
-                            top=0.927,
-                            wspace=0.2,
-                            hspace=0.2)
-
-        pixels = device_to_pixels[i]
-        for i in pixels:
-            if i in dead_pixels and not show_dead_pixels:
-                    continue
-            lineName = "PCE" + str(i)
-            # print(np.array(pce_list[i]))
-            plt.plot(time,data[:,i], label = lineName)
+            logging.info(f"PC: SAVED IMAGE {plot_title}")
+            plt.figure(figsize=plot_size)
+            plt.xlim(min_time,max_time)
+            plt.ylim(bottom = -0, top = max_pce)
+            plt.title(plot_title)
+            plt.xlabel('Time [hrs]')
+            plt.ylabel('PCE [%]')
+            plt.subplots_adjust(left=0.086,
+                                bottom=0.06,
+                                right=0.844,
+                                top=0.927,
+                                wspace=0.2,
+                                hspace=0.2)
+            pixels = device_to_pixels[i]
+            for i in pixels:
+                if i in dead_pixels and not show_dead_pixels:
+                        continue
+                lineName = "PCE" + str(i)
+                # print(np.array(pce_list[i]))
+                plt.plot(time,data[:,i], label = lineName)
 
         # averagePCE = np.zeros_like(np.array(data[:,i]))
         # count = 0
@@ -205,18 +200,18 @@ def show_pce_graphs(graph_name,
         # averagePCE/=count
         # plt.plot(time,averagePCE, label = lineName)
 
-        labelLines(plt.gca().get_lines(), zorder=2.5)
-        plt.legend(bbox_to_anchor=(1.15, 1))
-        plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
+            labelLines(plt.gca().get_lines(), zorder=2.5)
+            plt.legend(bbox_to_anchor=(1.15, 1))
+            plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
 
-    plot_title = "Γ_PCE_BoxPlot_(last values)"
-    fig = plt.figure(figsize=plot_size)
-    ax = fig.add_axes([0, 0, 1, 1])
-    ax.set_title(plot_title)
-    ax.set_ylabel('PCE (%)')
-    ax.set_xticklabels(["Reverse","Forward"])
-    bp = ax.boxplot(data[-1,:])
-    plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
+        plot_title = "Γ_PCE_BoxPlot_(last values)"
+        fig = plt.figure(figsize=plot_size)
+        ax = fig.add_axes([0, 0, 1, 1])
+        ax.set_title(plot_title)
+        ax.set_ylabel('PCE (%)')
+        ax.set_xticklabels(["Reverse","Forward"])
+        bp = ax.boxplot(data[-1,:])
+        plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
 
 def show_jv_graphs(graph_name,
                  show_dead_pixels = False,
@@ -225,10 +220,11 @@ def show_jv_graphs(graph_name,
                  fixed_window = False):
     plot_size = (10,8)
     arr = np.loadtxt(graph_name, delimiter=",", dtype=str)
-    device_to_pixels = {0:[0,1,2,3,4,5,6,7],
-                      1:[8,9,10,11,12,13,14,15],
-                      2:[16,17,18,19,20,21,22,23],
-                      3:[24,25,26,27,28,29,30,31]}
+    NUM_DEVICES = int((arr.shape[1]-2)/16)
+    device_to_pixels = {}
+    for i in range(NUM_DEVICES):
+        device_to_pixels[i] = [j + 8*i for j in range(8)]
+
     png_save_location = graph_name[:-4]
 
     plot_title_orig = png_save_location.split("\\")[-1]
@@ -302,8 +298,6 @@ def show_jv_graphs(graph_name,
         plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
 
     elif devices is not None: # show certain devices
-        print(" DEVICES")
-
         for i in devices:
             plot_title = plot_title_orig + " DEVICE_" + str(i)
             plt.figure(figsize=plot_size)
@@ -355,33 +349,33 @@ def show_jv_graphs(graph_name,
         plt.legend(bbox_to_anchor=(1.18, 1))
         plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
 
+    if len(device_to_pixels) > 1:
+        for i in device_to_pixels: # save all 4 devices
+            plot_title = plot_title_orig + " DEVICE_" + str(i)
 
-    for i in [0,1,2,3]: # save all 4 devices
-        plot_title = plot_title_orig + " DEVICE_" + str(i)
+            logging.info(f"PC: SAVED IMAGE {plot_title}")
+            plt.figure(figsize=plot_size)
+            plt.xlim(minX,maxX)
+            plt.ylim(minY, maxY)
+            plt.title(plot_title)
+            plt.xlabel('Bias [V]')
+            plt.ylabel('Current [mA]')
+            # plt.ylabel('Jmeas [mA/cm]')
+            plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
 
-        print("SAVED IMAGE", plot_title)
-        plt.figure(figsize=plot_size)
-        plt.xlim(minX,maxX)
-        plt.ylim(minY, maxY)
-        plt.title(plot_title)
-        plt.xlabel('Bias [V]')
-        plt.ylabel('Current [mA]')
-        # plt.ylabel('Jmeas [mA/cm]')
-        plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
+            pixels = device_to_pixels[i]
+            for i in pixels:
+                if i in dead_pixel and not show_dead_pixels:
+                        continue
+                i*=2
+                lineName = "Pixel " + str(int(i/2))
+                plt.plot(jvList[i],jvList[i+1], label = lineName)
 
-        pixels = device_to_pixels[i]
-        for i in pixels:
-            if i in dead_pixel and not show_dead_pixels:
-                    continue
-            i*=2
-            lineName = "Pixel " + str(int(i/2))
-            plt.plot(jvList[i],jvList[i+1], label = lineName)
-
-        ax = plt.gca()
-        ax.spines['bottom'].set_position('zero')
-        labelLines(plt.gca().get_lines(), zorder=2.5)
-        plt.legend(bbox_to_anchor=(1.18, 1))
-        plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
+            ax = plt.gca()
+            ax.spines['bottom'].set_position('zero')
+            labelLines(plt.gca().get_lines(), zorder=2.5)
+            plt.legend(bbox_to_anchor=(1.18, 1))
+            plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
 
     # generate boxplots
     reverse, forward = scan_calcs(graph_name)
@@ -392,12 +386,12 @@ def show_jv_graphs(graph_name,
     forwardJSC = forward[1]
     reverseVOC = reverse[2]
     forwardVOC = forward[2]
-    print("reverseFF", np.median(reverseFF))
-    print("forwardFF", np.median(forwardFF))
-    print("reverseJSC", np.median(reverseJSC))
-    print("forwardJSC", np.median(forwardJSC))
-    print("reverseVOC", np.median(reverseVOC))
-    print("forwardVOC", np.median(forwardVOC))
+    logging.info(f"reverseFF {np.median(reverseFF)}")
+    logging.info(f"forwardFF {np.median(forwardFF)}")
+    logging.info(f"reverseJSC {np.median(reverseJSC)}")
+    logging.info(f"forwardJSC {np.median(forwardJSC)}")
+    logging.info(f"reverseVOC {np.median(reverseVOC)}")
+    logging.info(f"forwardVOC {np.median(forwardVOC)}")
 
     FF = [np.array(reverseFF).flatten(), np.array(forwardFF).flatten()]
     JSC = [np.array(reverseJSC).flatten(), np.array(forwardJSC).flatten()]
@@ -567,139 +561,12 @@ def scan_calcs(graph_name):
 
     return calc(jListReverse, vListReverse), calc(jListForward, vListForward)
 
-def kalmanFilter(predictions: np.ndarray, process_noise = 1e-1, measurement_var = 0.1) -> np.ndarray:
-        '''
-        Inputs:
-            - Context predictions (e.g. slope, walking speed, etc.)
-            - Process noise for predictions
-            - Measurement uncertainty (in the form of variance)
-        Output:
-            - Updated estimates of context
-        '''
-
-        estimates = []
-
-        # Initialize
-        prior_estimate = predictions[0]
-        prior_var = 0.1
-
-        for i in range(len(predictions)):
-
-            slope_measurement = np.float64(predictions[i])
-
-            # Update
-            kalman_gain = prior_var / (prior_var + measurement_var) # Kn
-            estimate = prior_estimate + kalman_gain*(slope_measurement-prior_estimate) # Xnn
-            estimates.append(estimate)
-            estimate_var = (1-kalman_gain)*prior_var # Pnn
-
-            # Dynamics
-            prior_estimate = estimate
-            prior_var = estimate_var + process_noise
-
-        return estimates
-
-
-def show_jv_graphsSmoothed(graph_name, pixels = None):
-    plot_size = (10,8)
-    arr = np.loadtxt(graph_name, delimiter=",", dtype=str)
-    graph_name = graph_name.split('\\')
-    # print(arr)
-    headers = arr[6,:]
-    header_dict = {value: index for index, value in enumerate(headers)}
-    # print(header_dict)
-    arr = arr[6:, :]
-    length = (len(headers) - 1)
-    # print(length)
-
-    jvList = []
-
-    for i in range(2, length):
-        jvList.append(arr[:,i])
-
-
-    maxX = 0
-    minX = 0
-    maxY = 0
-    minY = 0
-
-    for i in range(0,len(jvList),2):
-        # print(i)
-        jvList[i] = [float(j) for j in jvList[i]]
-        jvList[i+1] = [float(x) for x in jvList[i+1]]
-        # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
-
-        if max(jvList[i]) > maxX: maxX = max(jvList[i])
-        if min(jvList[i]) < minX: minX = min(jvList[i])
-        if max(jvList[i+1]) > maxY: maxY = max(jvList[i+1])
-        if min(jvList[i+1]) < minY: minY = min(jvList[i+1])
-
-
-    maxX *= 1.1
-    minX *= 1.1
-    maxY *= 1.1
-    minY *= 1.1
-
-
-
-    # data = []
-    # jvList = np.array(jvList)
-    # for i in range(1,jvList.shape[1]):
-    #     avg = []
-    #     col_split = npi.group_by(jvList[:, 0]).split(jvList[:, i])
-    #     for i in col_split:
-    #         avg.append(np.average(i))
-    #     data.append(avg)
-    jvList = np.array(jvList).T
-    data = jvList
-
-    print(jvList.shape)
-    # print(len(npi.group_by(pce_list[:, 0]).split(pce_list[:, 8])))
-    for i in range(0,jvList.shape[1],2):
-        # print(jvList[:, i+1])
-
-        # print(kalmanFilter(jvList[:, i+1]))
-        jvList[:, i+1] = kalmanFilter(jvList[:, i+1])
-        # break
-    # print(np.array(data).T.shape)
-    jvList = np.array(data).T
-
-    plt.figure(figsize=plot_size)
-    plt.xlim(minX,maxX)
-    plt.ylim(minY, maxY)
-    plt.title(graph_name[-1][:-4])
-    plt.xlabel('Bias [V]')
-    plt.ylabel('Current [mA]')
-    # plt.ylabel('Jmeas [mA/cm]')
-    plt.subplots_adjust(left=0.086, bottom=0.06, right=0.844, top=0.927, wspace=0.2, hspace=0.2)
-
-
-    if pixels == None:
-        for i in range(0,len(jvList),2):
-            # print(i)
-            lineName = "Pixel " + str(int(i/2))
-            plt.plot(jvList[i],jvList[i+1], label = lineName)
-    else:
-        for i in pixels:
-            # print(i)
-            i*=2
-            lineName = "Pixel " + str(int(i/2))
-            plt.plot(jvList[i],jvList[i+1], label = lineName)
-
-    ax = plt.gca()
-    ax.spines['bottom'].set_position('zero')
-    labelLines(plt.gca().get_lines(), zorder=2.5)
-
-    plt.legend(bbox_to_anchor=(1.18, 0.7))
-
-    plt.show()
-
-
 if __name__ == '__main__':
-    # PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Apr-25-2023 15_50_01\Apr-25-2023 15_51_12PnO.csv"
-    Scan = r"C:\Users\Andrew Chen\Dropbox\code\Stability-Setup\data\Aug-22-2023 00_08_28\Aug-22-2023 00_10_18lightscan.csv"
+    Scan = r"C:\Users\Andrew Chen\Dropbox\code\Stability-Setup\data\Oct-26-2023 14_48_41\Oct-26-2023 14_48_44lightID1scan.csv"
+    show_jv_graphs(Scan, show_dead_pixels=True,pixels= None, devices=None, fixed_window=True)
 
-    show_jv_graphs(Scan, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
-    # show_pce_graphs(PCE, Scan, show_dead_pixels = False, pixels= None, devices= None)
+    PCE = r"C:\Users\Andrew Chen\Dropbox\code\Stability-Setup\data\Oct-26-2023 14_48_41\Oct-26-2023 14_49_38ID1PnO.csv"
+    show_pce_graphs(PCE, Scan, show_dead_pixels = True, pixels= None, devices= None)
+
 
 # %%

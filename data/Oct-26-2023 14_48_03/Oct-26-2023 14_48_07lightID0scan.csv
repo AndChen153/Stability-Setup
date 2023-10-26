@@ -1,0 +1,11 @@
+Voltage Range: ,0.05,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Step Size: ,0.03,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Read Count: ,2,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Voltage Delay Time: ,50,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Light Status: ,light,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Start Date: ,Oct-26-2023 14_48_03,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+Time,Voltage_Applied,Pixel 0_0 V,Pixel 0_0 mA,Pixel 0_1 V,Pixel 0_1 mA,Pixel 0_2 V,Pixel 0_2 mA,Pixel 0_3 V,Pixel 0_3 mA,Pixel 0_4 V,Pixel 0_4 mA,Pixel 0_5 V,Pixel 0_5 mA,Pixel 0_6 V,Pixel 0_6 mA,Pixel 0_7 V,Pixel 0_7 mA,ARUDUINOID
+0.0880,0.05,0.0760,0.0667,0.0800,0.0000,0.0760,0.0000,0.0760,0.0333,0.0800,0.0667,0.0827,0.0333,0.0800,0.0000,0.0747,0.0000,1
+0.1870,0.02,0.0480,0.0000,0.0480,0.0667,0.0480,-0.0333,0.0467,0.0000,0.0520,0.0333,0.0520,0.0000,0.0480,0.0333,0.0467,0.0000,1
+0.2860,-0.01,0.0187,0.0000,0.0160,0.0000,0.0160,-0.0333,0.0160,0.0333,0.0227,0.0000,0.0200,0.0000,0.0187,0.0000,0.0160,0.0333,1
+0.0880,0.03,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,-0.0000,0.0000,0.0013,0.0000,0.0000,0.0333,0.0000,0.0333,-0.0000,0.0333,1
