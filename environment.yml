@@ -75,7 +75,7 @@ dependencies:
     - pandas==1.4.2
     - pillow==9.2.0
     - pyserial==3.5
-    - pysimplegui==4.60.4
+    - pysimplegui==4.60.5.0
     - python-pptx==0.6.21
     - pytz==2022.1
     - scipy==1.9.1

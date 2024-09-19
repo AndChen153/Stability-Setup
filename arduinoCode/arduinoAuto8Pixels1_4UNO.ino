@@ -88,6 +88,7 @@ int light_Status = 0;
 
 void setup(void) {
     //pins
+    // setup tca address
     pinMode(10, OUTPUT);
     pinMode(11, OUTPUT);
     pinMode(12, OUTPUT);
@@ -156,8 +157,6 @@ void loop(void) {
         measurement_Rate_Scan = val4;
         light_Status = val5;
         lightControl(light_Status);
-
-
 
         scan("backward");
         scan("forward");

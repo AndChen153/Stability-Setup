@@ -1,0 +1,20 @@
+#ID:	3
+#type:	Perform parallel JV
+#start_time:	11/9/2023 1:28:37 PM
+#
+# Parameters
+#Sample area:	0.128000 cm²
+#start_voltage:	-0.200000 V
+#stop_voltage:	1.400000 V
+#sweep_speed:	50.000000 mV/s
+#settling_time:	10.000000 ms
+#direction:	3.000000 0=forward,1=backward,2=for- & backward,3=back- & forward
+##Sample IR temperature:	[23.709999,27.790001] °C
+##Environment temperature:	[23.719999,25.520000] °C
+##Humidity:	[50.299999,47.730000] %
+##Light intensity:	[100.000000,100.000000] %
+##Stage temperature:	[NaN,NaN] °C
+#
+#Vmpp (V),Impp (mA),MPP (mW),Voc (V),Isc (mA),FF (%),hyst (%),PCE (%)
+1.392627,-14.107751,-19.646835,1.014001,2.452678,789.975977,3.688223,153.490906
+1.367105,-13.841082,-18.922216,1.020826,2.409275,769.367981,0.000000,147.829819

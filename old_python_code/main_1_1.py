@@ -53,7 +53,7 @@ if __name__ == '__main__':
             logging.info("Scan started with settings: ", float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
             # print(params, "JV")
             scan_filename = arduino_controller.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
-            data_show.show_jv_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
+            data_show.show_scan_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
         elif mode == "PNO":
             logging.info("PNO started with settings: ", float(params[0]), float(params[1]), int(params[2]), int(params[3]))
             # print(params,)
@@ -62,7 +62,7 @@ if __name__ == '__main__':
             total_pno_files = []
             total_scan_files = []
             scan_filename = arduino_controller.scan(1.2, 0.03, 2, 50, 1)
-            data_show.show_jv_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
+            data_show.show_scan_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
             pno_filename = arduino_controller.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]), scan_filename)
 
             # for i in range(NUMBLOCKS):

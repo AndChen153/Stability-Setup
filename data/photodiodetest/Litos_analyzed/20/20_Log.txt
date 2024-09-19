@@ -1,0 +1,17 @@
+Device	Pixel	Sweep Direction	Scan number	Variable	Pin[mW/cm2]	Voc[V]	Jsc[mA/cm2]	FF[%]	PCE[%]	Sweep Speed	Measurement Start Date
+photo	p1	Rv	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p1	Fw	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p2	Rv	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p2	Fw	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p3	Rv	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p3	Fw	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p4	Rv	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p4	Fw	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p5	Rv	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p5	Fw	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p6	Rv	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p6	Fw	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p7	Rv	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p7	Fw	0	20p	20.00	nan	nan	nan	nan	50.0	2023-11-08 04:00:00
+photo	p8	Rv	0	20p	20.00	0.48	3.62	62.55	5.43	50.0	2023-11-08 04:00:00
+photo	p8	Fw	0	20p	20.00	0.48	3.61	63.36	5.49	50.0	2023-11-08 04:00:00
