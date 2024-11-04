@@ -108,6 +108,7 @@ def run(mode, params):
 
     elif mode == Page.CONSTANT:
         all_scans = []
+        print("arduino assignments: ", arduino_ports.get_arduino_assignments())
         for arduino in arduino_ports.get_arduino_assignments():
             t = threading.Thread(target = multithreaded_constant_voltage_wrapper, args=(arduino, folder_path, today, params, all_scans))
             t.start()

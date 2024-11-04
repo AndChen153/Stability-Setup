@@ -48,7 +48,6 @@ class stability_setup:
         self.should_run = True
         self.baud_rate = SERIAL_BAUD_RATE
 
-
         self.mode = ""
         self.scan_filename = ""
         self.file_name = ""
@@ -104,13 +103,21 @@ class stability_setup:
 
     def multithreaded_constant_voltage(self, params, return_arr):
         SCAN_RANGE = float(params[0])
-        SCAN_STEP_SIZE = 0
-        SCAN_READ_COUNT = 0
+        SCAN_STEP_SIZE = 0.1
+        SCAN_READ_COUNT = 1
         SCAN_RATE = 0
         LIGHT_STATUS = 0
+        if LIGHT_STATUS == 0:
+            light_status = "dark"
+        else:
+            light_status = "light"
+        self.mode = "scan"
+        self.file_name = (self.folder_path +
+                        datetime.now().strftime("%b-%d-%Y %H_%M_%S") +
+                        light_status + "ID" + self.arduinoID +
+                        "constant_voltage.csv")
         print("constant voltage started")
 
-        self.mode = "constant voltage"
         self.parameters = ("<constantVoltage," +
                         str(SCAN_RANGE) + "," +
                         str(SCAN_STEP_SIZE) + "," +
@@ -119,6 +126,9 @@ class stability_setup:
                         str(LIGHT_STATUS) + ">")
 
         print(f"PC: {self.parameters}")
+        self._init_scan_arr(SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status)
+        self._read_data()
+        return_arr.append(str(os.path.abspath(self.file_name)))
 
     def multithreaded_pno(self, scan_file_name, params, return_arr):
         PNO_STARTING_VOLTAGE = float(params[0])
@@ -160,11 +170,10 @@ class stability_setup:
             if self.ser:
                 self.ser.close()
 
-
     def _read_data(self):
         """
         - Reads data outputed on serial bus by arduino
-        - Saves data after certain interval of time to prevent ram overusage on lower end systems
+        - Saves data after certain interval of time
         - Does not need to manage mode because that is taken care of on the arduino
         """
         done = False
@@ -186,7 +195,7 @@ class stability_setup:
                         print(f"ARDUINO{self.arduinoID}: {line}")
 
                         if len(data_list) > 10:
-                            self.arr = np.append(self.arr, np.array([data_list]),axis = 0)
+                            self.arr = np.append(self.arr, np.array([data_list], dtype='object'),axis = 0)
 
                         if abs(time.time() - time_orig) > time_save * 60:
                             self._save_data()
@@ -214,7 +223,6 @@ class stability_setup:
         file_name
             file_name for file that was just saved
         """
-
         if not os.path.exists(self.file_name):
             np.savetxt(self.file_name, self.arr, delimiter="," , fmt='%s')
             if (self.mode == "scan"):
@@ -281,8 +289,6 @@ class stability_setup:
         header_arr = ["Time", "Voltage_Applied"]
         done = False
         line = ""
-
-
 
         while self.should_run and not done:
             try:
@@ -444,7 +450,6 @@ class stability_setup:
         return str(os.path.abspath(self.file_name))
 
     def find_vmpp(self, scan_file_name):
-
         arr = np.loadtxt(scan_file_name, delimiter=",", dtype=str)
         scan_file_name = scan_file_name.split('\\')
         # print(arr)

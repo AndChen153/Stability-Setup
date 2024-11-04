@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
     "port": "COM8",
-    "sketch": "Stability-Setup.ino"
+    "sketch": "Stability-Setup_Arduino\\Stability-Setup_Arduino.ino"
 }

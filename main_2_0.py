@@ -124,28 +124,32 @@ class App:
     def backend_task(self, page_number, page_id, values):
         print(f"Running backend task for page_id={page_id} with values={values}")
         data_locations = backend.run(page_id, values)
-        image_folder_locations = []
+        if data_locations:
 
-        # Process data into images
-        if page_id == Page.SCAN:
-            for scan_filename in data_locations:
-                folder_location = data_show.show_scan_graphs(
-                    scan_filename,
-                    show_dead_pixels=True,
-                    pixels=None,
-                    devices=None,
-                    fixed_window=False,
-                )
-                image_folder_locations.append(folder_location)
-        elif page_id == Page.PNO:
-            for pno_filename in data_locations:
-                folder_location = data_show.show_pce_graphs(pno_filename)
-                image_folder_locations.append(folder_location)
+            image_folder_locations = []
 
-        print("Image folder locations:", image_folder_locations)
-        # Schedule GUI update with image folder locations
-        self.root.after(0, self.update_after_backend, page_number, image_folder_locations)
+            # Process data into images
+            if page_id == Page.SCAN:
+                for scan_filename in data_locations:
+                    folder_location = data_show.show_scan_graphs(
+                        scan_filename,
+                        show_dead_pixels=True,
+                        pixels=None,
+                        devices=None,
+                        fixed_window=False,
+                    )
+                    image_folder_locations.append(folder_location)
+            elif page_id == Page.PNO:
+                for pno_filename in data_locations:
+                    folder_location = data_show.show_pce_graphs(pno_filename)
+                    image_folder_locations.append(folder_location)
 
+            print("Image folder locations:", image_folder_locations)
+            # Schedule GUI update with image folder locations
+            self.root.after(0, self.update_after_backend, page_number, image_folder_locations)
+
+        else:
+            self.root.after(0, self.update_after_backend, page_number, image_folder_locations, error="No Arduino Connected")
 
     # def backend_task(self, page_number, page_id, values):
     #     # Simulate a time-consuming backend process
@@ -182,7 +186,6 @@ class App:
     #     # # After processing, update the GUI (must be done in the main thread)
     #     # self.root.after(0, self.update_after_backend, page_number)
 
-
     def update_after_backend(self, page_number, image_folder_locations=None, error=None):
         print(f"update_after_backend called with page_number={page_number}, "
             f"image_folder_locations={image_folder_locations}, error={error}")
@@ -207,26 +210,6 @@ class App:
                 for location in image_folder_locations:
                     print(f"Showing images from: {location}")
                     self.show_images(location)
-
-
-    # def update_after_backend(self, page_number, image_folder_locations=None, error=None):
-    #     # Re-enable the Run button
-    #     run_button = self.pages[page_number]["run_button"]
-    #     run_button.config(state=tk.NORMAL)
-    #     # Re-enable the page buttons
-    #     self.update_button_styles()
-
-    #     # Update status label
-    #     status_label = self.pages[page_number]["status_label"]
-    #     if error:
-    #         status_label.config(text=f"Error: {error}")
-    #     else:
-    #         status_label.config(
-    #             text=constants["pages"][self.pages_list[page_number]] + " Finished"
-    #         )
-    #         if image_folder_locations:
-    #             for location in image_folder_locations:
-    #                 self.show_images(location)
 
     def disable_page_buttons(self):
     # Disable all page buttons
