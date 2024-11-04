@@ -5,10 +5,10 @@ import threading
 import os
 import glob
 
-from src_python.constants_1_0 import Page, constants
-from src_python.gui.resized_image_1_0 import ResizableImage
-from src_python.data_visualization import data_show_1_0 as data_show
-import src_python.controller.multithreader_1_0 as backend
+from constants_1_0 import Page, constants
+from gui.resized_image_1_0 import ResizableImage
+from data_visualization import data_show_1_0 as data_show
+import controller.multithreader_1_0 as backend
 
 
 class App:
