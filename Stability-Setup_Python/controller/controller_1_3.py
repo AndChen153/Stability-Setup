@@ -161,6 +161,7 @@ class stability_setup:
                            PNO_MEASUREMENTS_PER_STEP,
                            PNO_MEASUREMENT_DELAY,
                            PNO_MEASUREMENT_TIME)
+        print("PC ->", self.file_name)
         self._read_data()
         return_arr.append(str(os.path.abspath(self.file_name)))
 

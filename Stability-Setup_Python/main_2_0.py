@@ -9,7 +9,7 @@ from constants_1_0 import Page, constants
 from gui.resized_image_1_0 import ResizableImage
 from data_visualization import data_show_1_0 as data_show
 import controller.multithreader_1_0 as backend
-
+# TODO: make much longer delay so voltages can settle?
 
 class App:
     def __init__(self, root):
@@ -149,7 +149,7 @@ class App:
             self.root.after(0, self.update_after_backend, page_number, image_folder_locations)
 
         else:
-            self.root.after(0, self.update_after_backend, page_number, image_folder_locations, error="No Arduino Connected")
+            self.root.after(0, self.update_after_backend, page_number, error="No Arduino Connected")
 
     # def backend_task(self, page_number, page_id, values):
     #     # Simulate a time-consuming backend process

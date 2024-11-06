@@ -30,7 +30,7 @@ float voltage_starting_pno = 0.0;
 float voltage_step_size_pno = 0.000;
 int measurement_delay_pno = 0;
 int measurements_per_step_pno = 0;
-unsigned long measurement_time = 0;
+unsigned long measurement_time_mins = 0;
 
 // Scan Variables
 boolean scan_done = true;
@@ -87,6 +87,7 @@ void setup(void)
 
 void loop(void)
 {
+    zero();
     digitalWrite(LED_BUILTIN, HIGH);
     recvWithStartEndMarkers();
     if (new_data && scan_done && perturb_And_ObserveDone && constant_voltage_done)
@@ -135,9 +136,9 @@ void loop(void)
         voltage_step_size_pno = val2;
         measurements_per_step_pno = val3;
         measurement_delay_pno = val4;
-        measurement_time = val5;
+        measurement_time_mins = val5;
 
-        perturb_and_observe();
+        perturb_and_observe_classic();
         perturb_And_ObserveDone = true;
         Serial.println("Done!");
     }

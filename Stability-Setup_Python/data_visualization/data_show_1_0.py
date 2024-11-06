@@ -5,15 +5,97 @@ import numpy_indexed as npi
 from labellines import labelLines
 import os
 import sys
+from typing import List
 
 import logging
 log_name = "data_show"
 
+NUM_PIXELS = 8
+
 np.set_printoptions(threshold=sys.maxsize)
 
+def show_pce_graphs_one_graph(graph_name,
+                    lightScanName = "",
+                    startingPoint = 0,
+                    divFactor = 50,
+                    show_dead_pixels = False,
+                    pixels = None,
+                    devices = None):
+    plot_size = (12,8)
+    arr = np.loadtxt(graph_name,
+                     delimiter=",",
+                     dtype=str)
+
+    if lightScanName != "":
+        dead_pixels = get_dead_pixels(lightScanName)
+    else:
+        dead_pixels = []
+    headers = arr[6,:]
+    header_dict = {value: index for index, value in enumerate(headers)}
+    pce_indicies = [header_dict[value] for value in header_dict if "PCE" in value]
+    arr = arr[7:, :]
+
+    time = np.array(arr[:,header_dict["Time"]]).astype('float')
+    pce_list = np.array(arr)
+
+    png_save_location = graph_name[:-4]
+    plot_title_orig = png_save_location.split("\\")[-1]
+    png_save_location = png_save_location + "\\"
+    if not os.path.exists(png_save_location):
+        os.mkdir(png_save_location)
+
+    pce_list = pce_list[:, pce_indicies]
+    # pce_list = pce_list[:,0:-1]
+    for i in range(len(pce_list)):
+        pce_list[i] = [float(j) if j != " ovf" else 0.0 for j in pce_list[i]]
+        pce_list[i] = [float(j) if j != "nan" else 0.0 for j in pce_list[i]]
+
+    pce_list = pce_list.astype(float)
+
+    data = []
+
+    data = pce_list #np.array(data).T
+    # data *= 2.048 # comment line if not using mask
+
+    # convert to hours
+    time/=3600
+
+    min_time = min(time)*0.99
+    max_time = max(time)*1.01
+    max_pce = 20
+
+    plot_title = plot_title_orig + " DEVICE_" + str(pixels)
+
+    plt.figure(figsize=plot_size)
+    plt.xlim(min_time,max_time)
+    plt.ylim(bottom = -0, top = max_pce)
+    plt.title(plot_title)
+    plt.xlabel('Time [hrs]')
+    plt.grid()
+
+    plt.ylabel('PCE [%]')
+    plt.subplots_adjust(left=0.086,
+                        bottom=0.06,
+                        right=0.844,
+                        top=0.927,
+                        wspace=0.2,
+                        hspace=0.2)
+
+    for i in range(NUM_PIXELS):
+        if i in dead_pixels and not show_dead_pixels:
+                continue
+        lineName = "PCE" + str(i + 1)
+        # print(np.array(pce_list[i]))
+        plt.plot(time,data[:,i], label = lineName)
+
+    labelLines(plt.gca().get_lines(), zorder=2.5)
+    plt.legend(bbox_to_anchor=(1.15, 1))
+    plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
+
+    return
 
 def show_pce_graphs(graph_name,
-                    lightScanName,
+                    lightScanName = "",
                     startingPoint = 0,
                     divFactor = 50,
                     show_dead_pixels = False,
@@ -27,9 +109,12 @@ def show_pce_graphs(graph_name,
     NUM_DEVICES = int((arr.shape[1]-2)/16) #subtract arduino id and time
     device_to_pixels = {}
     for i in range(NUM_DEVICES):
-        device_to_pixels[i] = [j + 8*i for j in range(8)]
+        device_to_pixels[i] = [j + NUM_PIXELS*i for j in range(NUM_PIXELS)]
 
-    dead_pixels = get_dead_pixels(lightScanName)
+    if lightScanName != "":
+        dead_pixels = get_dead_pixels(lightScanName)
+    else:
+        dead_pixels = []
     headers = arr[6,:]
     header_dict = {value: index for index, value in enumerate(headers)}
     pce_indicies = [header_dict[value] for value in header_dict if "PCE" in value]
@@ -231,7 +316,7 @@ def show_scan_graphs(graph_name,
     NUM_DEVICES = int((arr.shape[1]-2)/16)
     device_to_pixels = {}
     for i in range(NUM_DEVICES):
-        device_to_pixels[i] = [j + 8*i for j in range(8)]
+        device_to_pixels[i] = [j + NUM_PIXELS*i for j in range(NUM_PIXELS)]
 
     png_save_location = graph_name[:-4]
 
@@ -447,14 +532,13 @@ def show_scan_graphs(graph_name,
 
     return png_save_location
 
-def get_dead_pixels(graph_name):
+def get_dead_pixels(graph_name) -> List[int]:
     arr = np.loadtxt(graph_name, delimiter=",", dtype=str)
     headers = arr[6,:]
     arr = arr[7:, :]
 
     # print(arr)
     length = (len(headers) - 1)
-
 
     jvList = []
     for i in range(2, length): # remove timing and volts output
@@ -468,7 +552,6 @@ def get_dead_pixels(graph_name):
         jvList[i+1] = [float(x) for x in jvList[i+1]]
         if np.mean(np.absolute(np.array(jvList[i]))) < 0.2 or np.mean(np.absolute(np.array(jvList[i+1]))) < 0.2:
             dead_pixels.append(int(i/2))#[9, 12, 13, 19, 21, 27, 30, 31]
-
 
     return dead_pixels
 
@@ -546,11 +629,6 @@ def scan_calcs(graph_name):
         jscList = jscList/0.128
         # jscList = jscList/0.0625
 
-        device_to_pixels = {0:[0,1,2,3,4,5,6,7],
-                        1:[8,9,10,11,12,13,14,15],
-                        2:[16,17,18,19,20,21,22,23],
-                        3:[24,25,26,27,28,29,30,31]}
-
         fillFactorList = np.delete(fillFactorList, dead_pixels)
         jscList = np.delete(jscList, dead_pixels)
         vocList = np.delete(vocList, dead_pixels)
@@ -576,11 +654,12 @@ def scan_calcs(graph_name):
     return calc(jListReverse, vListReverse), calc(jListForward, vListForward)
 
 if __name__ == '__main__':
-    Scan = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-09-2023 13_38_40\Nov-09-2023 13_40_43lightID2scan.csv"
-    show_scan_graphs(Scan, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
+    # Scan = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-09-2023 13_38_40\Nov-09-2023 13_40_43lightID2scan.csv"
+    # show_scan_graphs(Scan, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
 
-    PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-14-2023 18_12_10\Nov-14-2023 18_12_31ID2PnO.csv"
-    show_pce_graphs(PCE, Scan, show_dead_pixels = True, pixels= None, devices= None)
+    PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-05-2024 14_27_13\Nov-05-2024 14_27_13ID2PnO.csv"
+    # show_pce_graphs(PCE, show_dead_pixels = True, pixels= None, devices= None)
+    show_pce_graphs_one_graph(PCE, show_dead_pixels = True, pixels= None, devices= None)
 
 
 # %%

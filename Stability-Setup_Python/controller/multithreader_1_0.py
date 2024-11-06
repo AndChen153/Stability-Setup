@@ -1,7 +1,7 @@
-from src_python.controller import controller_1_3 as arduino_controller
-from src_python.constants_1_0 import Page
-from src_python.controller import arduino_assignment_1_0 as arduino_ports
-from src_python.data_visualization import data_show_1_0 as data_show
+from controller import controller_1_3 as arduino_controller
+from constants_1_0 import Page
+from controller import arduino_assignment_1_0 as arduino_ports
+from data_visualization import data_show_1_0 as data_show
 from datetime import datetime
 import threading
 

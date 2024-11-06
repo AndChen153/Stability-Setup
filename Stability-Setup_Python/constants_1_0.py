@@ -1,9 +1,11 @@
 from enum import Enum
 
+
 class Page(Enum):
     SCAN = 1
     PNO = 2
     CONSTANT = 3
+
 
 constants = {
     "pages": {Page.SCAN: "Scan", Page.PNO: "PNO", Page.CONSTANT: "Constant Voltage"},
@@ -26,7 +28,7 @@ constants = {
     },
     "defaults": {
         Page.SCAN: ["1.2", "0.03", "5", "50", "1"],
-        Page.PNO: ["0.90", "0.02", "5", "100", "600"],
+        Page.PNO: ["0.90", "0.02", "3", "300", "1"],
         Page.CONSTANT: ["0.5"],
     },
 }
