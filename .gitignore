@@ -1,0 +1,4 @@
+.VSCodeCounter/
+*.code-workspace
+__pycache__/
+*.pyc

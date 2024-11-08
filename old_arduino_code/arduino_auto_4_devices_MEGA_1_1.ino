@@ -335,7 +335,7 @@ void pertube_and_observe() {
     //     }
     // }
 
-    
+
     pno_measurements_per_step++; //average not working correctly
 
     int currentMillis = 0;
@@ -438,7 +438,7 @@ void pertube_and_observe() {
 
 }
 
-// performs measurement iteration for pno 
+// performs measurement iteration for pno
 void pno_vset_helper(int DEVICE, int direction) {
 
     float Vset_val;
@@ -472,7 +472,7 @@ void pno_vset_helper(int DEVICE, int direction) {
             } else if (direction < 0) {
                 avgPowerCalcedDown[DEVICE][PIXEL] += load_voltage * current_mA_Flipped;
             }
-            
+
         }
     }
     // Vset -------------------------------------------------------------------------------------------------------
@@ -547,7 +547,7 @@ void pno_vset_helper(int DEVICE, int direction) {
         //         }
         //     }
         // }
-    
+
 }
 
 // performs forward and/or backward JV scan of solar cell
@@ -873,7 +873,6 @@ void get_volt_and_curr(Adafruit_INA219 *ina219, uint8_t tcaADDR, uint8_t PIXEL) 
     load_voltage        = bus_voltage + (shunt_voltage / 1000);
 }
 
-// TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 void light_control(int light_status) {
     if (light_status == 0) {
         Serial.println("turned light off");

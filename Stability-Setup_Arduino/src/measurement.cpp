@@ -257,7 +257,7 @@ void perturb_and_observe_classic()
 {
     led(true);
     light_control(1);
-
+    // TODO: use longer moving average or more complex filter
     float moving_average_n = 5;
     int count;
     float load_voltageArr[8];
@@ -371,7 +371,7 @@ void scan(String dir)
     //     delayTimeMS = 0;
     // }
 
-    int delayTimeMS = 100;
+    int delayTimeMS = 300;
 
     Serial.print("started scan with delay time: ");
     Serial.println(delayTimeMS);
@@ -455,7 +455,7 @@ void scan(String dir)
     led(false);
 }
 
-void setConstantVoltage()
+void set_constant_voltage()
 {
     for (int ID = 0; ID < 8; ID++)
     {

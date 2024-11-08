@@ -759,7 +759,6 @@ void getVolCurr(Adafruit_INA219 *ina219, uint8_t tcaADDR, uint8_t PIXEL) {
     loadvoltage        = busvoltage + (shuntvoltage / 1000);
 }
 
-// TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 void lightControl(int light_Status) {
     if (light_Status == 0) {
         Serial.println("turned light off");

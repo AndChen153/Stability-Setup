@@ -337,7 +337,7 @@ void perturbAndObserve() {
         find PCE above and below by a set voltage amount,
         then set new voltage to highest PCE
         */
-        
+
         // Vset + deltaV -----------------------------------------
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
@@ -357,7 +357,7 @@ void perturbAndObserve() {
                 }
             }
         }
-        
+
 
         // Vset - deltaV -----------------------------------------
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
@@ -366,10 +366,10 @@ void perturbAndObserve() {
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
                 delay(measurement_Delay_PnO);
 
-                
+
             }
         }
-        
+
         for (int i = 0; i < measurements_Per_Step_PnO; ++i) {
             for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
                 for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
@@ -382,7 +382,7 @@ void perturbAndObserve() {
         // Calculations ------------------------------------------
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
-                
+
                 avgPowerCalced[DEVICE][PIXEL] = avgPowerCalced[DEVICE][PIXEL]/measurements_Per_Step_PnO;
                 avgPowerCalcedUp = avgPowerCalcedUp/measurements_Per_Step_PnO;
                 avgPowerCalcedDown = avgPowerCalcedDown/measurements_Per_Step_PnO;
@@ -399,17 +399,17 @@ void perturbAndObserve() {
             }
         }
 
-        
+
         // Vset --------------------------------------------------
         for (int DEVICE = 0; DEVICE < 4; DEVICE++) {
             for (int PIXEL = 0; PIXEL < 8; PIXEL++) {
                 // currentMillis = currentMillis + millis() - pm;
                 // pm = millis();
                 // Serial.println((millis()-startMillis)/1000.0, 4);
-                
+
                 setVoltage(allDAC[PIXEL+8*DEVICE], PIXEL, TCAADR_DAC[DEVICE], Vset[DEVICE][PIXEL]);
                 delay(measurement_Delay_PnO);
-                
+
             }
         }
 
@@ -745,7 +745,6 @@ void getVolCurr(Adafruit_INA219 *ina219, uint8_t tcaADDR, uint8_t PIXEL) {
     loadvoltage        = busvoltage + (shuntvoltage / 1000);
 }
 
-// TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 void lightControl(int light_Status) {
     if (light_Status == 0) {
         Serial.println("turned light off");

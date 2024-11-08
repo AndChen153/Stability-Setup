@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from email import header
 from fileinput import filename
+from constants_1_0 import Mode, constants_controller
+from data_visualization import data_show_1_0
 import serial
 import time
 from datetime import datetime
@@ -11,20 +13,6 @@ import matplotlib.pyplot as plt
 import threading
 import logging
 log_name = "controller"
-
-
-# params that have worked in the past
-# SCAN_RANGE = 1.2
-# SCAN_STEP_SIZE = 0.03
-# SCAN_READ_COUNT = 3
-# SCAN_RATE = 100         # mV/s
-
-# PNO_STARTING_VOLTAGE = 0.9
-# PNO_STEP_SIZE = 0.02
-# PNO_MEASUREMENTS_PER_STEP = 5
-# PNO_MEASUREMENT_DELAY = 100
-
-
 
 class stability_setup:
 
@@ -88,7 +76,7 @@ class stability_setup:
                         datetime.now().strftime("%b-%d-%Y %H_%M_%S") +
                         light_status + "ID" + self.arduinoID +
                         "scan.csv")
-        self.mode = "scan"
+        self.mode = Mode.SCAN
         self.parameters = ("<scan," +
                         str(SCAN_RANGE) + "," +
                         str(SCAN_STEP_SIZE) + "," +
@@ -111,7 +99,7 @@ class stability_setup:
             light_status = "dark"
         else:
             light_status = "light"
-        self.mode = "scan"
+        self.mode = Mode.SCAN
         self.file_name = (self.folder_path +
                         datetime.now().strftime("%b-%d-%Y %H_%M_%S") +
                         light_status + "ID" + self.arduinoID +
@@ -141,7 +129,7 @@ class stability_setup:
                             "ID" + self.arduinoID +
                             "PnO.csv")
         self.scan_filename = scan_file_name
-        self.mode = "PNO"
+        self.mode = Mode.PNO
         # VMPP = self.find_vmpp(scan_file_name)
         # print(f"PC: VMPP-> {VMPP}")
         VMPP = "<0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6>"
@@ -180,10 +168,6 @@ class stability_setup:
         done = False
         line = ""
         time_orig = time.time()
-        time_save = 0.1 # time between saves in minutes
-
-        pno_time_org = time.time()
-        pno_time_save = 1
 
         while self.should_run and not done:
             try:
@@ -198,7 +182,7 @@ class stability_setup:
                         if len(data_list) > 10:
                             self.arr = np.append(self.arr, np.array([data_list], dtype='object'),axis = 0)
 
-                        if abs(time.time() - time_orig) > time_save * 60:
+                        if abs(time.time() - time_orig) > constants_controller["save_time"]:
                             self._save_data()
                             time_orig = time.time()
 
@@ -226,17 +210,20 @@ class stability_setup:
         """
         if not os.path.exists(self.file_name):
             np.savetxt(self.file_name, self.arr, delimiter="," , fmt='%s')
-            if (self.mode == "scan"):
+            if (self.mode == Mode.SCAN):
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
-            elif (self.mode == "PNO"):
+            elif (self.mode == Mode.PNO):
                 self.arr = np.empty([1, self.pno_arr_width], dtype="object")
         else:
             with open(self.file_name,'ab') as f:
                 np.savetxt(f, self.arr[1:, :], delimiter="," , fmt='%s')
-            if (self.mode == "scan"):
+            if (self.mode == Mode.SCAN):
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
-            elif (self.mode == "PNO"):
+            elif (self.mode == Mode.PNO):
                 self.arr = np.empty([1, self.pno_arr_width], dtype="object")
+
+        if (self.mode == Mode.PNO):
+            data_show_1_0.show_pce_graphs_one_graph(self.file_name)
         print("PC: SAVED", log_name)
 
     def _init_pno_arr(self, PNO_STARTING_VOLTAGE,
@@ -363,7 +350,7 @@ class stability_setup:
                           datetime.now().strftime("%b-%d-%Y %H_%M_%S") +
                           light_status + "ID" + self.arduinoID +
                           "scan.csv")
-        self.mode = "scan"
+        self.mode = Mode.SCAN
         self.parameters = ("<scan," +
                            str(SCAN_RANGE) + "," +
                            str(SCAN_STEP_SIZE) + "," +
@@ -421,7 +408,7 @@ class stability_setup:
                             "ID" + self.arduinoID +
                             "PnO.csv")
         self.scan_filename = scan_file_name
-        self.mode = "PNO"
+        self.mode = Mode.PNO
         VMPP = self.find_vmpp(scan_file_name)
 
         # VMPP = "<0.7148,0.6797,0.5118,0.2118,0.4197,0.7367,0.3238,0.5358,0.7077,1.092,0.6237,0.5957,0.82,0.913,0.676,0.6437,0.7076,0.5567,0.7357,0.1439,0.6436,-0.0,0.6666,0.6438,0.4729,0.5639,0.6069,0.0,0.1189,0.2299,0.752,1.096>"

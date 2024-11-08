@@ -5,13 +5,13 @@ import threading
 import os
 import glob
 
-from constants_1_0 import Page, constants
-from gui.resized_image_1_0 import ResizableImage
+from constants_1_0 import Mode, constants_gui
 from data_visualization import data_show_1_0 as data_show
-import controller.multithreader_1_0 as backend
-# TODO: make much longer delay so voltages can settle?
+import controller.multithreader_1_0 as arduino_controller
 
 class App:
+    #TODO: create global date for each instance of app so that all files are output to the same date folder
+    #TODO: create input for folder title
     def __init__(self, root):
         self.root = root
         self.root.title("Stability Setup")
@@ -21,15 +21,15 @@ class App:
         self.top_frame = tk.Frame(self.root)
         self.top_frame.pack(side=tk.TOP, fill=tk.X)
 
-        self.num_pages = len(Page)
-        self.pages_list = list(Page)
+        self.num_pages = len(Mode)
+        self.pages_list = list(Mode)
 
         # Create page selection buttons
         self.page_buttons = []
         for i in range(self.num_pages):
             button = tk.Button(
                 self.top_frame,
-                text=constants["pages"][self.pages_list[i]],
+                text=constants_gui["pages"][self.pages_list[i]],
                 command=lambda i=i: self.show_page(i),
             )
             button.pack(side=tk.LEFT)
@@ -42,15 +42,15 @@ class App:
         for i in range(self.num_pages):
             page = tk.Frame(self.root)
             page_id = self.pages_list[i]
-            num_params = len(constants["params"][page_id])
+            num_params = len(constants_gui["params"][page_id])
             entries_list = []
 
             # Add input parameters with default values
             for j in range(num_params):
-                label = tk.Label(page, text=constants["params"][page_id][j])
+                label = tk.Label(page, text=constants_gui["params"][page_id][j])
                 label.grid(row=j, column=0, padx=5, pady=5, sticky="e")
                 entry = tk.Entry(page)
-                entry.insert(0, constants["defaults"][page_id][j])
+                entry.insert(0, constants_gui["defaults"][page_id][j])
                 entry.grid(row=j, column=1, padx=5, pady=5)
                 entries_list.append(entry)
 
@@ -104,7 +104,7 @@ class App:
         # Update status label
         status_label = self.pages[page_number]["status_label"]
         status_label.config(
-            text="Running " + constants["pages"][self.pages_list[page_number]]
+            text="Running " + constants_gui["pages"][self.pages_list[page_number]]
         )
 
         page_id = self.pages_list[page_number]
@@ -121,25 +121,21 @@ class App:
         )
         thread.start()
 
+    #TODO: Fix backend erroring after each run
+    #TODO: remove image display
     def backend_task(self, page_number, page_id, values):
         print(f"Running backend task for page_id={page_id} with values={values}")
-        data_locations = backend.run(page_id, values)
+        data_locations = arduino_controller.run(page_id, values)
         if data_locations:
 
             image_folder_locations = []
 
             # Process data into images
-            if page_id == Page.SCAN:
+            if page_id == Mode.SCAN:
                 for scan_filename in data_locations:
-                    folder_location = data_show.show_scan_graphs(
-                        scan_filename,
-                        show_dead_pixels=True,
-                        pixels=None,
-                        devices=None,
-                        fixed_window=False,
-                    )
+                    folder_location = data_show.show_scan_graphs_one_graph(scan_filename)
                     image_folder_locations.append(folder_location)
-            elif page_id == Page.PNO:
+            elif page_id == Mode.PNO:
                 for pno_filename in data_locations:
                     folder_location = data_show.show_pce_graphs(pno_filename)
                     image_folder_locations.append(folder_location)
@@ -151,45 +147,7 @@ class App:
         else:
             self.root.after(0, self.update_after_backend, page_number, error="No Arduino Connected")
 
-    # def backend_task(self, page_number, page_id, values):
-    #     # Simulate a time-consuming backend process
-    #     try:
-    #         print(page_id, values)
-    #         data_locations = backend.run(page_id, values)
-    #         image_folder_locations = []
-
-    #         # process data into images
-    #         if page_id == Page.SCAN:
-    #             for scan_filename in data_locations:
-    #                 image_folder_locations.append(
-    #                     data_show.show_scan_graphs(
-    #                         scan_filename,
-    #                         show_dead_pixels=True,
-    #                         pixels=None,
-    #                         devices=None,
-    #                         fixed_window=False,
-    #                     )
-    #                 )
-    #         elif page_id == Page.PNO:
-    #             for pno_filename in data_locations:
-    #                 image_folder_locations.append(data_show.show_pce_graphs(pno_filename))
-
-    #     except Exception as e:
-    #         # Schedule GUI update with error
-    #         print(str(e))
-    #         self.root.after(0, self.update_after_backend, page_number, None, str(e))
-    #     else:
-    #         # Schedule GUI update with image file
-    #         self.root.after(0, self.update_after_backend, page_number, image_folder_locations)
-    #     # print(page_id, values)
-
-    #     # # After processing, update the GUI (must be done in the main thread)
-    #     # self.root.after(0, self.update_after_backend, page_number)
-
     def update_after_backend(self, page_number, image_folder_locations=None, error=None):
-        print(f"update_after_backend called with page_number={page_number}, "
-            f"image_folder_locations={image_folder_locations}, error={error}")
-
         # Re-enable the Run button
         run_button = self.pages[page_number]["run_button"]
         run_button.config(state=tk.NORMAL)
@@ -204,75 +162,14 @@ class App:
             tk.messagebox.showerror("Error", error)
         else:
             status_label.config(
-                text=constants["pages"][self.pages_list[page_number]] + " Finished"
+                text=constants_gui["pages"][self.pages_list[page_number]] + " Finished"
             )
-            if image_folder_locations:
-                for location in image_folder_locations:
-                    print(f"Showing images from: {location}")
-                    self.show_images(location)
+
 
     def disable_page_buttons(self):
     # Disable all page buttons
-        for i, button in enumerate(self.page_buttons):
+        for button in self.page_buttons:
             button.config(state=tk.DISABLED)
-
-    def show_images(self, directory):
-        # Get all image files in the directory
-        image_files = self.get_all_images(directory)
-
-        if not image_files:
-            messagebox.showinfo("No Images Found", "No image files were found in the directory.")
-            return
-
-        # Create a new window to display images
-        images_window = tk.Toplevel(self.root)
-        images_window.title("Images Display")
-        images_window.geometry("850x800")  # Set the default size to 800x600 pixels
-
-        # Create a canvas with scrollbar
-        canvas = tk.Canvas(images_window)
-        scrollbar = tk.Scrollbar(images_window, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas)
-
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(
-                scrollregion=canvas.bbox("all")
-            )
-        )
-
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-
-        # Clear image references
-        self.image_refs.clear()
-
-        for image_file in image_files:
-            try:
-                image = Image.open(image_file)
-                # Optionally resize the image
-                image.thumbnail((800, 800), Image.ANTIALIAS)
-                photo = ImageTk.PhotoImage(image)
-            except Exception as e:
-                continue  # Skip files that cannot be opened as images
-
-            label = tk.Label(scrollable_frame, image=photo)
-            label.pack(padx=5, pady=5)
-            self.image_refs.append(photo)  # Keep a reference
-
-
-    def get_all_images(self, directory):
-        # Initialize an empty list to store image file paths
-        image_files = []
-
-        # Iterate over each extension and find matching files
-        image_files.extend(glob.glob(os.path.join(directory, "*.png")))
-
-        return image_files
-
 
 if __name__ == "__main__":
     root = tk.Tk()

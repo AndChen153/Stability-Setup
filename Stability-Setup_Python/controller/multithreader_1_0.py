@@ -1,6 +1,6 @@
 from controller import controller_1_3 as arduino_controller
-from constants_1_0 import Page
 from controller import arduino_assignment_1_0 as arduino_ports
+from constants_1_0 import Mode
 from data_visualization import data_show_1_0 as data_show
 from datetime import datetime
 import threading
@@ -19,17 +19,29 @@ logging.basicConfig(filename='example.log',format='%(asctime)s %(message)s', enc
 #     data_show.show_pce_graphs(pno_filename, scan_filename, show_dead_pixels = True)
 
 def multithreaded_scan_wrapper(arduino, folder_path, today, params, scan_arr):
-    communicator = arduino_controller.stability_setup(arduino["serial"], arduino["com"], 115200, folder_path, today)
+    communicator = arduino_controller.stability_setup(arduinoID = arduino["serial"],
+                                                      COM = arduino["com"],
+                                                      SERIAL_BAUD_RATE = 115200,
+                                                      folder_path = folder_path,
+                                                      today = today)
     if communicator.connect():
         communicator.multithreaded_scan(params, scan_arr)
 
 def multithreaded_constant_voltage_wrapper(arduino, folder_path, today, params, scan_arr):
-    communicator = arduino_controller.stability_setup(arduino["serial"], arduino["com"], 115200, folder_path, today)
+    communicator = arduino_controller.stability_setup(arduinoID = arduino["serial"],
+                                                      COM = arduino["com"],
+                                                      SERIAL_BAUD_RATE = 115200,
+                                                      folder_path = folder_path,
+                                                      today = today)
     if communicator.connect():
         communicator.multithreaded_constant_voltage(params, scan_arr)
 
 def multithreaded_pno_wrapper(arduino, folder_path, today, params, pno_arr, scan_file_name):
-    communicator = arduino_controller.stability_setup(arduino["serial"], arduino["com"], 115200, folder_path, today)
+    communicator = arduino_controller.stability_setup(arduinoID = arduino["serial"],
+                                                      COM = arduino["com"],
+                                                      SERIAL_BAUD_RATE = 115200,
+                                                      folder_path = folder_path,
+                                                      today = today)
     if communicator.connect():
         communicator.multithreaded_pno(scan_file_name, params, pno_arr)
 
@@ -38,7 +50,7 @@ def run(mode, params):
     folder_path = "./data/" + today + "/"
     threads = []
 
-    if mode == Page.SCAN:
+    if mode == Mode.SCAN:
         all_scans = []
         for arduino in arduino_ports.get_arduino_assignments():
             t = threading.Thread(target = multithreaded_scan_wrapper, args=(arduino, folder_path, today, params, all_scans))
@@ -58,10 +70,8 @@ def run(mode, params):
             print("Stopped all threads and closed connections.")
 
         return all_scans
-        for scan_filename in all_scans:
-            data_show.show_scan_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
 
-    elif mode == Page.PNO:
+    elif mode == Mode.PNO:
         all_scans = ["",""]
         all_pno = []
         # scan_params = (1.2, 0.03, 2, 50, 1)
@@ -103,10 +113,9 @@ def run(mode, params):
             print("Stopped all threads and closed connections.")
 
         return all_pno
-        for pno_filename in all_pno:
-            data_show.show_pce_graphs(pno_filename)
 
-    elif mode == Page.CONSTANT:
+
+    elif mode == Mode.CONSTANT:
         all_scans = []
         print("arduino assignments: ", arduino_ports.get_arduino_assignments())
         for arduino in arduino_ports.get_arduino_assignments():

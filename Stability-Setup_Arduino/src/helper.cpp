@@ -1,7 +1,7 @@
 // helper.cpp
 #include "../include/helper.h"
 #include "../include/sensor.h"
-#include "../include/serial_comm.h"
+#include "../include/serial_com.h"
 #include <Arduino.h>
 
 void light_control(int light_Status)

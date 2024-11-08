@@ -51,15 +51,6 @@ float constant_voltage = 0.0;
 
 void setup(void)
 {
-    // Pins setup
-    pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(10, OUTPUT);
-    pinMode(11, OUTPUT);
-    pinMode(12, OUTPUT);
-    digitalWrite(10, HIGH);
-    digitalWrite(11, HIGH);
-    digitalWrite(12, HIGH);
-
     // System setup
     Wire.begin();
     Serial.begin(115200);
@@ -88,7 +79,6 @@ void setup(void)
 void loop(void)
 {
     zero();
-    digitalWrite(LED_BUILTIN, HIGH);
     recvWithStartEndMarkers();
     if (new_data && scan_done && perturb_And_ObserveDone && constant_voltage_done)
     {
@@ -148,7 +138,7 @@ void loop(void)
 
         constant_voltage = val1;
         measurements_Per_Step_Scan = val3;
-        setConstantVoltage();
+        set_constant_voltage();
         constant_voltage_done = true;
         Serial.println("Done!");
     }

@@ -1,5 +1,6 @@
 {
-    "board": "arduino:avr:uno",
-    "port": "COM8",
-    "sketch": "Stability-Setup_Arduino\\Stability-Setup_Arduino.ino"
+    "board": "arduino:avr:nano",
+    "port": "COM11",
+    "sketch": "Stability-Setup_Arduino\\Stability-Setup_Arduino.ino",
+    "configuration": "cpu=atmega328"
 }

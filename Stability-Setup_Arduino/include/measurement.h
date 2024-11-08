@@ -7,6 +7,6 @@
 void perturb_and_observe();
 void perturb_and_observe_classic();
 void scan(String dir);
-void setConstantVoltage();
+void set_constant_voltage();
 
 #endif

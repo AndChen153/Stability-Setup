@@ -23,14 +23,26 @@ def get_arduino_assignments():
             "USB Serial Device" in device.description)
             and device.serial_number in arduino_assignments):
             assigned_arduinos.append({"serial" : arduino_assignments[device.serial_number], "com":device.device})
+        elif "USB-SERIAL CH340" in device.description:
+            assigned_arduinos.append({"serial" : 3, "com":device.device})
     return assigned_arduinos
 
 
 if __name__ == '__main__':
     for i in _show_all_com_devices():
-        print(f"{i.description}, {i.device}, {i.serial_number}, {i.name}")
-
-    print()
+        if "USB-SERIAL CH340" in i.description:
+            print(f"Device: {i.device}")
+            print(f"Name: {i.name}")
+            print(f"Description: {i.description}")
+            print(f"Serial Number: {i.serial_number}")
+            print(f"Manufacturer: {i.manufacturer}")
+            print(f"Product: {i.product}")
+            print(f"Vendor ID: {i.vid}")
+            print(f"Product ID: {i.pid}")
+            print(f"Location: {i.location}")
+            print(f"Hardware ID: {i.hwid}")
+            print(f"Interface: {i.interface}")
+            print()
 
     print(get_arduino_assignments())
 
