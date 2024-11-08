@@ -1,4 +1,7 @@
+data/_Old/
 .VSCodeCounter/
 *.code-workspace
 __pycache__/
 *.pyc
+.vscode/
+env/
