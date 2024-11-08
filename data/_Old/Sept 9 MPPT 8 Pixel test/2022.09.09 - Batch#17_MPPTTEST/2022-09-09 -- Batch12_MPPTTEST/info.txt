@@ -1,6 +1,0 @@
-software:	Litos Lite
-sw_version:	1.2.0.206
-format_version:	0
-user:	
-comment:	
-export_time:	9/9/2022 11:14:43 AM
