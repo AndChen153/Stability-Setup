@@ -222,8 +222,8 @@ class stability_setup:
             elif (self.mode == Mode.PNO):
                 self.arr = np.empty([1, self.pno_arr_width], dtype="object")
 
-        if (self.mode == Mode.PNO):
-            data_show_1_0.show_pce_graphs_one_graph(self.file_name)
+        # if (self.mode == Mode.PNO):
+        #     data_show_1_0.show_pce_graphs_one_graph(self.file_name, show_dead_pixels = True, pixels= None, devices= None)
         print("PC: SAVED", log_name)
 
     def _init_pno_arr(self, PNO_STARTING_VOLTAGE,

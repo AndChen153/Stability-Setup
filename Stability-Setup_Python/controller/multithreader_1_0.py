@@ -72,7 +72,7 @@ def run(mode, params):
         return all_scans
 
     elif mode == Mode.PNO:
-        all_scans = ["",""]
+        all_scans = ["","", "",""]
         all_pno = []
         # scan_params = (1.2, 0.03, 2, 50, 1)
         # for arduino in arduino_ports.get_arduino_assignments():
@@ -95,6 +95,8 @@ def run(mode, params):
         # for scan_filename in all_scans:
         #     data_show.show_scan_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
 
+
+        print(arduino_ports.get_arduino_assignments())
         for arduino,scan_filename in zip(arduino_ports.get_arduino_assignments(), all_scans):
             t = threading.Thread(target = multithreaded_pno_wrapper, args=(arduino, folder_path, today, params, all_pno, scan_filename))
             t.start()
