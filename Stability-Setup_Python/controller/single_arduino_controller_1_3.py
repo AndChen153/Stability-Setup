@@ -14,7 +14,7 @@ import threading
 import logging
 log_name = "controller"
 
-class stability_setup:
+class controller:
 
     # def __init__(self) -> None:
     #     pass
@@ -85,7 +85,7 @@ class stability_setup:
                         str(LIGHT_STATUS) + ">")
 
         print(f"PC: {self.parameters}")
-        self._init_scan_arr(SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status)
+        self._start_scan(SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status)
         self._read_data()
         return_arr.append(str(os.path.abspath(self.file_name)))
 
@@ -114,7 +114,7 @@ class stability_setup:
                         str(LIGHT_STATUS) + ">")
 
         print(f"PC: {self.parameters}")
-        self._init_scan_arr(SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status)
+        self._start_scan(SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status)
         self._read_data()
         return_arr.append(str(os.path.abspath(self.file_name)))
 
@@ -130,8 +130,11 @@ class stability_setup:
                             "PnO.csv")
         self.scan_filename = scan_file_name
         self.mode = Mode.PNO
-        # VMPP = self.find_vmpp(scan_file_name)
-        # print(f"PC: VMPP-> {VMPP}")
+
+        # if self.scan_filename:
+        #     VMPP = self.find_vmpp(scan_file_name)
+        #     print(f"PC: VMPP-> {VMPP}")
+
         VMPP = "<0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6>"
 
         # VMPP = "<0.7148,0.6797,0.5118,0.2118,0.4197,0.7367,0.3238,0.5358,0.7077,1.092,0.6237,0.5957,0.82,0.913,0.676,0.6437,0.7076,0.5567,0.7357,0.1439,0.6436,-0.0,0.6666,0.6438,0.4729,0.5639,0.6069,0.0,0.1189,0.2299,0.752,1.096>"
@@ -144,7 +147,7 @@ class stability_setup:
                            VMPP + ">")
 
         print(f"PC -> Arduino:  {self.parameters}", log_name)
-        self._init_pno_arr(PNO_STARTING_VOLTAGE,
+        self._start_pno(PNO_STARTING_VOLTAGE,
                            PNO_STEP_SIZE,
                            PNO_MEASUREMENTS_PER_STEP,
                            PNO_MEASUREMENT_DELAY,
@@ -226,7 +229,7 @@ class stability_setup:
         #     data_show_1_0.show_pce_graphs_one_graph(self.file_name, show_dead_pixels = True, pixels= None, devices= None)
         print("PC: SAVED", log_name)
 
-    def _init_pno_arr(self, PNO_STARTING_VOLTAGE,
+    def _start_pno(self, PNO_STARTING_VOLTAGE,
                       PNO_STEP_SIZE, PNO_MEASUREMENTS_PER_STEP,
                       PNO_MEASUREMENT_DELAY, PNO_MEASUREMENT_TIME):
 
@@ -271,7 +274,7 @@ class stability_setup:
         self.arr[6] = header_arr
         self.arr = np.append(self.arr, np.array([data_list]),axis = 0)
 
-    def _init_scan_arr(self, SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, LIGHT_STATUS):
+    def _start_scan(self, SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, LIGHT_STATUS):
         voltage_lambda = lambda x, y : "Pixel " + str(x+1) + "_" + str(y+1) + " V"
         amperage_lambda = lambda x, y : "Pixel " + str(x+1) + "_" + str(y+1) + " mA"
         header_arr = ["Time", "Voltage_Applied"]
@@ -310,7 +313,8 @@ class stability_setup:
         self.arr[6] = header_arr
         self.arr = np.append(self.arr, np.array([data_list]),axis = 0)
 
-
+    def set_folder_path(self, new_folder_path):
+        self.folder_path = new_folder_path
 
     def scan(self, SCAN_RANGE: float, SCAN_STEP_SIZE: float, SCAN_READ_COUNT: int, SCAN_RATE: int, LIGHT_STATUS: int) -> np.ndarray:
         """
@@ -360,7 +364,7 @@ class stability_setup:
 
         print(f"PC: {self.parameters}")
         self.ser.write(b"<scan,1.2,0.03,2,50,1>")  # send data to arduino
-        self._init_scan_arr(SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status)
+        self._start_scan(SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status)
         # print("PC: ", self.arr)
         self._read_data()
         return str(os.path.abspath(self.file_name))
@@ -424,16 +428,13 @@ class stability_setup:
         self.ser.write(self.parameters.encode())    # send data to arduino
         # self.ser.write(VMPP.encode())               # send pno starting voltages to arduino
 
-        self._init_pno_arr(PNO_STARTING_VOLTAGE,
+        self._start_pno(PNO_STARTING_VOLTAGE,
                            PNO_STEP_SIZE,
                            PNO_MEASUREMENTS_PER_STEP,
                            PNO_MEASUREMENT_DELAY,
                            PNO_MEASUREMENT_TIME)
-        # print(self.arr)
 
         self._read_data()
-        # print(self.arr)
-
 
         return str(os.path.abspath(self.file_name))
 

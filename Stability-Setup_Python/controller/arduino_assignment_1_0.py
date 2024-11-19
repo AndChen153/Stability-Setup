@@ -25,7 +25,7 @@ def get_arduino_assignments():
     assigned_arduinos = []
     for device in _show_all_com_devices():
         if (device.location in arduino_assignments_location.keys()):
-            assigned_arduinos.append({"serial" : arduino_assignments_location[device.location], "com":device.device})
+            assigned_arduinos.append({"ID" : arduino_assignments_location[device.location], "com":device.device})
         # if (("Arduino" in device.description or
         #     "USB Serial Device" in device.description)
         #     and device.serial_number in arduino_assignments):

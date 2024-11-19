@@ -32,5 +32,6 @@ constants_gui = {
 }
 
 constants_controller = {
-    "save_time" : 5
+    "save_time" : 5,
+    "serial_baud_rate" : 115200,
 }

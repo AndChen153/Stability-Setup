@@ -1,138 +1,123 @@
-from controller import controller_1_3 as arduino_controller
+from controller import single_arduino_controller_1_3 as single_arduino
 from controller import arduino_assignment_1_0 as arduino_ports
-from constants_1_0 import Mode
-from data_visualization import data_show_1_0 as data_show
-from datetime import datetime
+from constants_1_0 import Mode, constants_controller
 import threading
 
 import logging
 log_name = "main"
-logging.basicConfig(filename='example.log',format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
+# logging.basicConfig(filename='example.log',format='%(asctime)s %(message)s', encoding='utf-8', level=logging.INFO)
+class controller:
+    def __init__(self, folder_path: str, today:str):
+        self.folder_path = folder_path
+        self.today = today
+        self.threads = []
+        self.arduino_assignments = arduino_ports.get_arduino_assignments()
+        self.controllers = {}
 
-# def _multithreaded_scan(controller, params, scan_arr):
-#     scan_filename = controller.scan(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]))
-#     scan_arr.append(scan_filename)
-# def _multithreaded_pno(controller, params):
-#     scan_filename = controller.scan(1.2, 0.03, 2, 50, 1)
-#     data_show.show_jv_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
-#     pno_filename = controller.pno(float(params[0]), float(params[1]), int(params[2]), int(params[3]), int(params[4]), scan_filename)
-#     data_show.show_pce_graphs(pno_filename, scan_filename, show_dead_pixels = True)
+        for arduino in self.arduino_assignments:
+            ID = arduino["ID"]
+            COM = arduino["com"]
+            self.controllers[ID] = single_arduino.controller(arduinoID = ID,
+                                                        COM = COM,
+                                                        SERIAL_BAUD_RATE = constants_controller["serial_baud_rate"],
+                                                        folder_path = self.folder_path,
+                                                        today = self.today)
+    def multithreaded_scan_wrapper(self, controller, params, scan_arr):
+        if controller.connect():
+            controller.multithreaded_scan(params, scan_arr)
 
-def multithreaded_scan_wrapper(arduino, folder_path, today, params, scan_arr):
-    communicator = arduino_controller.stability_setup(arduinoID = arduino["serial"],
-                                                      COM = arduino["com"],
-                                                      SERIAL_BAUD_RATE = 115200,
-                                                      folder_path = folder_path,
-                                                      today = today)
-    if communicator.connect():
-        communicator.multithreaded_scan(params, scan_arr)
+    def multithreaded_constant_voltage_wrapper(self, controller, params, scan_arr):
+        if controller.connect():
+            controller.multithreaded_constant_voltage(params, scan_arr)
 
-def multithreaded_constant_voltage_wrapper(arduino, folder_path, today, params, scan_arr):
-    communicator = arduino_controller.stability_setup(arduinoID = arduino["serial"],
-                                                      COM = arduino["com"],
-                                                      SERIAL_BAUD_RATE = 115200,
-                                                      folder_path = folder_path,
-                                                      today = today)
-    if communicator.connect():
-        communicator.multithreaded_constant_voltage(params, scan_arr)
+    def multithreaded_pno_wrapper(self, controller, params, pno_arr, scan_file_name):
+        if controller.connect():
+            controller.multithreaded_pno(scan_file_name, params, pno_arr)
 
-def multithreaded_pno_wrapper(arduino, folder_path, today, params, pno_arr, scan_file_name):
-    communicator = arduino_controller.stability_setup(arduinoID = arduino["serial"],
-                                                      COM = arduino["com"],
-                                                      SERIAL_BAUD_RATE = 115200,
-                                                      folder_path = folder_path,
-                                                      today = today)
-    if communicator.connect():
-        communicator.multithreaded_pno(scan_file_name, params, pno_arr)
+    def run(self, mode, params):
+        if mode == Mode.SCAN:
+            all_scans = []
 
-def run(mode, params):
-    today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
-    folder_path = "./data/" + today + "/"
-    threads = []
+            for controller in self.controllers.keys():
+                t = threading.Thread(target = self.multithreaded_scan_wrapper,
+                                     args=(self.controllers[controller], params, all_scans))
+                t.start()
+                threads.append(t)
 
-    if mode == Mode.SCAN:
-        all_scans = []
-        for arduino in arduino_ports.get_arduino_assignments():
-            t = threading.Thread(target = multithreaded_scan_wrapper, args=(arduino, folder_path, today, params, all_scans))
-            t.start()
-            threads.append(t)
+            try:
+                # Wait for all threads to complete
+                for t in threads:
+                    t.join()
+                threads = []
+            except KeyboardInterrupt:
+                # On keyboard interrupt, signal all threads to stop and close their serial connections
+                for t in threads:
+                    t.stop()
+                print("Stopped all threads and closed connections.")
 
-        try:
-            # Wait for all threads to complete
-            for t in threads:
-                t.join()
+            return all_scans
 
-            threads = []
-        except KeyboardInterrupt:
-            # On keyboard interrupt, signal all threads to stop and close their serial connections
-            for communicator in threads:
-                communicator.stop()
-            print("Stopped all threads and closed connections.")
+        elif mode == Mode.PNO:
+            all_scans = ["" for _ in self.arduino_assignments]
+            all_pno = []
+            # scan_params = (1.2, 0.03, 2, 50, 1)
+            # for arduino in arduino_ports.get_arduino_assignments():
+            #     t = threading.Thread(target = multithreaded_scan_wrapper, args=(arduino, folder_path, today, scan_params, all_scans))
+            #     t.start()
+            #     threads.append(t)
 
-        return all_scans
+            # try:
+            #     # Wait for all threads to complete
+            #     for t in threads:
+            #         t.join()
 
-    elif mode == Mode.PNO:
-        all_scans = ["","", "",""]
-        all_pno = []
-        # scan_params = (1.2, 0.03, 2, 50, 1)
-        # for arduino in arduino_ports.get_arduino_assignments():
-        #     t = threading.Thread(target = multithreaded_scan_wrapper, args=(arduino, folder_path, today, scan_params, all_scans))
-        #     t.start()
-        #     threads.append(t)
+            #     threads = []
+            # except KeyboardInterrupt:
+            #     # On keyboard interrupt, signal all threads to stop and close their serial connections
+            #     for t in threads:
+            #         t.stop()
+            #     print("Stopped all threads and closed connections.")
 
-        # try:
-        #     # Wait for all threads to complete
-        #     for t in threads:
-        #         t.join()
+            # for scan_filename in all_scans:
+            #     data_show.show_scan_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
 
-        #     threads = []
-        # except KeyboardInterrupt:
-        #     # On keyboard interrupt, signal all threads to stop and close their serial connections
-        #     for communicator in threads:
-        #         communicator.stop()
-        #     print("Stopped all threads and closed connections.")
+            print(self.arduino_assignments)
+            for controller,scan_filename in zip(self.controllers.keys(), all_scans):
+                t = threading.Thread(target = self.multithreaded_pno_wrapper,
+                                     args=(self.controllers[controller], params, all_pno, scan_filename))
+                t.start()
+                threads.append(t)
 
-        # for scan_filename in all_scans:
-        #     data_show.show_scan_graphs(scan_filename, show_dead_pixels=True,pixels= None, devices=None, fixed_window=False)
+            try:
+                # Wait for all threads to complete
+                for t in threads:
+                    t.join()
+                threads = []
+            except KeyboardInterrupt:
+                # On keyboard interrupt, signal all threads to stop and close their serial connections
+                for t in threads:
+                    t.stop()
+                print("Stopped all threads and closed connections.")
 
-
-        print(arduino_ports.get_arduino_assignments())
-        for arduino,scan_filename in zip(arduino_ports.get_arduino_assignments(), all_scans):
-            t = threading.Thread(target = multithreaded_pno_wrapper, args=(arduino, folder_path, today, params, all_pno, scan_filename))
-            t.start()
-            threads.append(t)
-
-        try:
-            # Wait for all threads to complete
-            for t in threads:
-                t.join()
-
-            threads = []
-        except KeyboardInterrupt:
-            # On keyboard interrupt, signal all threads to stop and close their serial connections
-            for communicator in threads:
-                communicator.stop()
-            print("Stopped all threads and closed connections.")
-
-        return all_pno
+            return all_pno
 
 
-    elif mode == Mode.CONSTANT:
-        all_scans = []
-        print("arduino assignments: ", arduino_ports.get_arduino_assignments())
-        for arduino in arduino_ports.get_arduino_assignments():
-            t = threading.Thread(target = multithreaded_constant_voltage_wrapper, args=(arduino, folder_path, today, params, all_scans))
-            t.start()
-            threads.append(t)
+        elif mode == Mode.CONSTANT:
+            all_scans = []
+            print("arduino assignments: ", self.arduino_assignments)
+            for controller in self.controllers.keys():
+                t = threading.Thread(target = self.multithreaded_constant_voltage_wrapper,
+                                     args=(self.controllers[controller], params, all_scans))
+                t.start()
+                threads.append(t)
 
-        try:
-            # Wait for all threads to complete
-            for t in threads:
-                t.join()
-
-            threads = []
-        except KeyboardInterrupt:
-            # On keyboard interrupt, signal all threads to stop and close their serial connections
-            for communicator in threads:
-                communicator.stop()
-            print("Stopped all threads and closed connections.")
+            try:
+                # Wait for all threads to complete
+                for t in threads:
+                    t.join()
+                threads = []
+            except KeyboardInterrupt:
+                # On keyboard interrupt, signal all threads to stop and close their serial connections
+                for t in threads:
+                    t.stop()
+                print("Stopped all threads and closed connections.")

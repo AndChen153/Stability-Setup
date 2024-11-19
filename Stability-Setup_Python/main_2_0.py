@@ -1,18 +1,21 @@
-from tkinter import messagebox
-from PIL import Image, ImageTk
 import tkinter as tk
 import threading
-import os
-import glob
+from datetime import datetime
 
 from constants_1_0 import Mode, constants_gui
 from data_visualization import data_show_1_0 as data_show
-import controller.multithreader_1_0 as arduino_controller
+from controller import multithreader_1_0 as multi_arduino
 
 class App:
-    #TODO: create global date for each instance of app so that all files are output to the same date folder
     #TODO: create input for folder title
+    #TODO: replace this app with https://www.pythonguis.com/pyside6/
     def __init__(self, root):
+        today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
+        folder_path = "./data/" + today + "/"
+        self.controller = multi_arduino.controller(
+            folder_path = folder_path,
+            today = today)
+
         self.root = root
         self.root.title("Stability Setup")
         self.image_refs = []  # To keep references to images
@@ -121,11 +124,9 @@ class App:
         )
         thread.start()
 
-    #TODO: Fix backend erroring after each run
-    #TODO: remove image display
     def backend_task(self, page_number, page_id, values):
         print(f"Running backend task for page_id={page_id} with values={values}")
-        data_locations = arduino_controller.run(page_id, values)
+        data_locations = self.controller.run(page_id, values)
         if data_locations:
 
             image_folder_locations = []
