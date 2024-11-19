@@ -782,10 +782,10 @@ if __name__ == '__main__':
 
     # PCE = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-10-2024 23_12_36\Nov-10-2024 23_12_36ID2PnO.csv"
     # # show_pce_graphs(PCE, show_dead_pixels = True, pixels= None, devices= None)
-    show_pce_graphs_one_graph(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-13-2024 13_51_58\Nov-13-2024 13_51_58ID1PnO.csv", show_dead_pixels = True, pixels= None, devices= None)
-    show_pce_graphs_one_graph(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-13-2024 13_51_58\Nov-13-2024 13_51_58ID2PnO.csv", show_dead_pixels = True, pixels= None, devices= None)
-    show_pce_graphs_one_graph(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-13-2024 13_51_58\Nov-13-2024 13_51_58ID3PnO.csv", show_dead_pixels = True, pixels= None, devices= None)
-    show_pce_graphs_one_graph(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-13-2024 13_51_58\Nov-13-2024 13_51_58ID4PnO.csv", show_dead_pixels = True, pixels= None, devices= None)
+    show_pce_graphs_one_graph(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-19-2024 13_53_16\Nov-19-2024 13_53_18ID1PnO.csv", show_dead_pixels = True, pixels= None, devices= None)
+    show_pce_graphs_one_graph(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-19-2024 13_53_16\Nov-19-2024 13_53_18ID2PnO.csv", show_dead_pixels = True, pixels= None, devices= None)
+    show_pce_graphs_one_graph(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-19-2024 13_53_16\Nov-19-2024 13_53_18ID3PnO.csv", show_dead_pixels = True, pixels= None, devices= None)
+    show_pce_graphs_one_graph(r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-19-2024 13_53_16\Nov-19-2024 13_53_18ID4PnO.csv", show_dead_pixels = True, pixels= None, devices= None)
 
 
 # %%

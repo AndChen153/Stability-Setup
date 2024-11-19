@@ -42,16 +42,16 @@ class controller:
                 t = threading.Thread(target = self.multithreaded_scan_wrapper,
                                      args=(self.controllers[controller], params, all_scans))
                 t.start()
-                threads.append(t)
+                self.threads.append(t)
 
             try:
                 # Wait for all threads to complete
-                for t in threads:
+                for t in self.threads:
                     t.join()
-                threads = []
+                self.threads = []
             except KeyboardInterrupt:
                 # On keyboard interrupt, signal all threads to stop and close their serial connections
-                for t in threads:
+                for t in self.threads:
                     t.stop()
                 print("Stopped all threads and closed connections.")
 
@@ -64,17 +64,17 @@ class controller:
             # for arduino in arduino_ports.get_arduino_assignments():
             #     t = threading.Thread(target = multithreaded_scan_wrapper, args=(arduino, folder_path, today, scan_params, all_scans))
             #     t.start()
-            #     threads.append(t)
+            #     self.threads.append(t)
 
             # try:
             #     # Wait for all threads to complete
-            #     for t in threads:
+            #     for t in self.threads:
             #         t.join()
 
-            #     threads = []
+            #     self.threads = []
             # except KeyboardInterrupt:
             #     # On keyboard interrupt, signal all threads to stop and close their serial connections
-            #     for t in threads:
+            #     for t in self.threads:
             #         t.stop()
             #     print("Stopped all threads and closed connections.")
 
@@ -86,16 +86,16 @@ class controller:
                 t = threading.Thread(target = self.multithreaded_pno_wrapper,
                                      args=(self.controllers[controller], params, all_pno, scan_filename))
                 t.start()
-                threads.append(t)
+                self.threads.append(t)
 
             try:
                 # Wait for all threads to complete
-                for t in threads:
+                for t in self.threads:
                     t.join()
-                threads = []
+                self.threads = []
             except KeyboardInterrupt:
                 # On keyboard interrupt, signal all threads to stop and close their serial connections
-                for t in threads:
+                for t in self.threads:
                     t.stop()
                 print("Stopped all threads and closed connections.")
 
@@ -109,15 +109,15 @@ class controller:
                 t = threading.Thread(target = self.multithreaded_constant_voltage_wrapper,
                                      args=(self.controllers[controller], params, all_scans))
                 t.start()
-                threads.append(t)
+                self.threads.append(t)
 
             try:
                 # Wait for all threads to complete
-                for t in threads:
+                for t in self.threads:
                     t.join()
-                threads = []
+                self.threads = []
             except KeyboardInterrupt:
                 # On keyboard interrupt, signal all threads to stop and close their serial connections
-                for t in threads:
+                for t in self.threads:
                     t.stop()
                 print("Stopped all threads and closed connections.")
