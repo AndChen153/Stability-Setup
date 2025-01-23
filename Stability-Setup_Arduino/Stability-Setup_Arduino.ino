@@ -17,15 +17,18 @@ int val3;
 int val4;
 int val5;
 
+bool TCA9548Connected = false;
+bool SensorsConnected = false;
+serialCommResult messageResult = serialCommResult::NONE;
+
 // const byte num_chars = 32;
 char received_chars[num_chars];
 char temp_chars[num_chars]; // temporary array for use when parsing
 char mode_from_pc[num_chars] = {0};
-boolean new_data = false;
 
 // Perturb and Observe Variables
 float Vset[8] = {0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6};
-boolean perturb_And_ObserveDone = true;
+volatile bool pno_done = true;
 float voltage_starting_pno = 0.0;
 float voltage_step_size_pno = 0.000;
 int measurement_delay_pno = 0;
@@ -33,7 +36,7 @@ int measurements_per_step_pno = 0;
 unsigned long measurement_time_mins = 0;
 
 // Scan Variables
-boolean scan_done = true;
+volatile bool scan_done = true;
 float avgVolt[8];
 float avgCurr[8];
 int volt_Step_Count = 0;
@@ -46,49 +49,85 @@ int measurement_Rate_Scan = 0;
 int light_Status = 0;
 
 // Constant Voltage Variables
-boolean constant_voltage_done = true;
+volatile bool constant_voltage_done = true;
 float constant_voltage = 0.0;
+
+volatile bool measurement_running = !scan_done || !constant_voltage_done || !pno_done;
 
 void setup(void)
 {
     // System setup
     Wire.begin();
     Serial.begin(115200);
-    recvWithStartEndMarkers();
-    while (!Serial)
-    {
-        delay(10);
-    }
-    Serial.println("ArduinoAuto8Pixels Test");
+    // recvWithStartEndMarkers();
+    while (!Serial) { ; } // Wait for serial port to connect.
+    Serial.println("Stability-Setup_Arduino Version: 1.2");
 
-    // Initialize sensors
-    for (uint8_t ID = 0; ID < 8; ID++)
+    TCA9548Connected = getTCA9548Connected();
+    Serial.println(getTCA9548Connected());
+    if (TCA9548Connected)
     {
-        setupSensor_INA219(&allINA219[ID], ID);
+        Serial.println("TCA9548 Connected");
+        // Initialize sensors
+        for (uint8_t ID = 0; ID < 8; ID++)
+        {
+            Serial.println("Setting up MCP4725 with ID " + String(ID));
+            setupSensor_Dac(&allDAC[ID], ID);
+        }
+
+        for (uint8_t ID = 0; ID < 8; ID++)
+        {
+            Serial.println("Setting up INA219 with ID " + String(ID));
+            setupSensor_INA219(&allINA219[ID], ID);
+        }
+
+        Serial.println("");
+        Serial.println("Setup Successful");
+        SensorsConnected = true;
+    }
+    else
+    {
+        Serial.println("TCA9548 Connection Failure");
+        Serial.println("Entering Testing Mode");
     }
 
-    for (uint8_t ID = 0; ID < 8; ID++)
-    {
-        setupSensor_Dac(&allDAC[ID], ID);
-    }
-
-    Serial.println("");
-    Serial.println("Setup completed");
+    Serial.println("Arduino Ready");
 }
 
 void loop(void)
 {
-    zero();
-    recvWithStartEndMarkers();
-    if (new_data && scan_done && perturb_And_ObserveDone && constant_voltage_done)
+    if (TCA9548Connected && SensorsConnected)
     {
-        strcpy(temp_chars, received_chars);
-        parse_data();
-        show_parsed_data();
+        mainLoop();
+    }
+    else
+    {
+        messageResult = recvWithLineTermination();
+        if (messageResult == serialCommResult::START)
+        {
+            Serial.print("Measurement Started: ");
+            Serial.println(mode_from_pc);
+
+            bool run = true;
+            while (run) {
+                Serial.print(millis());
+                Serial.println(",10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10");
+                delay(1000);
+            }
+        }
+    }
+}
+
+void mainLoop()
+{
+    zero();
+    messageResult = recvWithLineTermination();
+    if (messageResult == serialCommResult::START)
+    {
         zero();
 
-        new_data = false;
         String mode = String(mode_from_pc);
+        Serial.println("Measurement Started");
 
         if (mode.equals("scan"))
         {
@@ -96,7 +135,7 @@ void loop(void)
         }
         else if (mode.equals("PnO"))
         {
-            perturb_And_ObserveDone = false;
+            pno_done = false;
         }
         else if (mode.equals("constantVoltage"))
         {
@@ -118,7 +157,7 @@ void loop(void)
         scan_done = true;
         Serial.println("Done!");
     }
-    else if (!perturb_And_ObserveDone)
+    else if (!pno_done)
     {
         Serial.println("Perturb and Observe");
 
@@ -129,7 +168,7 @@ void loop(void)
         measurement_time_mins = val5;
 
         perturb_and_observe_classic();
-        perturb_And_ObserveDone = true;
+        pno_done = true;
         Serial.println("Done!");
     }
     else if (!constant_voltage_done)

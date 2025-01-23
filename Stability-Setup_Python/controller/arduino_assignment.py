@@ -6,10 +6,14 @@ log_name = 'arduino_assignment'
 arduino_assignments = {"55131323837351A04202": 1,
                         "55139313535351406241": 2}
 
-arduino_assignments_location = {"1-5.4": 1,
+arduino_assignments_location = {"1-5":1,
+                                "1-4":1,
+                                "1-4.3" : 1,
+                                "1-5.4": 1,
                                 "1-5.3" : 2,
                                 "1-5.1" : 3,
-                                "1-5.2" : 4}
+                                "1-5.2" : 4,
+                                "1-3.4.2": 1}
 
 def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
     ports = [
@@ -21,11 +25,14 @@ def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
         raise IOError()
     return ports
 
-def get_arduino_assignments():
+def get():
     assigned_arduinos = []
     for device in _show_all_com_devices():
+        # Arduino assingment by location, works on any arduino but needs to be set before running
         if (device.location in arduino_assignments_location.keys()):
             assigned_arduinos.append({"ID" : arduino_assignments_location[device.location], "com":device.device})
+
+        # # Arduino assignment by ID, only works on specific arduinos
         # if (("Arduino" in device.description or
         #     "USB Serial Device" in device.description)
         #     and device.serial_number in arduino_assignments):
@@ -35,7 +42,7 @@ def get_arduino_assignments():
     return assigned_arduinos
 
 if __name__ == '__main__':
-    # print(_show_all_com_devices())
+    # custom_print(_show_all_com_devices())
 
     for i in _show_all_com_devices():
         # if "USB-SERIAL CH340" in i.description:
@@ -53,5 +60,5 @@ if __name__ == '__main__':
         print()
 
 
-    print(get_arduino_assignments())
+    print(get())
 

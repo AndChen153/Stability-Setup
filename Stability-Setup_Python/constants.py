@@ -1,6 +1,12 @@
 from enum import Enum
 
 class Mode(Enum):
+    STOP = 0
+    SCAN = 1
+    PNO = 2
+    CONSTANT = 3
+
+class UI_Mode(Enum):
     SCAN = 1
     PNO = 2
     CONSTANT = 3

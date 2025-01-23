@@ -6,8 +6,17 @@
 
 static const byte num_chars = 32;
 
-void recvWithStartEndMarkers();
-void parse_data();
+enum serialCommResult {
+    NONE,
+    START,
+};
+
+static const String Modes[3] = {"scan", "PnO", "constantVoltage"};
+
+serialCommResult recvWithLineTermination();
+bool checkForStopMessage();
+bool check_valid_mode();
+void clearSerialBuffer();
 void show_parsed_data();
 
 #endif

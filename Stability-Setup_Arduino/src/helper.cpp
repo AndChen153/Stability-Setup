@@ -31,7 +31,7 @@ void displaySensorVals(Adafruit_INA219 *ina219, int ID)
     delay(500);
 }
 
-void led(boolean status)
+void led(bool status)
 {
     digitalWrite(LED_BUILTIN, status ? HIGH : LOW);
 }

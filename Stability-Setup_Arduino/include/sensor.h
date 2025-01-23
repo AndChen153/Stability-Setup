@@ -33,10 +33,14 @@ extern float load_voltage;
 extern float power_mW;
 extern float current_mA_Flipped;
 
+const int TCA_ADDR_INA219 = 0x70;
+const int TCA_ADDR_MCP4725 = 0x71;
+
+bool getTCA9548Connected();
 void setupSensor_INA219(Adafruit_INA219 *ina219, uint8_t ID);
 void setupSensor_Dac(Adafruit_MCP4725 *dac, uint8_t ID);
 void TCA9548A_INA219(uint8_t bus);
-void TCA9548A_MCP475(uint8_t bus);
+void TCA9548A_MCP4725(uint8_t bus);
 void getINA129(Adafruit_INA219 *ina219, uint8_t ID);
 void setVoltage(Adafruit_MCP4725 *dac, float voltage_val, uint8_t ID);
 void zero();

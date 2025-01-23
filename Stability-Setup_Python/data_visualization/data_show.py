@@ -6,13 +6,14 @@ from labellines import labelLines
 import os
 import sys
 from typing import List
+from helper.global_helpers import custom_print
 from matplotlib.font_manager import FontProperties
 
 NUM_PIXELS = 8
 
 np.set_printoptions(threshold=sys.maxsize)
 
-def show_pce_graphs_one_graph(graph_name,
+def create_pce_graph(graph_name,
                     lightScanName = "",
                     startingPoint = 0,
                     divFactor = 50,
@@ -81,7 +82,7 @@ def show_pce_graphs_one_graph(graph_name,
         if i in dead_pixels and not show_dead_pixels:
                 continue
         lineName = "PCE" + str(i + 1)
-        # print(np.array(pce_list[i]))
+        # custom_print(np.array(pce_list[i]))
         plt.plot(time,data[:,i], label = lineName)
 
 
@@ -104,13 +105,13 @@ def show_pce_graphs_one_graph(graph_name,
     return
 
 
-def show_scan_graphs_one_graph(graph_name,
+def create_scan_graph(graph_name,
                  show_dead_pixels = False,
                  fixed_window = False,
                  current_density = True):
     plot_size = (10,8)
     arr = np.loadtxt(graph_name, delimiter=",", dtype=str)
-    print("PC -> Graph Name", graph_name)
+    custom_print("PC -> Graph Name", graph_name)
     png_save_location = graph_name[:-4]
 
     plot_title = png_save_location.split("\\")[-1].split("/")[-1]
@@ -210,7 +211,7 @@ def get_dead_pixels(graph_name) -> List[int]:
     headers = arr[6,:]
     arr = arr[7:, :]
 
-    # print(arr)
+    # custom_print(arr)
     length = (len(headers) - 1)
 
     jvList = []
@@ -219,8 +220,8 @@ def get_dead_pixels(graph_name) -> List[int]:
 
     dead_pixels = []
     for i in range(0,len(jvList),2):
-        # print(i)
-        # print(jvList[i], jvList[i+1])
+        # custom_print(i)
+        # custom_print(jvList[i], jvList[i+1])
         jvList[i] = [float(j) for j in jvList[i]]
         jvList[i+1] = [float(x) for x in jvList[i+1]]
         if np.mean(np.absolute(np.array(jvList[i]))) < 0.2 or np.mean(np.absolute(np.array(jvList[i+1]))) < 0.2:
@@ -303,7 +304,7 @@ def show_pce_graphs(graph_name,
                 continue
 
             lineName = "PCE" + str(i + 1)
-            # print(np.array(pce_list[i]))
+            # custom_print(np.array(pce_list[i]))
             plt.plot(time,data[:,i], label = lineName)
 
         labelLines(plt.gca().get_lines(),
@@ -337,7 +338,7 @@ def show_pce_graphs(graph_name,
                 if i in dead_pixels and not show_dead_pixels:
                     continue
                 lineName = "PCE" + str(i + 1)
-                # print(np.array(pce_list[i]))
+                # custom_print(np.array(pce_list[i]))
                 plt.plot(time,data[:,i],
                          label = lineName)
 
@@ -370,7 +371,7 @@ def show_pce_graphs(graph_name,
                 if i in dead_pixels and not show_dead_pixels:
                         continue
                 lineName = "PCE" + str(i + 1)
-                # print(np.array(pce_list[i]))
+                # custom_print(np.array(pce_list[i]))
                 plt.plot(time,data[:,i], label = lineName)
 
             labelLines(plt.gca().get_lines(), zorder=2.5)
@@ -402,7 +403,7 @@ def show_pce_graphs(graph_name,
                 if i in dead_pixels and not show_dead_pixels:
                         continue
                 lineName = "PCE" + str(i + 1)
-                # print(np.array(pce_list[i]))
+                # custom_print(np.array(pce_list[i]))
                 plt.plot(time,data[:,i], label = lineName)
 
         # averagePCE = np.zeros_like(np.array(data[:,i]))
@@ -413,7 +414,7 @@ def show_pce_graphs(graph_name,
         #     lineName = "PCE" + str(i + 1)
         #     averagePCE += np.array(data[:,i])
         #     count += 1
-        #     # print(np.array(pce_list[i]))
+        #     # custom_print(np.array(pce_list[i]))
         # averagePCE/=count
         # plt.plot(time,averagePCE, label = lineName)
 
@@ -444,7 +445,7 @@ def show_scan_graphs(graph_name,
     for i in range(NUM_DEVICES):
         device_to_pixels[i] = [j + NUM_PIXELS*i for j in range(NUM_PIXELS)]
 
-    print("PC -> Graph Name", graph_name)
+    custom_print("PC -> Graph Name", graph_name)
     png_save_location = graph_name[:-4]
 
     plot_title_orig = png_save_location.split("\\")[-1]
@@ -467,7 +468,7 @@ def show_scan_graphs(graph_name,
 
     maxX,minX,maxY,minY= 0,0,0,0
     for i in range(0,len(jvList),2):
-        # print(i)
+        # custom_print(i)
 
         jvList[i] = [float(v) - 5*float(j)*0.001 for v, j in zip(jvList[i], jvList[i+1])]
         # jvList[i] = [float(j) for j in jvList[i]]
@@ -479,7 +480,7 @@ def show_scan_graphs(graph_name,
         if min(jvList[i]) < minX: minX = min(jvList[i])
         if max(jvList[i+1]) > maxY: maxY = max(jvList[i+1])
         if min(jvList[i+1]) < minY: minY = min(jvList[i+1])
-    # print(jvList)
+    # custom_print(jvList)
 
     if not fixed_window:
         maxX *= 1.1
@@ -491,11 +492,11 @@ def show_scan_graphs(graph_name,
         minX = 0
         maxY = 26
         minY = -2
-    # print(maxX,minX,maxY,minY)
+    # custom_print(maxX,minX,maxY,minY)
 
     # generate graphs
     if pixels is None and devices is None: # show all pixels
-        print("1")
+        custom_print("1")
         plt.figure(figsize=plot_size)
         plt.xlim(minX,maxX)
         plt.ylim(minY, maxY)
@@ -525,12 +526,12 @@ def show_scan_graphs(graph_name,
 
         plt.legend(bbox_to_anchor=(1.18, 1))
         plot_title = plot_title_orig
-        print("PC -> save location", png_save_location + plot_title_orig)
+        custom_print("PC -> save location", png_save_location + plot_title_orig)
 
         plt.savefig(png_save_location, dpi=300, bbox_inches='tight')
 
     elif devices is not None: # show certain devices
-        print("2")
+        custom_print("2")
         for i in devices:
             plot_title = plot_title_orig + " DEVICE_" + str(i)
             plt.figure(figsize=plot_size)
@@ -546,7 +547,7 @@ def show_scan_graphs(graph_name,
             for i in pixels:
                 if i in dead_pixel and not show_dead_pixels:
                     continue
-                # print(i)
+                # custom_print(i)
                 i*=2
                 lineName = "Pixel " + str(int(i/2) + 1)
                 plt.plot(jvList[i],jvList[i+1], label = lineName)
@@ -558,7 +559,7 @@ def show_scan_graphs(graph_name,
             plt.savefig(png_save_location+plot_title, dpi=300, bbox_inches='tight')
 
     elif pixels is not None: # show certain pixels
-        print("3")
+        custom_print("3")
         plot_title = plot_title_orig + " DEVICE_" + str(pixels)
         # pngTitle += " PIXELS" + "_".join(str(x) for x in pixels)
         plt.figure(figsize=plot_size)
@@ -584,7 +585,7 @@ def show_scan_graphs(graph_name,
         plt.savefig(png_save_location + plot_title, dpi=300, bbox_inches='tight')
 
     if len(device_to_pixels) > 1:
-        print("4")
+        custom_print("4")
         for i in device_to_pixels: # save all 4 devices
             plot_title = plot_title_orig + " DEVICE_" + str(i)
 
@@ -662,7 +663,7 @@ def get_dead_pixels(graph_name) -> List[int]:
     headers = arr[6,:]
     arr = arr[7:, :]
 
-    # print(arr)
+    # custom_print(arr)
     length = (len(headers) - 1)
 
     jvList = []
@@ -671,8 +672,8 @@ def get_dead_pixels(graph_name) -> List[int]:
 
     dead_pixels = []
     for i in range(0,len(jvList),2):
-        # print(i)
-        # print(jvList[i], jvList[i+1])
+        # custom_print(i)
+        # custom_print(jvList[i], jvList[i+1])
         jvList[i] = [float(j) for j in jvList[i]]
         jvList[i+1] = [float(x) for x in jvList[i+1]]
         if np.mean(np.absolute(np.array(jvList[i]))) < 0.2 or np.mean(np.absolute(np.array(jvList[i+1]))) < 0.2:
@@ -686,17 +687,17 @@ def scan_calcs(graph_name):
     '''
     arr = np.loadtxt(graph_name, delimiter=",", dtype=str)
     dead_pixels = get_dead_pixels(graph_name)
-    # print(dead_pixels)
+    # custom_print(dead_pixels)
     graph_name = graph_name.split('\\')
-    # print(arr)
+    # custom_print(arr)
 
     headers = arr[6,:]
 
     header_dict = {value: index for index, value in enumerate(headers)}
-    # print(header_dict)
+    # custom_print(header_dict)
     arr = arr[7:, :]
     length = (len(headers) - 1)
-    # print(length)
+    # custom_print(length)
 
     jvList = []
 
@@ -707,7 +708,7 @@ def scan_calcs(graph_name):
     jList = [] #current
     vList = [] #voltage
     for i in range(0,len(jvList),2):
-        # print(i)
+        # custom_print(i)
         jList.append([float(j) for j in jvList[i+1]])
         vList.append([float(x) for x in jvList[i]])
         # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
@@ -737,9 +738,9 @@ def scan_calcs(graph_name):
 
         # find Fill Factor
         pce_list = jList*vList
-        # print(np.array(pce_list).shape)
+        # custom_print(np.array(pce_list).shape)
         maxVIdx = np.argmax(pce_list, axis=0) # find index of max pce value
-        # print(np.array(maxVIdx).shape)
+        # custom_print(np.array(maxVIdx).shape)
         vmppList = []
         jmppList = []
         for i in range(len(maxVIdx)): # for i in number of pixels
@@ -766,7 +767,7 @@ def scan_calcs(graph_name):
         #     for i in device_to_pixels[i]:
         #         # if i not in dead_pixels:
         #         alive.append(i)
-        #     # print(alive)
+        #     # custom_print(alive)
         #     fillFactorListSplit.append([fillFactorList[alive]])
         #     jscListSplit.append([jscList[alive]])
         #     vocListSplit.append([vocList[alive]])
@@ -788,7 +789,7 @@ if __name__ == '__main__':
     all_files = list_files_in_directory(directory_path)
 
     for filepath in all_files:
-        show_scan_graphs_one_graph(filepath)
+        create_scan_graph(filepath)
 
     # directory_path = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-20-2024 11_58_21"
     # all_files = list_files_in_directory(directory_path)

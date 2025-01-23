@@ -1,0 +1,83 @@
+# multi_arduino_controller.py
+from controller.single_arduino_controller import single_controller
+from controller import arduino_assignment
+from constants import Mode, constants_controller
+import threading
+from helper.global_helpers import custom_print
+
+class multi_controller:
+    def __init__(self, folder_path: str, today: str):
+        self.folder_path = folder_path
+        self.today = today
+        self.arduino_assignments = arduino_assignment.get()
+        self.controllers = {}
+        self.active_threads = {}
+        self.lock = threading.Lock()
+
+        # Initialize controllers
+        for arduino in self.arduino_assignments:
+            ID = arduino["ID"]
+            COM = arduino["com"]
+            controller = single_controller(
+                arduinoID=ID,
+                COM=COM,
+                SERIAL_BAUD_RATE=constants_controller["serial_baud_rate"],
+                folder_path=self.folder_path,
+                today=self.today,
+            )
+            self.controllers[ID] = controller
+
+            if controller.connect():
+                custom_print(f"Connected to {controller.port}.")
+            else:
+                custom_print(f"Connection to {controller.port} failed.")
+
+    def get_valid(self):
+        return bool(self.arduino_assignments)
+
+    def run_command(self, ID, command, **kwargs):
+        """
+        Runs a command on a specific controller. If another command is already running,
+        it stops the current command before starting the new one.
+        """
+        custom_print(f"Attempting to run {command} on controller {ID}")
+        custom_print(self.active_threads)
+        with self.lock:
+            # Stop existing commands if running
+            if ID in self.active_threads:
+                custom_print(f"Stopping current command on controller {ID}.")
+                self.controllers[ID].reset_arduino()
+                thread = self.active_threads[ID]
+                thread.join()
+                del self.active_threads[ID]
+
+            # Define the target function based on the command
+            if command == Mode.SCAN:
+                target = lambda: self.controllers[ID].scan(**kwargs)
+            elif command == Mode.PNO:
+                target = lambda: self.controllers[ID].pno(**kwargs)
+            elif command == Mode.CONSTANT:
+                target = lambda: self.controllers[ID].constant_voltage(**kwargs)
+            elif not (command == Mode.STOP):
+                custom_print(f"Unknown command: {command}")
+                return
+
+            if not (command == Mode.STOP):
+                # Start the new command in a new thread
+                thread = threading.Thread(target=target, daemon=True)
+                thread.start()
+                self.active_threads[ID] = thread
+                custom_print(f"Started command {command} on controller {ID}.")
+
+    def run(self, mode, params=[]):
+        """
+        Runs a specified mode on all connected controllers.
+        """
+        kwargs = {
+            "params": params,
+        }
+        for controller_id in self.controllers:
+            try:
+                self.run_command(controller_id, mode, **kwargs)
+            except Exception as e:
+                custom_print(f"Failed to run command '{mode}' on controller {controller_id}: {e}")

@@ -2,6 +2,8 @@
 #include "../include/sensor.h"
 #include <Wire.h>
 
+#define WIRE Wire
+
 // Sensor instances
 Adafruit_INA219 ina219_0;
 Adafruit_INA219 ina219_1;
@@ -31,6 +33,35 @@ float load_voltage;
 float power_mW;
 float current_mA_Flipped;
 
+bool getTCA9548Connected()
+{
+    byte error, address;
+    int nDevices;
+    nDevices = 0;
+    int devices[128];
+
+    for (address = 1; address < 127; address++)
+    {
+        WIRE.beginTransmission(address);
+        error = WIRE.endTransmission();
+
+        if (error == 0)
+        {
+            devices[address] = 1;
+
+            nDevices++;
+        } else {
+            devices[address] = 0;
+        }
+    }
+
+    if (devices[TCA_ADDR_INA219] && devices[TCA_ADDR_MCP4725]) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void setupSensor_INA219(Adafruit_INA219 *ina219, uint8_t ID)
 {
     TCA9548A_INA219(ID);
@@ -47,7 +78,7 @@ void setupSensor_INA219(Adafruit_INA219 *ina219, uint8_t ID)
 
 void setupSensor_Dac(Adafruit_MCP4725 *dac, uint8_t ID)
 {
-    TCA9548A_MCP475(ID);
+    TCA9548A_MCP4725(ID);
     if (!dac->begin())
     {
         Serial.print("dac_");
@@ -60,15 +91,15 @@ void setupSensor_Dac(Adafruit_MCP4725 *dac, uint8_t ID)
 
 void TCA9548A_INA219(uint8_t bus)
 {
-    Wire.beginTransmission(0x70); // TCA9548A_INA219 address is 0x70
-    Wire.write(1 << bus);         // send byte to select bus
+    Wire.beginTransmission(TCA_ADDR_INA219); // TCA9548A_INA219 address is 0x70
+    Wire.write(1 << bus);                    // send byte to select bus
     Wire.endTransmission();
 }
 
-void TCA9548A_MCP475(uint8_t bus)
+void TCA9548A_MCP4725(uint8_t bus)
 {
-    Wire.beginTransmission(0x71); // TCA9548A_MCP475 address is 0x71
-    Wire.write(1 << bus);         // send byte to select bus
+    Wire.beginTransmission(TCA_ADDR_MCP4725); // TCA9548A_MCP475 address is 0x71
+    Wire.write(1 << bus);                     // send byte to select bus
     Wire.endTransmission();
 }
 
@@ -85,7 +116,7 @@ void getINA129(Adafruit_INA219 *ina219, uint8_t ID)
 
 void setVoltage(Adafruit_MCP4725 *dac, float voltage_val, uint8_t ID)
 {
-    TCA9548A_MCP475(ID);
+    TCA9548A_MCP4725(ID);
     dac->setVoltage(convert_to_12bit(voltage_val), false);
 }
 

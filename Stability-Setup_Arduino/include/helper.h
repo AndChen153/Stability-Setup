@@ -7,6 +7,6 @@
 
 void light_control(int light_Status);
 void displaySensorVals(Adafruit_INA219 *ina219, int ID);
-void led(boolean status);
+void led(bool status);
 
 #endif
