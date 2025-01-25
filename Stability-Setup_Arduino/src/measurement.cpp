@@ -87,6 +87,7 @@ void perturb_and_observe_classic()
             load_voltageArr[ID] /= measurements_per_step_pno;
             current_mA_FlippedArr[ID] /= measurements_per_step_pno;
 
+            // moving average calculation
             float smoothedPower = (prevPower[ID] * (moving_average_n - 1) + currentPower[ID]) / moving_average_n;
 
             if (smoothedPower > prevPower[ID])

@@ -3,7 +3,7 @@
 from email import header
 from fileinput import filename
 from constants import Mode, constants_controller
-from data_visualization import data_show as data_show
+from data_visualization import data_plotter
 from helper.global_helpers import custom_print
 import serial
 import time
@@ -120,7 +120,7 @@ class single_controller:
         )
         self._read_data()
         if os.path.exists(self.file_name):
-            data_show.create_scan_graph(os.path.abspath(self.file_name))
+            data_plotter.create_graph(os.path.abspath(self.file_name))
         else:
             custom_print("File Not Found")
 
@@ -241,9 +241,8 @@ class single_controller:
         #     VMPP = self.find_vmpp(scan_file_name)
         #     custom_print(f"PC: VMPP-> {VMPP}")
 
-        VMPP = "0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6"
-
-        # VMPP = "0.7148,0.6797,0.5118,0.2118,0.4197,0.7367,0.3238,0.5358,0.7077,1.092,0.6237,0.5957,0.82,0.913,0.676,0.6437,0.7076,0.5567,0.7357,0.1439,0.6436,-0.0,0.6666,0.6438,0.4729,0.5639,0.6069,0.0,0.1189,0.2299,0.752,1.096"
+        # VMPP = "0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6"
+        # TODO: reimplement vmpp
         self.parameters = (
             "PnO,"
             + str(PNO_STARTING_VOLTAGE)
@@ -255,9 +254,6 @@ class single_controller:
             + str(PNO_MEASUREMENT_DELAY)
             + ","
             + str(PNO_MEASUREMENT_TIME)
-            + ","
-            + VMPP
-            + ""
         )
 
         custom_print(f"Parameters:  {self.parameters}")
@@ -270,7 +266,73 @@ class single_controller:
         )
         custom_print(self.file_name)
         self._read_data()
-        data_show.create_pce_graph(os.path.abspath(self.file_name))
+        data_plotter.create_graph(os.path.abspath(self.file_name))
+
+    def _start_pno(
+        self,
+        PNO_STARTING_VOLTAGE,
+        PNO_STEP_SIZE,
+        PNO_MEASUREMENTS_PER_STEP,
+        PNO_MEASUREMENT_DELAY,
+        PNO_MEASUREMENT_TIME,
+    ):
+
+        voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
+        amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
+        power_lambda = lambda y: "Pixel_" + str(y) + " PCE"
+        header_arr = ["Time"]
+        pce_header = []
+
+        done = False
+        line = ""
+        while self.should_run and not done:
+            try:
+                with self.write_lock:
+                    self.ser.write(self.parameters.encode())  # send data to arduino
+                    line = self.ser.readline().decode().strip()
+                    data_list = line.split(",")
+                    custom_print(f"INIT Arduino {self.arduinoID}", data_list)
+                    if "Measurement Started" in line:
+                        header_arr.extend(
+                            [
+                                f(value)
+                                for value in range(8)
+                                for f in (voltage_lambda, amperage_lambda)
+                            ]
+                        )
+                        pce_header.extend(
+                            [
+                                power_lambda(value)
+                                for value in range(8)
+                            ]
+                        )
+                        done = True
+            except serial.SerialException as e:
+                custom_print(f"Communication error on {self.port}. Error: {e}")
+                break
+
+        header_arr.extend(pce_header)
+        header_arr.append("ARUDUINOID")
+
+        self.pno_arr_width = len(header_arr)
+        self.arr = np.empty([7, len(header_arr)], dtype="object")
+        self.arr[0][0], self.arr[0][1] = "Voltage Range (V): ", PNO_STARTING_VOLTAGE
+        self.arr[1][0], self.arr[1][1] = "Voltage Step Size (V): ", PNO_STEP_SIZE
+        self.arr[2][0], self.arr[2][1] = (
+            "Voltage Read Count: ",
+            PNO_MEASUREMENTS_PER_STEP,
+        )
+        self.arr[3][0], self.arr[3][1] = (
+            "Voltage Delay Time (ms): ",
+            PNO_MEASUREMENT_DELAY,
+        )
+        self.arr[4][0], self.arr[4][1] = (
+            "Voltage Measurement Time (Hrs): ",
+            PNO_MEASUREMENT_TIME,
+        )
+        self.arr[5][0], self.arr[5][1] = "Start Date: ", self.today
+        # self.arr[6][0], self.arr[6][1] = "End Date: ", datetime.now().strftime("%b-%d-%Y")
+        self.arr[6] = header_arr
 
     def reset_arduino(self):
         """
@@ -355,76 +417,7 @@ class single_controller:
             elif self.mode == Mode.PNO:
                 self.arr = np.empty([1, self.pno_arr_width], dtype="object")
 
-        # if (self.mode == Mode.PNO):
-        #     data_show_1_0.show_pce_graphs_one_graph(self.file_name, show_dead_pixels = True, pixels= None, devices= None)
         custom_print("SAVED")
-
-    def _start_pno(
-        self,
-        PNO_STARTING_VOLTAGE,
-        PNO_STEP_SIZE,
-        PNO_MEASUREMENTS_PER_STEP,
-        PNO_MEASUREMENT_DELAY,
-        PNO_MEASUREMENT_TIME,
-    ):
-
-        voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
-        amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
-        power_lambda = lambda y: "Pixel_" + str(y) + " PCE"
-        header_arr = ["Time"]
-        pce_header = []
-
-        done = False
-        line = ""
-        while self.should_run and not done:
-            try:
-                with self.write_lock:
-                    self.ser.write(self.parameters.encode())  # send data to arduino
-                    line = self.ser.readline().decode().strip()
-                    data_list = line.split(",")
-                    custom_print(f"INIT Arduino {self.arduinoID}", data_list)
-                    if "Measurement Started" in line:
-                        header_arr.extend(
-                            [
-                                f(value)
-                                for value in range(8)
-                                for f in (voltage_lambda, amperage_lambda)
-                            ]
-                        )
-                        pce_header.extend(
-                            [
-                                power_lambda(value)
-                                for value in range(8)
-                            ]
-                        )
-                        done = True
-            except serial.SerialException as e:
-                custom_print(f"Communication error on {self.port}. Error: {e}")
-                break
-
-        header_arr.extend(pce_header)
-        header_arr.append("ARUDUINOID")
-
-        self.pno_arr_width = len(header_arr)
-        self.arr = np.empty([7, len(header_arr)], dtype="object")
-        self.arr[0][0], self.arr[0][1] = "Voltage Range (V): ", PNO_STARTING_VOLTAGE
-        self.arr[1][0], self.arr[1][1] = "Voltage Step Size (V): ", PNO_STEP_SIZE
-        self.arr[2][0], self.arr[2][1] = (
-            "Voltage Read Count: ",
-            PNO_MEASUREMENTS_PER_STEP,
-        )
-        self.arr[3][0], self.arr[3][1] = (
-            "Voltage Delay Time (ms): ",
-            PNO_MEASUREMENT_DELAY,
-        )
-        self.arr[4][0], self.arr[4][1] = (
-            "Voltage Measurement Time (Hrs): ",
-            PNO_MEASUREMENT_TIME,
-        )
-        self.arr[5][0], self.arr[5][1] = "Start Date: ", self.today
-        # self.arr[6][0], self.arr[6][1] = "End Date: ", datetime.now().strftime("%b-%d-%Y")
-        self.arr[6] = header_arr
-
 
     def set_folder_path(self, new_folder_path):
         self.folder_path = new_folder_path
