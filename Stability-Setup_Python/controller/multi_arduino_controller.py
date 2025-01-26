@@ -3,27 +3,30 @@ from controller.single_arduino_controller import single_controller
 from controller import arduino_assignment
 from constants import Mode, constants_controller
 import threading
+import os
 from helper.global_helpers import custom_print
 
 class multi_controller:
-    def __init__(self, folder_path: str, today: str):
+    def __init__(self, folder_path: str):
         self.folder_path = folder_path
-        self.today = today
         self.arduino_assignments = arduino_assignment.get()
         self.controllers = {}
         self.active_threads = {}
         self.lock = threading.Lock()
 
+        if not os.path.exists(self.folder_path):
+            os.mkdir(self.folder_path)
+
         # Initialize controllers
         for arduino in self.arduino_assignments:
             ID = arduino["ID"]
             COM = arduino["com"]
+
             controller = single_controller(
                 arduinoID=ID,
                 COM=COM,
                 SERIAL_BAUD_RATE=constants_controller["serial_baud_rate"],
                 folder_path=self.folder_path,
-                today=self.today,
             )
             self.controllers[ID] = controller
 

@@ -23,7 +23,6 @@ class single_controller:
         COM: str,
         SERIAL_BAUD_RATE: int,
         folder_path: str,
-        today: str,
     ) -> None:
         """
         Parameters
@@ -47,10 +46,8 @@ class single_controller:
         self.file_name = ""
 
         self.arduinoID = str(arduinoID)
-        self.today = today
+        self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         self.folder_path = folder_path
-        if not os.path.exists(self.folder_path):
-            os.mkdir(self.folder_path)
         self.start = time.time()
 
         self.scan_arr_width = 0

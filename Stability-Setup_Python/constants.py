@@ -15,6 +15,7 @@ constants_gui = {
     "pages": {Mode.SCAN: "Scan", Mode.PNO: "PNO", Mode.CONSTANT: "Constant Voltage"},
     "params": {
         Mode.SCAN: [
+            "Trial Name",
             "Scan Range (V):",
             "Scan Step Size (V):",
             "Scan Read Count:",
@@ -22,6 +23,7 @@ constants_gui = {
             "Scan Mode(dark, light):",
         ],
         Mode.PNO: [
+            "Trial Name",
             "PNO Starting Voltage (V):",
             "PNO Step Size (V):",
             "PNO Measurements Per Step:",
@@ -31,8 +33,8 @@ constants_gui = {
         Mode.CONSTANT: ["Constant Voltage (V):"],
     },
     "defaults": {
-        Mode.SCAN: ["1.2", "0.03", "5", "50", "1"],
-        Mode.PNO: ["0.50", "0.01", "5", "300", "60"],
+        Mode.SCAN: ["", "1.2", "0.03", "5", "50", "1"],
+        Mode.PNO: ["", "0.50", "0.01", "5", "300", "60"],
         Mode.CONSTANT: ["0.5"],
     },
 }

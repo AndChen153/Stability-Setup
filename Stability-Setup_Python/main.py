@@ -5,7 +5,7 @@ import threading
 from datetime import datetime
 from helper.global_helpers import custom_print
 from constants import Mode, constants_gui
-from data_visualization import data_show as data_show
+from data_visualization import data_plotter as data_plotter
 from controller.multi_arduino_controller import multi_controller
 
 REMOVE_STOP_MODE = 1
@@ -14,10 +14,11 @@ class App:
     # TODO: create input for folder title
     # TODO: replace this app with https://www.pythonguis.com/pyside6/
     def __init__(self, root):
+        self.trial_name = ""
+        self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
+        self.folder_path = None
 
-        today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
-        folder_path = "./data/" + today + "/"
-        self.multi_controller = multi_controller(folder_path=folder_path, today=today)
+        self.multi_controller = None
 
         self.root = root
         self.root.title("Stability Setup")
@@ -27,7 +28,6 @@ class App:
         self.top_frame = tk.Frame(self.root)
         self.top_frame.pack(side=tk.TOP, fill=tk.X)
 
-        #
         self.num_pages = len(Mode) - REMOVE_STOP_MODE
         self.pages_list = list(Mode)[REMOVE_STOP_MODE:]
 
@@ -136,7 +136,15 @@ class App:
 
         # Retrieve parameter values
         entries = self.pages[page_number]["entries"]
+        self.trial_name = entries.pop(0).get()
         values = [entry.get() for entry in entries]
+        custom_print(self.trial_name, values)
+
+        if self.trial_name:
+            self.trial_name = self.trial_name + " "
+        self.folder_path = "./data/" + self.trial_name + self.today + "/"
+        if not self.multi_controller:
+            self.multi_controller = multi_controller(folder_path=self.folder_path)
 
         # Clear any previous stop event
         self.stop_events[page_number].clear()
