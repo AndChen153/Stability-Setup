@@ -2,41 +2,47 @@
 from controller.single_arduino_controller import single_controller
 from controller import arduino_assignment
 from constants import Mode, constants_controller
+from data_visualization import data_plotter
 import threading
 import os
 from helper.global_helpers import custom_print
 
+
 class multi_controller:
-    def __init__(self, folder_path: str):
+    def __init__(self, folder_path: str, plotting_mode: False):
         self.folder_path = folder_path
-        self.arduino_assignments = arduino_assignment.get()
+        self.arduino_assignments = None
         self.controllers = {}
         self.active_threads = {}
         self.lock = threading.Lock()
-
-        if not os.path.exists(self.folder_path):
-            os.mkdir(self.folder_path)
+        self.plotting_mode = plotting_mode
 
         # Initialize controllers
-        for arduino in self.arduino_assignments:
-            ID = arduino["ID"]
-            COM = arduino["com"]
+        if not self.plotting_mode:
+            self.arduino_assignments = arduino_assignment.get()
 
-            controller = single_controller(
-                arduinoID=ID,
-                COM=COM,
-                SERIAL_BAUD_RATE=constants_controller["serial_baud_rate"],
-                folder_path=self.folder_path,
-            )
-            self.controllers[ID] = controller
+            if not os.path.exists(self.folder_path):
+                os.mkdir(self.folder_path)
 
-            if controller.connect():
-                custom_print(f"Connected to {controller.port}.")
-            else:
-                custom_print(f"Connection to {controller.port} failed.")
+            for arduino in self.arduino_assignments:
+                ID = arduino["ID"]
+                COM = arduino["com"]
+
+                controller = single_controller(
+                    arduinoID=ID,
+                    COM=COM,
+                    SERIAL_BAUD_RATE=constants_controller["serial_baud_rate"],
+                    folder_path=self.folder_path,
+                )
+                self.controllers[ID] = controller
+
+                if controller.connect():
+                    custom_print(f"Connected to {controller.port}.")
+                else:
+                    custom_print(f"Connection to {controller.port} failed.")
 
     def get_valid(self):
-        return bool(self.arduino_assignments)
+        return bool(self.arduino_assignments) or self.plotting_mode
 
     def run_command(self, ID, command, **kwargs):
         """
@@ -76,11 +82,16 @@ class multi_controller:
         """
         Runs a specified mode on all connected controllers.
         """
-        kwargs = {
-            "params": params,
-        }
-        for controller_id in self.controllers:
-            try:
-                self.run_command(controller_id, mode, **kwargs)
-            except Exception as e:
-                custom_print(f"Failed to run command '{mode}' on controller {controller_id}: {e}")
+        if mode == Mode.PLOTTER:
+            data_plotter.plot_all_in_folder(params[0])
+        else:
+            kwargs = {
+                "params": params,
+            }
+            for controller_id in self.controllers:
+                try:
+                    self.run_command(controller_id, mode, **kwargs)
+                except Exception as e:
+                    custom_print(
+                        f"Failed to run command '{mode}' on controller {controller_id}: {e}"
+                    )

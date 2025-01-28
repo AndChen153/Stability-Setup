@@ -1,3 +1,0 @@
-Variable,Architecture,Max PCE[%] Rv,Median PCE[%] Rv,Max Voc[V] Rv,Median Voc[V] Rv,Max Jsc[mA/cm2] Rv,Median Jsc[mA/cm2] Rv,Max FF[%] Rv,Median FF[%] Rv,Max Stabilized_MPP [%],Median Stabilized_MPP [%],Max Hysteresis [HI],Median Hysteresis [HI]
-test,nip,12.72,11.5,0.95,0.9,23.94,23.71,58.54,54.52,11.95,11.15,0.3,0.05
-test1,nip,12.63,9.84,0.95,0.89,23.69,23.31,57.94,49.4,11.69,5.5,0.11,0.07

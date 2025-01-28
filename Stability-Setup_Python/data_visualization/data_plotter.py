@@ -1,24 +1,40 @@
 #%%
+import matplotlib
+matplotlib.use('Agg')  # Use a non-GUI backend to suppress GUI errors
+
 import matplotlib.pyplot as plt
 import numpy as np
 from labellines import labelLines
 import os
 import sys
+import warnings
 from typing import List
 from helper.global_helpers import custom_print
 from matplotlib.font_manager import FontProperties
+import matplotlib.ticker as ticker
 
 NUM_PIXELS = 8
 np.set_printoptions(threshold=sys.maxsize)
 
+warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+
 def create_graph(file_location):
     if (file_location.endswith("scan.csv")):
+        custom_print(f"Creating Plots for: {file_location}")
         create_scan_graph(file_location, current_density=False)
-        return create_scan_graph(file_location, current_density=True)
+        return create_scan_graph(file_location, current_density=True, saveInFolder = False)
     elif (file_location.endswith("PnO.csv")):
+        custom_print(f"Creating Plot for: {file_location}")
         return create_pce_graph(file_location)
     else:
         return ""
+
+def plot_all_in_folder(directory_path):
+    all_files = list_files_in_directory(directory_path)
+
+    for filepath in all_files:
+        create_graph(filepath)
 
 def create_pce_graph(graph_name,
                     lightScanName = "",
@@ -44,8 +60,8 @@ def create_pce_graph(graph_name,
     time = np.array(arr[:,header_dict["Time"]]).astype('float')
     pce_list = np.array(arr)
 
-    png_save_location = graph_name[:-4]
-    plot_title = png_save_location.replace('\\', '/').split('/')[-1]
+    png_save_location = "/".join(graph_name.replace('\\', '/').split('/')[:-1])
+    plot_title = graph_name.replace('\\', '/').split('/')[-1][:-4]
     png_save_location = png_save_location + "\\"
     if not os.path.exists(png_save_location):
         os.mkdir(png_save_location)
@@ -112,19 +128,28 @@ def create_pce_graph(graph_name,
 
 def create_scan_graph(graph_name,
                  current_density = True,
+                 saveInFolder = True,
                  show_dead_pixels = False,
                  fixed_window = False):
     plot_size = (10,8)
     arr = np.loadtxt(graph_name, delimiter=",", dtype=str)
     # custom_print("PC -> Graph Name", graph_name)
+    # C:/Users/achen/Dropbox/code/Stability-Setup/data/Nov-19-2024 17_01_11\Nov-19-2024 17_01_13lightID1scan.csv
+    if saveInFolder:
+        png_save_location = graph_name[:-4]
+    else:
+        png_save_location = "/".join(graph_name.replace('\\', '/').split('/')[:-1])
 
-    png_save_location = graph_name[:-4]
-    plot_title = png_save_location.replace('\\', '/').split('/')[-1]
-    plot_title += '_Jmeas' if current_density else '_Current'
+    custom_print(graph_name.replace('\\', '/').split('/'))
 
     png_save_dir = png_save_location + "\\"
     if not os.path.exists(png_save_dir):
         os.mkdir(png_save_dir)
+
+    box_plot_save_dir =graph_name[:-4] + "\\"
+
+    plot_title = graph_name.replace('\\', '/').split('/')[-1][:-4]
+    plot_title += '_Jmeas' if current_density else '_Current'
 
     png_save_path = png_save_dir + plot_title
     dead_pixel = get_dead_pixels(graph_name)
@@ -186,9 +211,10 @@ def create_scan_graph(graph_name,
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_title(plot_title)
     ax.set_ylabel('FF (%)')
+    ax.set_xticks([1, 2])
     ax.set_xticklabels(["Reverse","Forward"])
     bp = ax.boxplot(FF)
-    plt.savefig(png_save_dir + plot_title, dpi=300, bbox_inches='tight')
+    plt.savefig(box_plot_save_dir + plot_title, dpi=300, bbox_inches='tight')
 
 
     plot_title = "Γ_JSC_BoxPlot"
@@ -197,9 +223,10 @@ def create_scan_graph(graph_name,
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_title(plot_title)
     ax.set_ylabel('Jsc (mA/cm2)')
+    ax.set_xticks([1, 2])
     ax.set_xticklabels(["Reverse","Forward"])
     bp = ax.boxplot(JSC)
-    plt.savefig(png_save_dir + plot_title, dpi=300, bbox_inches='tight')
+    plt.savefig(box_plot_save_dir + plot_title, dpi=300, bbox_inches='tight')
 
     plot_title = "Γ_VOC_BoxPlot"
     fig = plt.figure(figsize=plot_size)
@@ -207,9 +234,10 @@ def create_scan_graph(graph_name,
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_title(plot_title)
     ax.set_ylabel('Voc (V)')
+    ax.set_xticks([1, 2])
     ax.set_xticklabels(["Reverse","Forward"])
     bp = ax.boxplot(VOC)
-    plt.savefig(png_save_dir + plot_title, dpi=300, bbox_inches='tight')
+    plt.savefig(box_plot_save_dir + plot_title, dpi=300, bbox_inches='tight')
 
     return png_save_dir
 

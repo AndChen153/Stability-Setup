@@ -1,11 +1,13 @@
 # main.py
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import filedialog
 import threading
 from datetime import datetime
 from helper.global_helpers import custom_print
-from constants import Mode, constants_gui
+from constants import Mode, ConstantsGUI
 from data_visualization import data_plotter as data_plotter
+from gui.image_viewer import ImageViewer
 from controller.multi_arduino_controller import multi_controller
 
 REMOVE_STOP_MODE = 1
@@ -17,56 +19,53 @@ class App:
         self.trial_name = ""
         self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         self.folder_path = None
-
         self.multi_controller = None
 
         self.root = root
         self.root.title("Stability Setup")
-        self.image_refs = []  # To keep references to images
+        self.image_refs = []
 
-        # Create the top frame for page selection buttons
         self.top_frame = tk.Frame(self.root)
         self.top_frame.pack(side=tk.TOP, fill=tk.X)
 
         self.num_pages = len(Mode) - REMOVE_STOP_MODE
         self.pages_list = list(Mode)[REMOVE_STOP_MODE:]
 
-        # Create page selection buttons
         self.page_buttons = []
         for i in range(self.num_pages):
             button = tk.Button(
                 self.top_frame,
-                text=constants_gui["pages"][self.pages_list[i]],
+                text=ConstantsGUI.pages[self.pages_list[i]],
                 command=lambda i=i: self.show_page(i),
             )
             button.pack(side=tk.LEFT)
             self.page_buttons.append(button)
 
-        # Create the container for pages
         self.pages = {}
-
-        # Initialize a dictionary to keep track of stop events for each page
         self.stop_events = {i: threading.Event() for i in range(self.num_pages)}
-        # Initialize a dictionary to keep track of threads for each page
         self.threads = {i: None for i in range(self.num_pages)}
 
-        # Create the frames for each page
         for i in range(self.num_pages):
             page = tk.Frame(self.root)
             page_id = self.pages_list[i]
-            num_params = len(constants_gui["params"][page_id])
+            num_params = len(ConstantsGUI.params[page_id])
             entries_list = []
 
-            # Add input parameters with default values
             for j in range(num_params):
-                label = tk.Label(page, text=constants_gui["params"][page_id][j])
+                label = tk.Label(page, text=ConstantsGUI.params[page_id][j])
                 label.grid(row=j, column=0, padx=5, pady=5, sticky="e")
                 entry = tk.Entry(page)
-                entry.insert(0, constants_gui["defaults"][page_id][j])
+                entry.insert(0, ConstantsGUI.defaults[page_id][j])
                 entry.grid(row=j, column=1, padx=5, pady=5)
                 entries_list.append(entry)
 
-            # Add the Run button
+                # Add folder selection button for Plotter page
+                if (page_id in ConstantsGUI.plotModes) and j == 0:
+                    select_folder_button = tk.Button(
+                        page, text="Select Folder", command=lambda entry=entry: self.select_folder(entry)
+                    )
+                    select_folder_button.grid(row=j, column=2, padx=5, pady=5)
+
             run_button = tk.Button(
                 page, text="Run", command=lambda i=i: self.run_page(i)
             )
@@ -83,29 +82,36 @@ class App:
             status_label = tk.Label(page, text="")
             status_label.grid(row=7, column=0, columnspan=2, pady=5)
 
-            # Store the page frame and entries in the pages dictionary
             self.pages[i] = {
                 "frame": page,
                 "entries": entries_list,
                 "status_label": status_label,
-                "run_button": run_button,  # Store the Run button reference
-                "stop_button": stop_button,  # Store the Stop button reference
+                "run_button": run_button,
+                "stop_button": stop_button,
             }
 
-        # Show the first page (page 0) by default
         self.current_page = 0
         self.pages[self.current_page]["frame"].pack(fill=tk.BOTH, expand=True)
-
-        # Update the button styles to indicate the current page
         self.re_enable_buttons()
 
+    def select_folder(self, entry):
+        folder_selected = filedialog.askdirectory()
+        if folder_selected:
+            entry.delete(0, tk.END)
+            entry.insert(0, folder_selected)
+
+    # def show_page(self, page_number):
+    #     # Hide the current page
+    #     self.pages[self.current_page]["frame"].pack_forget()
+    #     # Show the new page
+    #     self.current_page = page_number
+    #     self.pages[self.current_page]["frame"].pack(fill=tk.BOTH, expand=True)
+    #     # Update the button styles
+    #     self.re_enable_buttons()
     def show_page(self, page_number):
-        # Hide the current page
         self.pages[self.current_page]["frame"].pack_forget()
-        # Show the new page
         self.current_page = page_number
         self.pages[self.current_page]["frame"].pack(fill=tk.BOTH, expand=True)
-        # Update the button styles
         self.re_enable_buttons()
 
     def re_enable_buttons(self):
@@ -116,6 +122,8 @@ class App:
                 button.config(relief=tk.RAISED, state=tk.NORMAL)
 
     def run_page(self, page_number):
+        self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
+
         # Disable the Run button to prevent multiple clicks
         run_button = self.pages[page_number]["run_button"]
         run_button.config(state=tk.DISABLED)
@@ -129,22 +137,34 @@ class App:
         # Update status label
         status_label = self.pages[page_number]["status_label"]
         status_label.config(
-            text="Running " + constants_gui["pages"][self.pages_list[page_number]]
+            text="Running " + ConstantsGUI.pages[self.pages_list[page_number]]
         )
+
+        self.animate_loading(page_number)
 
         page_id = self.pages_list[page_number]
 
         # Retrieve parameter values
         entries = self.pages[page_number]["entries"]
-        self.trial_name = entries.pop(0).get()
         values = [entry.get() for entry in entries]
-        custom_print(self.trial_name, values)
 
-        if self.trial_name:
-            self.trial_name = self.trial_name + " "
-        self.folder_path = "./data/" + self.trial_name + self.today + "/"
-        if not self.multi_controller:
-            self.multi_controller = multi_controller(folder_path=self.folder_path)
+        if page_id in ConstantsGUI.plotModes:
+            self.multi_controller = multi_controller(
+                folder_path=values[0],
+                plotting_mode=True)
+            if page_id == Mode.VIEW:
+                ImageViewer(values[0])
+        else:
+            self.trial_name = values.pop(0)
+            custom_print(f"Starting Trial [{self.trial_name}] with Parameters:{values}")
+
+            if self.trial_name:
+                self.trial_name = self.trial_name + " "
+            self.folder_path = "./data/" + self.trial_name + self.today + "/"
+            if not self.multi_controller:
+                self.multi_controller = multi_controller(
+                    folder_path=self.folder_path,
+                    plotting_mode=False)
 
         # Clear any previous stop event
         self.stop_events[page_number].clear()
@@ -166,7 +186,7 @@ class App:
             # Update status label
             status_label = self.pages[page_number]["status_label"]
             status_label.config(
-                text="Stopping " + constants_gui["pages"][self.pages_list[page_number]]
+                text="Stopping " + ConstantsGUI.pages[self.pages_list[page_number]]
             )
 
             # Disable the Stop button to prevent multiple clicks
@@ -236,6 +256,7 @@ class App:
         stopped = params.get("stopped", False)
         error = params.get("error", None)
 
+        self.stop_events[page_number].set()
         # Re-enable the Run button
         run_button = self.pages[page_number]["run_button"]
         run_button.config(state=tk.NORMAL)
@@ -253,16 +274,33 @@ class App:
             self.disable_page_buttons()
         elif stopped:
             status_label.config(
-                text=constants_gui["pages"][self.pages_list[page_number]] + " Stopped"
+                text=ConstantsGUI.pages[self.pages_list[page_number]] + " Stopped"
             )
         else:
             status_label.config(
-                text=constants_gui["pages"][self.pages_list[page_number]] + " Finished"
+                text=ConstantsGUI.pages[self.pages_list[page_number]] + " Finished"
             )
+
     def disable_page_buttons(self):
         # Disable all page buttons
         for button in self.page_buttons:
             button.config(state=tk.DISABLED)
+
+    def animate_loading(self, page_number, count=0):
+        """ Rotates a loading animation next to the status text. """
+        if self.stop_events[page_number].is_set():
+            return  # Stop animation when the page stops
+
+        animation_frames = ["|", "/", "-", "\\"]
+        frame = animation_frames[count % len(animation_frames)]
+
+        status_label = self.pages[page_number]["status_label"]
+        status_label.config(
+            text=f"Running {ConstantsGUI.pages[self.pages_list[page_number]]} {frame}"
+        )
+
+        # Schedule next update
+        self.root.after(200, self.animate_loading, page_number, count + 1)
 
 
 if __name__ == "__main__":
