@@ -1,3 +1,4 @@
+
 // main.ino
 // version 1.2
 
@@ -56,43 +57,76 @@ volatile bool measurement_running = !scan_done || !constant_voltage_done || !pno
 
 void setup(void)
 {
+    // Pins setup
+    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(10, OUTPUT);
+    pinMode(11, OUTPUT);
+    pinMode(12, OUTPUT);
+    digitalWrite(10, HIGH);
+    digitalWrite(11, HIGH);
+    digitalWrite(12, HIGH);
+
     // System setup
     Wire.begin();
     Serial.begin(115200);
-    // recvWithStartEndMarkers();
-    while (!Serial) { ; } // Wait for serial port to connect.
-    Serial.println("Stability-Setup_Arduino Version: 1.2");
-
-    TCA9548Connected = getTCA9548Connected();
-    Serial.println(getTCA9548Connected());
-    if (TCA9548Connected)
+    recvWithLineTermination();
+    while (!Serial)
     {
-        Serial.println("TCA9548 Connected");
-        // Initialize sensors
-        for (uint8_t ID = 0; ID < 8; ID++)
-        {
-            Serial.println("Setting up MCP4725 with ID " + String(ID));
-            setupSensor_Dac(&allDAC[ID], ID);
-        }
-
-        for (uint8_t ID = 0; ID < 8; ID++)
-        {
-            Serial.println("Setting up INA219 with ID " + String(ID));
-            setupSensor_INA219(&allINA219[ID], ID);
-        }
-
-        Serial.println("");
-        Serial.println("Setup Successful");
-        SensorsConnected = true;
+        delay(10);
     }
-    else
+    Serial.println("ArduinoAuto8Pixels Test");
+
+    // Initialize sensors
+    for (uint8_t ID = 0; ID < 8; ID++)
     {
-        Serial.println("TCA9548 Connection Failure");
-        Serial.println("Entering Testing Mode");
+        setupSensor_INA219(&allINA219[ID], ID);
     }
 
+    for (uint8_t ID = 0; ID < 8; ID++)
+    {
+        setupSensor_Dac(&allDAC[ID], ID);
+    }
+
+    Serial.println("");
     Serial.println("Arduino Ready");
 }
+//     // System setup
+//     Wire.begin();
+//     Serial.begin(115200);
+//     // recvWithStartEndMarkers();
+//     while (!Serial) { ; } // Wait for serial port to connect.
+//     Serial.println("Stability-Setup_Arduino Version: 1.2");
+
+//     TCA9548Connected = getTCA9548Connected();
+//     Serial.println(getTCA9548Connected());
+//     if (TCA9548Connected)
+//     {
+//         Serial.println("TCA9548 Connected");
+//         // Initialize sensors
+//         for (uint8_t ID = 0; ID < 8; ID++)
+//         {
+//             Serial.println("Setting up MCP4725 with ID " + String(ID));
+//             setupSensor_Dac(&allDAC[ID], ID);
+//         }
+
+//         for (uint8_t ID = 0; ID < 8; ID++)
+//         {
+//             Serial.println("Setting up INA219 with ID " + String(ID));
+//             setupSensor_INA219(&allINA219[ID], ID);
+//         }
+
+//         // Serial.println("");
+//         // Serial.println("Setup Successful");
+//         SensorsConnected = true;
+//     }
+//     else
+//     {
+//         Serial.println("TCA9548 Connection Failure");
+//         Serial.println("Entering Testing Mode");
+//     }
+
+//     Serial.println("Arduino Ready");
+// }
 
 void loop(void)
 {

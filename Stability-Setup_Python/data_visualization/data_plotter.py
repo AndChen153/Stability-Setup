@@ -140,8 +140,6 @@ def create_scan_graph(graph_name,
     else:
         png_save_location = "/".join(graph_name.replace('\\', '/').split('/')[:-1])
 
-    custom_print(graph_name.replace('\\', '/').split('/'))
-
     png_save_dir = png_save_location + "\\"
     if not os.path.exists(png_save_dir):
         os.mkdir(png_save_dir)
