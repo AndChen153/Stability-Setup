@@ -16,11 +16,10 @@ class App:
     # TODO: create input for folder title
     # TODO: replace this app with https://www.pythonguis.com/pyside6/
     def __init__(self, root):
-        self.trial_name = ""
         self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         self.folder_path = None
         self.multi_controller = None
-        self.trial_name = ""
+        self.trial_name_var = tk.StringVar(value="")
 
         self.root = root
         self.root.title("Stability Setup")
@@ -57,9 +56,16 @@ class App:
             for j in range(num_params):
                 label = tk.Label(page, text=ConstantsGUI.params[page_id][j])
                 label.grid(row=j, column=0, padx=5, pady=5, sticky="e")
-                entry = tk.Entry(page)
-                entry.insert(0, ConstantsGUI.defaults[page_id][j])
+
+                if page_id in [Mode.SCAN, Mode.PNO] and j == 0:
+                    if not self.trial_name_var.get():
+                        self.trial_name_var.set(ConstantsGUI.defaults[page_id][j])
+                    entry = tk.Entry(page, textvariable=self.trial_name_var)
+                else:
+                    entry = tk.Entry(page)
+                    entry.insert(0, ConstantsGUI.defaults[page_id][j])
                 entry.grid(row=j, column=1, padx=5, pady=5)
+
                 entries_list.append(entry)
 
                 # Add folder selection button for Plotter page
