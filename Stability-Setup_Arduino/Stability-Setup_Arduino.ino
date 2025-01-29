@@ -130,26 +130,7 @@ void setup(void)
 
 void loop(void)
 {
-    if (TCA9548Connected && SensorsConnected)
-    {
-        mainLoop();
-    }
-    else
-    {
-        messageResult = recvWithLineTermination();
-        if (messageResult == serialCommResult::START)
-        {
-            Serial.print("Measurement Started: ");
-            Serial.println(mode_from_pc);
-
-            bool run = true;
-            while (run) {
-                Serial.print(millis());
-                Serial.println(",10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10");
-                delay(1000);
-            }
-        }
-    }
+    mainLoop();
 }
 
 void mainLoop()

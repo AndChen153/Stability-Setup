@@ -6,14 +6,11 @@ log_name = 'arduino_assignment'
 arduino_assignments = {"55131323837351A04202": 1,
                         "55139313535351406241": 2}
 
-arduino_assignments_location = {"1-5":1,
-                                "1-4":1,
-                                "1-4.3" : 1,
-                                "1-5.4": 1,
-                                "1-5.3" : 2,
-                                "1-5.1" : 3,
-                                "1-5.2" : 4,
-                                "1-3.4.2": 1}
+arduino_assignments_location = {"1-1.4.1.1":1,
+                                "1-1.4.1.2":2,
+                                "1-1.4.1.3":3,
+                                "1-1.4.1.4":4,
+                                }
 
 def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
     ports = [
