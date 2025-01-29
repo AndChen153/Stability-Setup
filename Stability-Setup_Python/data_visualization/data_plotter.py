@@ -21,7 +21,6 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 def plot_all_in_folder(directory_path):
     all_files = load_unplotted_files(directory_path)
-    custom_print(f"unplotted: {all_files}")
     for filepath in all_files:
         create_graph(filepath)
     return

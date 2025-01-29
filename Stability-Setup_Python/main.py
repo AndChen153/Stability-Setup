@@ -160,12 +160,10 @@ class App:
             self.trial_name = values.pop(0)
             custom_print(f"Starting Trial [{self.trial_name}] with Parameters:{values}")
 
-
-            if not self.multi_controller:
-                self.multi_controller = multi_controller(
-                    trial_name=self.trial_name,
-                    date=self.today,
-                    plotting_mode=False)
+            self.multi_controller = multi_controller(
+                trial_name=self.trial_name,
+                date=self.today,
+                plotting_mode=False)
 
         # Clear any previous stop event
         self.stop_events[page_number].clear()
