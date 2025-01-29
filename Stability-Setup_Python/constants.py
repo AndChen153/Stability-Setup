@@ -6,7 +6,6 @@ class Mode(Enum):
     PNO = 2
     CONSTANT = 3
     PLOTTER = 4
-    VIEW = 5
 
 class UI_Mode(Enum):
     SCAN = 1
@@ -18,8 +17,7 @@ class ConstantsGUI:
         Mode.SCAN: "Scan",
         Mode.PNO: "PNO",
         Mode.CONSTANT: "Constant Voltage",
-        Mode.PLOTTER: "Graph Plotter",
-        Mode.VIEW: "Graph Viewer"
+        Mode.PLOTTER: "Graph Viewer",
 
     }
     params = {
@@ -41,16 +39,14 @@ class ConstantsGUI:
         ],
         Mode.CONSTANT: ["Constant Voltage (V):"],
         Mode.PLOTTER: ["Data Location"],
-        Mode.VIEW: ["Data Location"],
     }
     defaults = {
         Mode.SCAN: ["", "1.2", "0.03", "5", "50", "1"],
         Mode.PNO: ["", "0.50", "0.01", "5", "300", "60"],
         Mode.CONSTANT: ["0.5"],
         Mode.PLOTTER: [""],
-        Mode.VIEW: [""],
     }
-    plotModes = [Mode.PLOTTER, Mode.VIEW]
+    plotModes = [Mode.PLOTTER]
 
 constants_controller = {
     "save_time" : 5,

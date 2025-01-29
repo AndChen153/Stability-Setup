@@ -19,6 +19,13 @@ np.set_printoptions(threshold=sys.maxsize)
 warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
+def plot_all_in_folder(directory_path):
+    all_files = load_unplotted_files(directory_path)
+    custom_print(f"unplotted: {all_files}")
+    for filepath in all_files:
+        create_graph(filepath)
+    return
+
 def create_graph(file_location):
     if (file_location.endswith("scan.csv")):
         custom_print(f"Creating Plots for: {file_location}")
@@ -30,13 +37,7 @@ def create_graph(file_location):
     else:
         return ""
 
-def plot_all_in_folder(directory_path):
-    all_files = list_files_in_directory(directory_path)
-
-    for filepath in all_files:
-        create_graph(filepath)
-
-def create_pce_graph(graph_name,
+def create_pce_graph(file_location,
                     lightScanName = "",
                     startingPoint = 0,
                     divFactor = 50,
@@ -44,7 +45,7 @@ def create_pce_graph(graph_name,
                     pixels = None,
                     devices = None):
     plot_size = (12,8)
-    arr = np.loadtxt(graph_name,
+    arr = np.loadtxt(file_location,
                      delimiter=",",
                      dtype=str)
 
@@ -60,8 +61,8 @@ def create_pce_graph(graph_name,
     time = np.array(arr[:,header_dict["Time"]]).astype('float')
     pce_list = np.array(arr)
 
-    png_save_location = "/".join(graph_name.replace('\\', '/').split('/')[:-1])
-    plot_title = graph_name.replace('\\', '/').split('/')[-1][:-4]
+    png_save_location = "/".join(file_location.replace('\\', '/').split('/')[:-1])
+    plot_title = file_location.replace('\\', '/').split('/')[-1][:-4]
     png_save_location = png_save_location + "\\"
     if not os.path.exists(png_save_location):
         os.mkdir(png_save_location)
@@ -126,31 +127,32 @@ def create_pce_graph(graph_name,
 
     return png_save_location
 
-def create_scan_graph(graph_name,
+def create_scan_graph(file_location,
                  current_density = True,
                  saveInFolder = True,
                  show_dead_pixels = False,
                  fixed_window = False):
     plot_size = (10,8)
-    arr = np.loadtxt(graph_name, delimiter=",", dtype=str)
+    arr = np.loadtxt(file_location, delimiter=",", dtype=str)
+
     # custom_print("PC -> Graph Name", graph_name)
     # C:/Users/achen/Dropbox/code/Stability-Setup/data/Nov-19-2024 17_01_11\Nov-19-2024 17_01_13lightID1scan.csv
     if saveInFolder:
-        png_save_location = graph_name[:-4]
+        png_save_location = file_location[:-4]
     else:
-        png_save_location = "/".join(graph_name.replace('\\', '/').split('/')[:-1])
+        png_save_location = "/".join(file_location.replace('\\', '/').split('/')[:-1])
 
     png_save_dir = png_save_location + "\\"
     if not os.path.exists(png_save_dir):
         os.mkdir(png_save_dir)
 
-    box_plot_save_dir =graph_name[:-4] + "\\"
+    box_plot_save_dir =file_location[:-4] + "\\"
 
-    plot_title = graph_name.replace('\\', '/').split('/')[-1][:-4]
+    plot_title = file_location.replace('\\', '/').split('/')[-1][:-4]
     plot_title += '_Jmeas' if current_density else '_Current'
 
     png_save_path = png_save_dir + plot_title
-    dead_pixel = get_dead_pixels(graph_name)
+    dead_pixel = get_dead_pixels(file_location)
 
     headers = arr[6,:]
     header_dict = {value: index for index, value in enumerate(headers)}
@@ -191,7 +193,7 @@ def create_scan_graph(graph_name,
     plt.savefig(png_save_path, dpi=300, bbox_inches='tight')
 
     # generate boxplots
-    reverse, forward = scan_calcs(graph_name)
+    reverse, forward = scan_calcs(file_location)
     # returns: reverse:[fillFactorListSplit, jscListSplit, vocListSplit], forward:[fillFactorListSplit, jscListSplit, vocListSplit]
     reverseFF = reverse[0]
     forwardFF = forward[0]
@@ -371,6 +373,39 @@ def list_files_in_directory(directory):
         for file in files:
             filepaths.append(os.path.join(root, file))
     return filepaths
+
+def load_unplotted_files(directory):
+    files = list_files_in_directory(directory)
+    csv_files = [file for file in files if file.endswith(".csv")]
+    png_files = [file for file in files if file.endswith(".png")]
+    unplotted = []
+
+    for csv_file in csv_files:
+        csv_base_name = extract_base_name(csv_file)
+        unfound = True
+        for png_file in png_files:
+            png_base_name = extract_base_name(png_file)
+
+            if csv_base_name == png_base_name:
+                csv_mtime = os.path.getmtime(csv_file)
+                png_mtime = os.path.getmtime(png_file)
+                if csv_mtime > png_mtime:
+                    custom_print(csv_mtime, png_mtime)
+                    unplotted.append(csv_file)
+                unfound = False
+                break
+        if unfound:
+            unplotted.append(csv_file)
+
+    return unplotted
+
+def extract_base_name(file_path):
+    base_name = os.path.basename(file_path)
+    base_name = os.path.splitext(base_name)[0]
+    if "_Jmeas" in base_name:
+        base_name = base_name.replace("_Jmeas", "")
+
+    return base_name
 
 if __name__ == '__main__':
     directory_path = r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Nov-19-2024 17_01_11 copy"

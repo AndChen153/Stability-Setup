@@ -22,6 +22,8 @@ class single_controller:
         arduinoID: int,
         COM: str,
         SERIAL_BAUD_RATE: int,
+        trial_name: str,
+        date: str,
         folder_path: str,
     ) -> None:
         """
@@ -46,7 +48,10 @@ class single_controller:
         self.file_name = ""
 
         self.arduinoID = str(arduinoID)
-        self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
+        self.trial_name = ""
+        if trial_name:
+            self.trial_name = trial_name + " "
+        self.today = date
         self.folder_path = folder_path
         self.start = time.time()
 
@@ -90,7 +95,8 @@ class single_controller:
 
         self.file_name = (
             self.folder_path
-            + datetime.now().strftime("%b-%d-%Y %H_%M_%S")
+            + self.trial_name
+            + self.today
             + light_status
             + "ID"
             + self.arduinoID
@@ -190,7 +196,8 @@ class single_controller:
         self.mode = Mode.SCAN
         self.file_name = (
             self.folder_path
-            + datetime.now().strftime("%b-%d-%Y %H_%M_%S")
+            + self.trial_name
+            + self.today
             + light_status
             + "ID"
             + self.arduinoID
@@ -226,7 +233,8 @@ class single_controller:
         PNO_MEASUREMENT_TIME = int(params[4])
         self.file_name = (
             self.folder_path
-            + datetime.now().strftime("%b-%d-%Y %H_%M_%S")
+            + self.trial_name
+            + self.today
             + "ID"
             + self.arduinoID
             + "PnO.csv"

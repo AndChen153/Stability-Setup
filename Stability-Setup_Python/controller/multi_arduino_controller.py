@@ -3,19 +3,29 @@ from controller.single_arduino_controller import single_controller
 from controller import arduino_assignment
 from constants import Mode, constants_controller
 from data_visualization import data_plotter
+from datetime import datetime
 import threading
 import os
 from helper.global_helpers import custom_print
 
 
 class multi_controller:
-    def __init__(self, folder_path: str, plotting_mode: False):
-        self.folder_path = folder_path
+    def __init__(self,
+                 trial_name: str,
+                 date: str,
+                 plot_location="",
+                 plotting_mode=False):
+        self.trial_name = ""
+        if trial_name:
+            self.trial_name = trial_name + " "
+        self.folder_path = "./data/" + trial_name + date + "/"
+        self.date = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         self.arduino_assignments = None
         self.controllers = {}
         self.active_threads = {}
         self.lock = threading.Lock()
         self.plotting_mode = plotting_mode
+        self.plot_location = plot_location
 
         # Initialize controllers
         if not self.plotting_mode:
@@ -32,6 +42,8 @@ class multi_controller:
                     arduinoID=ID,
                     COM=COM,
                     SERIAL_BAUD_RATE=constants_controller["serial_baud_rate"],
+                    trial_name=self.trial_name,
+                    date=self.date,
                     folder_path=self.folder_path,
                 )
                 self.controllers[ID] = controller
@@ -83,7 +95,7 @@ class multi_controller:
         Runs a specified mode on all connected controllers.
         """
         if mode == Mode.PLOTTER:
-            data_plotter.plot_all_in_folder(params[0])
+            data_plotter.plot_all_in_folder(self.plot_location)
         else:
             kwargs = {
                 "params": params,

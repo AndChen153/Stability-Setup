@@ -20,6 +20,7 @@ class App:
         self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         self.folder_path = None
         self.multi_controller = None
+        self.trial_name = ""
 
         self.root = root
         self.root.title("Stability Setup")
@@ -30,6 +31,8 @@ class App:
 
         self.num_pages = len(Mode) - REMOVE_STOP_MODE
         self.pages_list = list(Mode)[REMOVE_STOP_MODE:]
+
+        self.image_viewer_path = None
 
         self.page_buttons = []
         for i in range(self.num_pages):
@@ -60,7 +63,7 @@ class App:
                 entries_list.append(entry)
 
                 # Add folder selection button for Plotter page
-                if (page_id in ConstantsGUI.plotModes) and j == 0:
+                if page_id == Mode.PLOTTER and j == 0:
                     select_folder_button = tk.Button(
                         page, text="Select Folder", command=lambda entry=entry: self.select_folder(entry)
                     )
@@ -100,14 +103,6 @@ class App:
             entry.delete(0, tk.END)
             entry.insert(0, folder_selected)
 
-    # def show_page(self, page_number):
-    #     # Hide the current page
-    #     self.pages[self.current_page]["frame"].pack_forget()
-    #     # Show the new page
-    #     self.current_page = page_number
-    #     self.pages[self.current_page]["frame"].pack(fill=tk.BOTH, expand=True)
-    #     # Update the button styles
-    #     self.re_enable_buttons()
     def show_page(self, page_number):
         self.pages[self.current_page]["frame"].pack_forget()
         self.current_page = page_number
@@ -148,22 +143,22 @@ class App:
         entries = self.pages[page_number]["entries"]
         values = [entry.get() for entry in entries]
 
-        if page_id in ConstantsGUI.plotModes:
+        if page_id == Mode.PLOTTER:
             self.multi_controller = multi_controller(
-                folder_path=values[0],
+                trial_name="",
+                date=self.today,
+                plot_location=values[0],
                 plotting_mode=True)
-            if page_id == Mode.VIEW:
-                ImageViewer(values[0])
+            self.image_viewer_path = values[0]
         else:
             self.trial_name = values.pop(0)
             custom_print(f"Starting Trial [{self.trial_name}] with Parameters:{values}")
 
-            if self.trial_name:
-                self.trial_name = self.trial_name + " "
-            self.folder_path = "./data/" + self.trial_name + self.today + "/"
+
             if not self.multi_controller:
                 self.multi_controller = multi_controller(
-                    folder_path=self.folder_path,
+                    trial_name=self.trial_name,
+                    date=self.today,
                     plotting_mode=False)
 
         # Clear any previous stop event
@@ -228,6 +223,7 @@ class App:
                     self.update_after_backend,
                     {
                         "page_number": page_number,
+                        "page_id": page_id,
                     },
                 )
             else:
@@ -253,8 +249,12 @@ class App:
 
     def update_after_backend(self, params):
         page_number = params.get("page_number")
+        page_id = params.get("page_id")
         stopped = params.get("stopped", False)
         error = params.get("error", None)
+
+        if page_id == Mode.PLOTTER:
+            ImageViewer(self.image_viewer_path)
 
         self.stop_events[page_number].set()
         # Re-enable the Run button
