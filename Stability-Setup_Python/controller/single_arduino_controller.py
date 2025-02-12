@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 from email import header
 from fileinput import filename
-from constants import Mode, constants_controller
+from constants import Mode, ConstantsController
 from data_visualization import data_plotter
 from helper.global_helpers import custom_print
 import serial
@@ -19,7 +19,6 @@ class single_controller:
 
     def __init__(
         self,
-        arduinoID: int,
         COM: str,
         SERIAL_BAUD_RATE: int,
         trial_name: str,
@@ -47,7 +46,7 @@ class single_controller:
         self.scan_filename = ""
         self.file_name = ""
 
-        self.arduinoID = str(arduinoID)
+        self.arduinoID = None
         self.trial_name = ""
         if trial_name:
             self.trial_name = trial_name + " "
@@ -71,6 +70,10 @@ class single_controller:
                     line = self.ser.readline().decode().strip()
                     # line = self.ser.readline().decode('unicode_escape').rstrip()
                     custom_print(f"Pre-Init Stage Arduino {self.arduinoID} Output:", line)
+                    if "HW_ID" in line:
+                        HW_ID = line.split(":")[-1]
+                        self.arduinoID = ConstantsController.arduino_ID[HW_ID]
+                        print(self.arduinoID)
                     if "Arduino Ready" in line:
                         done = True
             self.ser.reset_input_buffer()
@@ -381,7 +384,7 @@ class single_controller:
 
                         if (
                             abs(time.time() - time_orig)
-                            > constants_controller["save_time"]
+                            > ConstantsController.save_time
                         ):
                             self._save_data()
                             time_orig = time.time()

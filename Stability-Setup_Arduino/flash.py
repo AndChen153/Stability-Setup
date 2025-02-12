@@ -5,23 +5,18 @@ import sys
 import threading
 
 # Path to your Arduino sketch
-SKETCH_PATH = r"C:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Arduino\Stability-Setup_Arduino.ino"  # Change this!
-arduino_assignments_location = {"1-1.4.1.1":1,
-                                "1-1.4.1.2":2,
-                                "1-1.4.1.3":3,
-                                "1-1.4.1.4":4,
-                                }
+SKETCH_PATH = r"C:\Users\achen\Dropbox\code\Stability-Setup\Stability-Setup_Arduino\Stability-Setup_Arduino.ino"  # Change this!
 
 # Detect connected Arduino boards
 def list_arduino_boards():
     try:
-        result = subprocess.run(["arduino-cli", "board", "list", "--format", "json"], 
+        result = subprocess.run(["arduino-cli", "board", "list", "--format", "json"],
                                 capture_output=True, text=True, check=True)
         boards = json.loads(result.stdout.strip())
         detected_boards = []
         for board in boards["detected_ports"]:
             port = board["port"]['address']
-            fqbn = 'arduino:avr:uno'
+            fqbn = 'arduino:avr:nano'
             detected_boards.append((port, fqbn))
         return detected_boards
     except Exception as e:
@@ -86,4 +81,5 @@ def flash_all_boards():
     print("Flashing complete!")
 
 if __name__ == "__main__":
+    # print(list_arduino_boards())
     flash_all_boards()

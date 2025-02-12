@@ -2,6 +2,7 @@
 // main.ino
 // version 1.2
 
+#include <EEPROM.h>
 #include <Wire.h>
 #include <Adafruit_INA219.h>
 #include <Adafruit_MCP4725.h>
@@ -17,6 +18,9 @@ float val2;
 int val3;
 int val4;
 int val5;
+
+const int idAddress = 0;
+uint32_t uniqueID;
 
 bool TCA9548Connected = false;
 bool SensorsConnected = false;
@@ -53,28 +57,44 @@ int light_Status = 0;
 volatile bool constant_voltage_done = true;
 float constant_voltage = 0.0;
 
+// TODO: remove this variable
 volatile bool measurement_running = !scan_done || !constant_voltage_done || !pno_done;
 
 void setup(void)
 {
-    // Pins setup
-    pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(10, OUTPUT);
-    pinMode(11, OUTPUT);
-    pinMode(12, OUTPUT);
-    digitalWrite(10, HIGH);
-    digitalWrite(11, HIGH);
-    digitalWrite(12, HIGH);
+    long seed = analogRead(A0) + analogRead(A1) + analogRead(A2);
+    randomSeed(seed);
+
+    // // Pins setup
+    // pinMode(LED_BUILTIN, OUTPUT);
+    // pinMode(10, OUTPUT);
+    // pinMode(11, OUTPUT);
+    // pinMode(12, OUTPUT);
+    // digitalWrite(10, HIGH);
+    // digitalWrite(11, HIGH);
+    // digitalWrite(12, HIGH);
 
     // System setup
     Wire.begin();
     Serial.begin(115200);
-    recvWithLineTermination();
     while (!Serial)
     {
         delay(10);
     }
-    Serial.println("ArduinoAuto8Pixels Test");
+
+    EEPROM.get(idAddress, uniqueID);
+    if (uniqueID == 0xFFFFFFFFUL) {
+        uint32_t high = random(0, 0x10000);  // 16 bits
+        uint32_t low  = random(0, 0x10000);  // another 16 bits
+        uniqueID = (high << 16) | low;
+        EEPROM.put(idAddress, uniqueID);
+        Serial.print("seed: ");
+        Serial.println(seed);
+        Serial.print("Generated and stored new ID: ");
+    }
+
+    Serial.print("HW_ID:");
+    Serial.println(uniqueID, HEX);
 
     // Initialize sensors
     for (uint8_t ID = 0; ID < 8; ID++)
@@ -90,50 +110,8 @@ void setup(void)
     Serial.println("");
     Serial.println("Arduino Ready");
 }
-//     // System setup
-//     Wire.begin();
-//     Serial.begin(115200);
-//     // recvWithStartEndMarkers();
-//     while (!Serial) { ; } // Wait for serial port to connect.
-//     Serial.println("Stability-Setup_Arduino Version: 1.2");
-
-//     TCA9548Connected = getTCA9548Connected();
-//     Serial.println(getTCA9548Connected());
-//     if (TCA9548Connected)
-//     {
-//         Serial.println("TCA9548 Connected");
-//         // Initialize sensors
-//         for (uint8_t ID = 0; ID < 8; ID++)
-//         {
-//             Serial.println("Setting up MCP4725 with ID " + String(ID));
-//             setupSensor_Dac(&allDAC[ID], ID);
-//         }
-
-//         for (uint8_t ID = 0; ID < 8; ID++)
-//         {
-//             Serial.println("Setting up INA219 with ID " + String(ID));
-//             setupSensor_INA219(&allINA219[ID], ID);
-//         }
-
-//         // Serial.println("");
-//         // Serial.println("Setup Successful");
-//         SensorsConnected = true;
-//     }
-//     else
-//     {
-//         Serial.println("TCA9548 Connection Failure");
-//         Serial.println("Entering Testing Mode");
-//     }
-
-//     Serial.println("Arduino Ready");
-// }
 
 void loop(void)
-{
-    mainLoop();
-}
-
-void mainLoop()
 {
     zero();
     messageResult = recvWithLineTermination();

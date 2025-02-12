@@ -1,7 +1,7 @@
 # multi_arduino_controller.py
 from controller.single_arduino_controller import single_controller
 from controller import arduino_assignment
-from constants import Mode, constants_controller
+from constants import Mode, ConstantsController
 from data_visualization import data_plotter
 from datetime import datetime
 import threading
@@ -34,14 +34,10 @@ class multi_controller:
             if not os.path.exists(self.folder_path):
                 os.mkdir(self.folder_path)
 
-            for arduino in self.arduino_assignments:
-                ID = arduino["ID"]
-                COM = arduino["com"]
-
+            for ID, COM in enumerate(self.arduino_assignments):
                 controller = single_controller(
-                    arduinoID=ID,
                     COM=COM,
-                    SERIAL_BAUD_RATE=constants_controller["serial_baud_rate"],
+                    SERIAL_BAUD_RATE=ConstantsController.serial_baud_rate,
                     trial_name=self.trial_name,
                     date=self.date,
                     folder_path=self.folder_path,
