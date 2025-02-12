@@ -71,7 +71,7 @@ class multi_controller:
             # Define the target function based on the command
             if command == Mode.SCAN:
                 target = lambda: self.controllers[ID].scan(**kwargs)
-            elif command == Mode.PNO:
+            elif command == Mode.MPPT:
                 target = lambda: self.controllers[ID].pno("", **kwargs)
             elif command == Mode.CONSTANT:
                 target = lambda: self.controllers[ID].constant_voltage(**kwargs)

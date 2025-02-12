@@ -243,7 +243,7 @@ class single_controller:
             + "PnO.csv"
         )
         self.scan_filename = scan_file_name
-        self.mode = Mode.PNO
+        self.mode = Mode.MPPT
 
         # if self.scan_filename:
         #     VMPP = self.find_vmpp(scan_file_name)
@@ -415,14 +415,14 @@ class single_controller:
             np.savetxt(self.file_name, self.arr, delimiter=",", fmt="%s")
             if self.mode == Mode.SCAN:
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
-            elif self.mode == Mode.PNO:
+            elif self.mode == Mode.MPPT:
                 self.arr = np.empty([1, self.pno_arr_width], dtype="object")
         else:
             with open(self.file_name, "ab") as f:
                 np.savetxt(f, self.arr[1:, :], delimiter=",", fmt="%s")
             if self.mode == Mode.SCAN:
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
-            elif self.mode == Mode.PNO:
+            elif self.mode == Mode.MPPT:
                 self.arr = np.empty([1, self.pno_arr_width], dtype="object")
 
         custom_print("SAVED")

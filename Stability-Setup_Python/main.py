@@ -57,7 +57,7 @@ class App:
                 label = tk.Label(page, text=ConstantsGUI.params[page_id][j])
                 label.grid(row=j, column=0, padx=5, pady=5, sticky="e")
 
-                if page_id in [Mode.SCAN, Mode.PNO] and j == 0:
+                if page_id in [Mode.SCAN, Mode.MPPT] and j == 0:
                     if not self.trial_name_var.get():
                         self.trial_name_var.set(ConstantsGUI.defaults[page_id][j])
                     entry = tk.Entry(page, textvariable=self.trial_name_var)
