@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 import threading
 import logging
 
-class single_controller:
 
+class SingleController:
     def __init__(
         self,
         COM: str,
@@ -69,11 +69,12 @@ class single_controller:
                 with self.reading_lock:
                     line = self.ser.readline().decode().strip()
                     # line = self.ser.readline().decode('unicode_escape').rstrip()
-                    custom_print(f"Pre-Init Stage Arduino {self.arduinoID} Output:", line)
+                    custom_print(
+                        f"Pre-Init Stage Arduino {self.arduinoID} Output:", line
+                    )
                     if "HW_ID" in line:
                         HW_ID = line.split(":")[-1]
-                        self.arduinoID = ConstantsController.arduino_ID[HW_ID]
-                        print(self.arduinoID)
+                        self.arduinoID = str(ConstantsController.arduino_ID[HW_ID])
                     if "Arduino Ready" in line:
                         done = True
             self.ser.reset_input_buffer()
@@ -82,6 +83,11 @@ class single_controller:
             custom_print(f"Failed to connect to {self.port}. Error: {e}")
             return False
         return True
+
+    def disconnect(self):
+        if self.ser is not None:
+            self.ser.close()
+            self.ser = None
 
     def scan(self, params):
         SCAN_RANGE = float(params[0])
@@ -134,7 +140,8 @@ class single_controller:
         self, SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, LIGHT_STATUS
     ):
         custom_print("Starting Scan")
-        if not self.should_run: custom_print("Run Blocked")
+        if not self.should_run:
+            custom_print("Run Blocked")
 
         voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
         amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
@@ -308,12 +315,7 @@ class single_controller:
                                 for f in (voltage_lambda, amperage_lambda)
                             ]
                         )
-                        pce_header.extend(
-                            [
-                                power_lambda(value)
-                                for value in range(8)
-                            ]
-                        )
+                        pce_header.extend([power_lambda(value) for value in range(8)])
                         done = True
             except serial.SerialException as e:
                 custom_print(f"Communication error on {self.port}. Error: {e}")
@@ -382,10 +384,7 @@ class single_controller:
                                 self.arr, np.array([data_list], dtype="object"), axis=0
                             )
 
-                        if (
-                            abs(time.time() - time_orig)
-                            > ConstantsController.save_time
-                        ):
+                        if abs(time.time() - time_orig) > ConstantsController.save_time:
                             self._save_data()
                             time_orig = time.time()
 

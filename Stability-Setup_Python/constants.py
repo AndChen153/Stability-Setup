@@ -45,6 +45,6 @@ class ConstantsGUI:
     plotModes = [Mode.PLOTTER]
 
 class ConstantsController:
-    save_time = 5,
+    save_time = 5
     serial_baud_rate = 115200
     arduino_ID = {"F05123D": 1}

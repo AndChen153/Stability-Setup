@@ -4,9 +4,31 @@ import os
 import sys
 import threading
 
-# Path to your Arduino sketch
-SKETCH_PATH = r"C:\Users\achen\Dropbox\code\Stability-Setup\Stability-Setup_Arduino\Stability-Setup_Arduino.ino"  # Change this!
+import serial.tools.list_ports
+import logging
+from typing import Dict, List
 
+
+def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
+    ports = [
+        p
+        for p in serial.tools.list_ports.comports()
+    ]
+    if not ports:
+        raise IOError()
+    return ports
+
+def get():
+    connected_arduinos = []
+    for device in _show_all_com_devices():
+        if "USB-SERIAL CH340" in device.description:
+            connected_arduinos.append(device.device)
+
+    return connected_arduinos
+
+
+# Path to your Arduino sketch
+SKETCH_PATH = r".\Stability-Setup_Arduino\Stability-Setup_Arduino.ino"
 # Detect connected Arduino boards
 def list_arduino_boards():
     try:
@@ -16,6 +38,17 @@ def list_arduino_boards():
         detected_boards = []
         for board in boards["detected_ports"]:
             port = board["port"]['address']
+            fqbn = 'arduino:avr:nano'
+            detected_boards.append((port, fqbn))
+        return detected_boards
+    except Exception as e:
+        print(f"Error detecting Arduino boards: {e}")
+        return []
+
+def list_arduino_boards_nano():
+    try:
+        detected_boards = []
+        for port in get():
             fqbn = 'arduino:avr:nano'
             detected_boards.append((port, fqbn))
         return detected_boards
@@ -54,7 +87,7 @@ def upload_to_board(port, fqbn):
 
 # Flash all detected boards in parallel
 def flash_all_boards():
-    boards = list_arduino_boards()
+    boards = list_arduino_boards_nano()
     if not boards:
         print("No Arduino boards detected!")
         return
@@ -81,5 +114,4 @@ def flash_all_boards():
     print("Flashing complete!")
 
 if __name__ == "__main__":
-    # print(list_arduino_boards())
     flash_all_boards()
