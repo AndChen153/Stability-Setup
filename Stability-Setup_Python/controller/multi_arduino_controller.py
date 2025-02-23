@@ -1,7 +1,7 @@
 # multi_arduino_controller.py
 from controller.single_arduino_controller import SingleController
 from controller import arduino_assignment
-from constants import Mode, ConstantsController
+from constants import Mode, Constants
 from data_visualization import data_plotter
 from datetime import datetime
 import threading
@@ -37,7 +37,7 @@ class MultiController:
             for ID, COM in enumerate(self.arduino_assignments):
                 controller = SingleController(
                     COM=COM,
-                    SERIAL_BAUD_RATE=ConstantsController.serial_baud_rate,
+                    SERIAL_BAUD_RATE=Constants.serial_baud_rate,
                     trial_name=self.trial_name,
                     date=self.date,
                     folder_path=self.folder_path,
@@ -81,17 +81,17 @@ class MultiController:
             # Stop existing commands if running
             if ID in self.active_threads:
                 custom_print(f"Stopping current command on controller {ID}.")
+                self.controllers[ID].should_run = False
                 self.controllers[ID].reset_arduino()
                 thread = self.active_threads[ID]
                 thread.join()
                 del self.active_threads[ID]
 
-            custom_print(f"IF STATEMENT COMMAND: {command}")
             # Define the target function based on the command
             if command == Mode.SCAN:
                 target = lambda: self.controllers[ID].scan(**kwargs)
             elif command == Mode.MPPT:
-                target = lambda: self.controllers[ID].pno("", **kwargs)
+                target = lambda: self.controllers[ID].mppt("", **kwargs)
             elif command == Mode.STOP:
                 custom_print("STOPPING SINGLE CONTROLLER")
                 del self.controllers[ID]

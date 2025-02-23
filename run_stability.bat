@@ -23,7 +23,7 @@ if errorlevel 1 (
 )
 
 REM Run the Python script
-python ./Stability-Setup_Python/main.py
+python ./Stability-Setup_Python/app.py
 if errorlevel 1 (
     echo Error: Failed to run the Python script.
     pause

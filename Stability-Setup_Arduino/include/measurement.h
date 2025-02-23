@@ -3,10 +3,17 @@
 #define MEASUREMENT_H
 
 #include <Arduino.h>
+#include <math.h>
+
+
+enum ScanDirection {
+    SCAN_FORWARD,
+    SCAN_BACKWARD
+  };
 
 void perturb_and_observe();
-void perturb_and_observe_classic();
-void scan(String dir);
-void set_constant_voltage();
+void perturbAndObserveClassic();
+void scan(ScanDirection dir);
+void setConstantVoltage();
 
 #endif

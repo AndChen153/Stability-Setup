@@ -5,7 +5,7 @@
 #include <Adafruit_INA219.h>
 #include <Arduino.h>
 
-void light_control(int light_Status);
+void light_control(int light_status);
 void displaySensorVals(Adafruit_INA219 *ina219, int ID);
 void led(bool status);
 

@@ -7,12 +7,13 @@ extern char mode_from_pc[];
 
 extern float val1;
 extern float val2;
-extern int val3;
+extern float val3;
 extern int val4;
 extern int val5;
+extern int val6;
 
 extern bool scan_done;
-extern bool pno_done;
+extern bool mppt_done;
 extern bool constant_voltage_done;
 
 extern bool measurement_running;
@@ -34,30 +35,43 @@ serialCommResult recvWithLineTermination()
         // Copy to temp_chars for parsing
         strcpy(temp_chars, received_chars);
 
-        char *strtokIndx;
-        strtokIndx = strtok(temp_chars, ",");
-        strcpy(mode_from_pc, strtokIndx);
+        char *token = strtok(temp_chars, ",");
+        // Parse mode (a string)
+        if (token != NULL) {
+            strcpy(mode_from_pc, token);
+        } else {
+            mode_from_pc[0] = '\0'; // Default to an empty string if missing
+        }
 
-        strtokIndx = strtok(NULL, ",");
-        val1 = atof(strtokIndx);
+        // Parse val1 (float)
+        token = strtok(NULL, ",");
+        val1 = (token != NULL) ? atof(token) : 0;
 
-        strtokIndx = strtok(NULL, ",");
-        val2 = atof(strtokIndx);
+        // Parse val2 (float)
+        token = strtok(NULL, ",");
+        val2 = (token != NULL) ? atof(token) : 0;
 
-        strtokIndx = strtok(NULL, ",");
-        val3 = atoi(strtokIndx);
+        // Parse val3 (float)
+        token = strtok(NULL, ",");
+        val3 = (token != NULL) ? atof(token) : 0;
 
-        strtokIndx = strtok(NULL, ",");
-        val4 = atoi(strtokIndx);
+        // Parse val4 (int)
+        token = strtok(NULL, ",");
+        val4 = (token != NULL) ? atoi(token) : 0;
 
-        strtokIndx = strtok(NULL, ",");
-        val5 = atoi(strtokIndx);
+        // Parse val5 (int)
+        token = strtok(NULL, ",");
+        val5 = (token != NULL) ? atoi(token) : 0;
+
+        // Parse val6 (int)
+        token = strtok(NULL, ",");
+        val6 = (token != NULL) ? atoi(token) : 0;
 
         // If measurement is not running and values have been read
         if (!measurement_running)
         {
-            Serial.print("recvWithLineTermination: ");
-            show_parsed_data();
+            Serial.print("Recieved Params: ");
+            showParsedData();
             Serial.println(temp_chars);
             return serialCommResult::START;
         }
@@ -72,7 +86,7 @@ serialCommResult recvWithLineTermination()
  * This function prints the parsed values (`val1`, `val2`, `val3`, `val4`, and `val5`)
  * to the serial monitor in a formatted manner for debugging or monitoring purposes.
  */
-void show_parsed_data()
+void showParsedData()
 {
     Serial.print("Mode: ");
     Serial.print(mode_from_pc);
@@ -86,17 +100,7 @@ void show_parsed_data()
     Serial.print(val4);
     Serial.print(", Val5: ");
     Serial.print(val5);
+    Serial.print(", Val6: ");
+    Serial.print(val6);
     Serial.println("");
 }
-
-// bool check_valid_mode()
-// {
-//     for (const String &mode : Modes)
-//     {
-//         if (String(mode_from_pc).equals(mode))
-//         {
-//             return true;
-//         }
-//     }
-//     return false;
-// }

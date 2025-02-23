@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, QFileSystemWatcher
 import threading
 import os
 from datetime import datetime
-from constants import Mode, ConstantsGUI
+from constants import Mode, Constants
 from helper.global_helpers import custom_print
 from controller.multi_arduino_controller import MultiController
 from gui.plotter_widget import PlotterWidget
@@ -37,10 +37,11 @@ class MainWindow(QMainWindow):
         self.stop_measurement_thread = threading.Event()
 
         self.multi_controller = None
+        self.folder_path = None
 
         # Left side: Tab Widget for Scan/MPPT pages.
         self.left_tabs = QTabWidget()
-        for mode, page_title in ConstantsGUI.pages.items():
+        for mode, page_title in Constants.pages.items():
             if mode == Mode.PLOTTER:
                 continue  # skip Plotter on left side
             tab = QWidget()
@@ -67,7 +68,7 @@ class MainWindow(QMainWindow):
         if mode == Mode.PLOTTER:
             # Create a QLineEdit to hold the folder path.
             line_edit = QLineEdit()
-            default = ConstantsGUI.defaults.get(mode, [""])[0]
+            default = Constants.defaults.get(mode, [""])[0]
             line_edit.setText(default)
             self.data_location_line_edit = line_edit
             self.textboxes[mode].append(("Data Location", line_edit))
@@ -84,9 +85,9 @@ class MainWindow(QMainWindow):
             form_layout.addRow("CSV Folder", container)
         else:
             # For the other modes, add parameters as before.
-            if mode in ConstantsGUI.params:
-                params = ConstantsGUI.params[mode]
-                defaults = ConstantsGUI.defaults.get(mode, [""] * len(params))
+            if mode in Constants.params:
+                params = Constants.params[mode]
+                defaults = Constants.defaults.get(mode, [""] * len(params))
                 for param, default in zip(params, defaults):
                     line_edit = QLineEdit()
                     line_edit.setText(default)
@@ -99,15 +100,18 @@ class MainWindow(QMainWindow):
         button_container = QWidget()
         button_layout = QHBoxLayout(button_container)
         button_layout.setContentsMargins(0, 0, 0, 0)
-        run_button = QPushButton("Run")
-        run_button.clicked.connect(lambda _, m=mode: self.run_action(m))
-        button_layout.addWidget(run_button)
-        self.run_buttons[mode] = run_button
         if mode != Mode.PLOTTER:
             stop_button = QPushButton("Stop")
             stop_button.clicked.connect(lambda _, m=mode: self.stop_action(m))
             button_layout.addWidget(stop_button)
             self.stop_buttons[mode] = stop_button
+            run_button = QPushButton("Run")
+        else:
+            run_button = QPushButton("Plots")
+        run_button.clicked.connect(lambda _, m=mode: self.run_action(m))
+        button_layout.addWidget(run_button)
+        self.run_buttons[mode] = run_button
+
         form_layout.addRow("", button_container)
         layout.addLayout(form_layout)
 
@@ -137,7 +141,8 @@ class MainWindow(QMainWindow):
             line_edit.setText(folder_path)
 
     def run_action(self, mode: Mode):
-        custom_print(f"Run button clicked on page: {ConstantsGUI.pages.get(mode, 'Unknown')}")
+        custom_print(f"Run button clicked on page: {Constants.pages.get(mode, 'Unknown')}")
+
         if mode == Mode.PLOTTER:
             self.running_plotter = True
             folder_path = self.data_location_line_edit.text().strip()
@@ -146,34 +151,39 @@ class MainWindow(QMainWindow):
                 self.plotter_widget.update_plot(folder_path)
             else:
                 custom_print("Invalid folder.")
+
+
         elif mode in [Mode.SCAN, Mode.MPPT]:
             self.running_left = True
             self.update_buttons()
+
             values = []
             for param, textbox in self.textboxes.get(mode, []):
                 if param == "Trial Name":
                     self.trial_name = textbox.text()
-                else:
-                    values.append(textbox.text())
+                values.append(textbox.text())
+
             self.multi_controller = MultiController(
                 trial_name=self.trial_name,
                 date=self.today,
                 plotting_mode=False)
+            self.data_location_line_edit.setText(self.multi_controller.folder_path)
             self.multi_controller.run(mode, values)
             self.left_tabs.tabBar().setEnabled(False)
 
-        # Start a thread to monitor the run process.
-        self.stop_measurement_thread.clear()
-        thread = threading.Thread(
-            target=self.wait_for_run_finish, args=([mode]), daemon=True
-        )
-        self.running_thread = thread
-        thread.start()
+            # Start a thread to monitor the run process.
+            self.stop_measurement_thread.clear()
+            thread = threading.Thread(
+                target=self.wait_for_run_finish, args=([mode]), daemon=True
+            )
+            self.running_thread = thread
+            thread.start()
 
     def wait_for_run_finish(self, mode):
-        while not self.stop_measurement_thread.is_set() and self.multi_controller.active_threads:
-            # Wait loop; add any condition for finishing the run.
-            threading.Event().wait(0.1)
+        if mode != Mode.PLOTTER:
+            while not self.stop_measurement_thread.is_set() and self.multi_controller.active_threads:
+                # Wait loop; add any condition for finishing the run.
+                threading.Event().wait(0.1)
         self.after_run(mode)
 
     def after_run(self, mode: Mode):
@@ -187,10 +197,10 @@ class MainWindow(QMainWindow):
         self.multi_controller.controllers = None
         self.multi_controller = None
 
-        custom_print(f"Run finished on page: {ConstantsGUI.pages.get(mode, 'Unknown')}")
+        custom_print(f"Run finished on page: {Constants.pages.get(mode, 'Unknown')}")
 
     def stop_action(self, mode: Mode):
-        custom_print(f"Stop button clicked on page: {ConstantsGUI.pages.get(mode, 'Unknown')}")
+        custom_print(f"Stop button clicked on page: {Constants.pages.get(mode, 'Unknown')}")
 
         # Signal all running threads to stop.
         self.stop_measurement_thread.set()

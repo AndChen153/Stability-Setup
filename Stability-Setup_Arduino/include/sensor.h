@@ -2,30 +2,22 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
+#define NUM_ADCS 8
+#define NUM_DACS 8
+
+#define ADC_I2C 0x40
+#define DAC_I2C 0x60
+
+const float R = 10.f;
+const float VDD = 3.3f;
+
 #include <Arduino.h>
 #include <Adafruit_INA219.h>
 #include <Adafruit_MCP4725.h>
 
-extern Adafruit_INA219 ina219_0;
-extern Adafruit_INA219 ina219_1;
-extern Adafruit_INA219 ina219_2;
-extern Adafruit_INA219 ina219_3;
-extern Adafruit_INA219 ina219_4;
-extern Adafruit_INA219 ina219_5;
-extern Adafruit_INA219 ina219_6;
-extern Adafruit_INA219 ina219_7;
-extern Adafruit_INA219 allINA219[];
-
-extern Adafruit_MCP4725 dac_0;
-extern Adafruit_MCP4725 dac_1;
-extern Adafruit_MCP4725 dac_2;
-extern Adafruit_MCP4725 dac_3;
-extern Adafruit_MCP4725 dac_4;
-extern Adafruit_MCP4725 dac_5;
-extern Adafruit_MCP4725 dac_6;
-extern Adafruit_MCP4725 dac_7;
-extern Adafruit_MCP4725 allDAC[];
-
+// Global sensor variables
+extern Adafruit_INA219 adcDevices[NUM_ADCS];
+extern Adafruit_MCP4725 dacDevices[NUM_DACS];
 extern float shunt_voltage;
 extern float bus_voltage;
 extern float current_mA;
@@ -33,16 +25,16 @@ extern float load_voltage;
 extern float power_mW;
 extern float current_mA_Flipped;
 
-const int TCA_ADDR_INA219 = 0x70;
-const int TCA_ADDR_MCP4725 = 0x71;
-
-bool getTCA9548Connected();
-void setupSensor_INA219(Adafruit_INA219 *ina219, uint8_t ID);
-void setupSensor_Dac(Adafruit_MCP4725 *dac, uint8_t ID);
-void TCA9548A_INA219(uint8_t bus);
-void TCA9548A_MCP4725(uint8_t bus);
-void getINA129(Adafruit_INA219 *ina219, uint8_t ID);
-void setVoltage(Adafruit_MCP4725 *dac, float voltage_val, uint8_t ID);
+void setupSensor_ADC(uint8_t ID);
+void setupSensor_DAC(uint8_t ID);
+void getADC(uint8_t ID);
+float getCurrent_A(uint8_t ID);
+float get_current_flipped_A(uint8_t ID);
+float getCurrent_mA(uint8_t ID);
+float get_current_flipped_mA(uint8_t ID);
+float get_voltage_V(uint8_t ID);
+float getVoltage_mV(uint8_t ID);
+void setVoltage_V(float voltage_val, uint8_t ID);
 void zero();
 uint16_t convert_to_12bit(float val);
 

@@ -15,8 +15,7 @@ static const String Modes[3] = {"scan", "PnO", "constantVoltage"};
 
 serialCommResult recvWithLineTermination();
 bool checkForStopMessage();
-bool check_valid_mode();
 void clearSerialBuffer();
-void show_parsed_data();
+void showParsedData();
 
 #endif

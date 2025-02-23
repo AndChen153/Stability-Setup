@@ -6,12 +6,20 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from labellines import labelLines
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QSizePolicy,
-    QScrollArea, QLabel, QPushButton, QCheckBox
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QSizePolicy,
+    QScrollArea,
+    QLabel,
+    QPushButton,
+    QCheckBox,
 )
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from PySide6.QtCore import Qt
+from helper.global_helpers import custom_print
+
 
 class PlotterWidget(QWidget):
     def __init__(self, parent=None):
@@ -37,15 +45,18 @@ class PlotterWidget(QWidget):
         """Loads CSV files from the given folder, creates the plot,
         and builds the canvas, toolbar, and custom legend widget."""
         if not os.path.isdir(folder_path):
-            print("Invalid folder.")
+            custom_print(f"Invalid folder. {folder_path}")
             return
 
         csv_files = sorted(
-            [os.path.join(folder_path, f)
-             for f in os.listdir(folder_path) if f.lower().endswith(".csv")]
+            [
+                os.path.join(folder_path, f)
+                for f in os.listdir(folder_path)
+                if f.lower().endswith(".csv")
+            ]
         )
         if not csv_files:
-            print("No CSV files found in folder.")
+            custom_print("No CSV files found in folder.")
             return
 
         # Clear any previous content.
@@ -55,7 +66,7 @@ class PlotterWidget(QWidget):
         fig, ax = plt.subplots()
 
         # Decide which plotting logic to use.
-        if "pno" in os.path.basename(csv_files[0]).lower():
+        if "mppt" in os.path.basename(csv_files[0]).lower():
             self._plot_pno(ax, csv_files, folder_path)
         else:
             self._plot_scan(ax, csv_files, folder_path)
@@ -103,18 +114,31 @@ class PlotterWidget(QWidget):
         for csv_file in csv_files:
             try:
                 arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
-                headers = arr[6, :]
+                header_row = np.where(arr == "Time")[0][0]
+
+                meta_data = {}
+                for data in arr[:header_row, :2]:
+                    meta_data[data[0]] = data[1]
+
+                headers = arr[header_row, :]
+                arr = arr[header_row + 1 :, :]
+
                 header_dict = {value: index for index, value in enumerate(headers)}
                 if "Time" not in header_dict:
-                    print(f"'Time' header not found in {csv_file}")
+                    custom_print(f"'Time' header not found in {csv_file}")
                     continue
                 pce_indices = [header_dict[key] for key in header_dict if "PCE" in key]
-                arr = arr[7:, :]
+
                 time = np.array(arr[:, header_dict["Time"]]).astype("float")
+
                 # Convert any non-numeric values.
                 pce_list = np.array(arr)
                 for i in range(len(pce_list)):
-                    pce_list[i] = [float(j) if j.strip() not in ["ovf", "nan"] else 0.0 for j in pce_list[i]]
+                    pce_list[i] = [
+                        float(j) if j.strip() not in ["ovf", "nan"] else 0.0
+                        for j in pce_list[i]
+                    ]
+
                 pce_list = pce_list.astype(float)
                 data = pce_list[:, pce_indices]
 
@@ -143,14 +167,14 @@ class PlotterWidget(QWidget):
                     lineName = f"Pixel {i+1}{label_suffix}"
                     ax.plot(time, data[:, i], label=lineName)
             except Exception as e:
-                print(f"Error processing PnO file {csv_file}: {e}")
+                custom_print(f"Error processing MPPT file {csv_file}: {e}")
 
         if overall_min_time is None or overall_max_time is None:
             overall_min_time, overall_max_time = 0, 1
 
         ax.set_xlim(overall_min_time * 0.99, overall_max_time * 1.01)
         ax.set_ylim(0, 20)
-        ax.set_title(os.path.basename(folder_path) + " PnO")
+        ax.set_title(os.path.basename(folder_path) + " _mppt")
         ax.set_xlabel("Time [hrs]")
         ax.set_ylabel("PCE [%]")
         ax.grid(True)
@@ -160,11 +184,17 @@ class PlotterWidget(QWidget):
         lines = ax.get_lines()
         if lines:
             x_min, x_max = ax.get_xlim()
-            xvals = np.linspace(x_min + 0.1 * (x_max - x_min),
-                                x_max - 0.1 * (x_max - x_min), len(lines))
+            xvals = np.linspace(
+                x_min + 0.1 * (x_max - x_min), x_max - 0.1 * (x_max - x_min), len(lines)
+            )
             bold_font = FontProperties(weight="medium")
             label_texts = labelLines(
-                lines, xvals=xvals, zorder=2.5, align=False, fontsize=11, fontproperties=bold_font
+                lines,
+                xvals=xvals,
+                zorder=2.5,
+                align=False,
+                fontsize=11,
+                fontproperties=bold_font,
             )
             self.line_label_texts = dict(zip(lines, label_texts))
 
@@ -172,37 +202,139 @@ class PlotterWidget(QWidget):
         for csv_file in csv_files:
             try:
                 arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
-                headers = arr[6, :]
-                arr = arr[7:, :]
+                header_row = np.where(arr == "Time")[0][0]
+
+                meta_data = {}
+                for data in arr[:header_row, :2]:
+                    meta_data[data[0]] = data[1]
+
+                headers = arr[header_row, :]
+                arr = arr[header_row + 1 :, :]
                 data = arr[:, 2:-1]
                 pixel_V = data[:, ::2].astype(float)
                 pixel_mA = data[:, 1::2].astype(float)
-                pixel_mA /= 0.128
+                if ("Cell Area (mm^2)" in meta_data):
+                    pixel_mA /= float(meta_data["Cell Area (mm^2)"])
+                else:
+                    pixel_mA /= 0.128
                 jvLen = pixel_V.shape[0] // 2
+
                 for i in range(pixel_V.shape[1]):
                     basename = os.path.basename(csv_file)
                     match = re.search(r"ID(\d+)", basename, re.IGNORECASE)
                     id_str = match.group(1) if match else ""
                     label_suffix = f" (ID {id_str})" if id_str else ""
-                    ax.plot(
+
+                    lines = ax.plot(
                         pixel_V[0:jvLen, i],
                         pixel_mA[0:jvLen, i],
                         label=f"Pixel {i+1} Reverse{label_suffix}",
                     )
+                    color = lines[0].get_color()
+
                     ax.plot(
                         pixel_V[jvLen:, i],
                         pixel_mA[jvLen:, i],
                         "--",
+                        color=color,
                         label=f"Pixel {i+1} Forward{label_suffix}",
                     )
+
             except Exception as e:
-                print(f"Error processing file {csv_file}: {e}")
+                custom_print(f"Error processing file {csv_file}: {e}")
 
         ax.set_title(os.path.basename(folder_path) + " Jmeas")
         ax.set_xlabel("Bias [V]")
         ax.set_ylabel("Jmeas [mAcm-2]")
         ax.grid(True)
         ax.spines["bottom"].set_position("zero")
+
+    def scan_calcs(self, arr, headers, cell_area):
+        """
+        returns: reverse:[fillFactorListSplit, jscListSplit, vocListSplit], forward:[fillFactorListSplit, jscListSplit, vocListSplit]
+        """
+        dead_pixels = self.get_dead_pixels(arr, headers)
+
+        length = len(headers) - 1
+
+        jvList = []
+
+        for i in range(2, length):
+            jvList.append(arr[:, i])
+
+        jList = []  # current
+        vList = []  # voltage
+        for i in range(0, len(jvList), 2):
+            jList.append([float(j) for j in jvList[i + 1]])
+            vList.append([float(x) for x in jvList[i]])
+
+        jList = np.array(jList).T
+        vList = np.array(vList).T
+        jListReverse, jListForward = np.array_split(jList, 2)
+        vListReverse, vListForward = np.array_split(vList, 2)
+
+        return (
+            self.calc(jListReverse, vListReverse, cell_area, dead_pixels),
+            self.calc(jListForward, vListForward, cell_area, dead_pixels),
+        )
+
+    def calc(self, jList, vList, cell_area, dead_pixels):
+        # find Jsc (V = 0)
+        jscList = np.zeros((vList.shape[1]))
+        for i in range(vList.shape[1]):
+            difference_array = np.absolute(vList[:, i])
+            idx = difference_array.argmin()
+            jscList[i] = jList[idx, i]
+
+        # find Voc (J = 0)
+        vocList = np.zeros((jList.shape[1]))
+        for i in range(jList.shape[1]):
+            difference_array = np.absolute(jList[:, i])
+            idx = difference_array.argmin()
+            vocList[i] = vList[idx, i]
+
+        # find Fill Factor
+        pce_list = jList * vList
+        maxVIdx = np.argmax(pce_list, axis=0)  # find index of max pce value
+        vmppList = []
+        jmppList = []
+        for i in range(len(maxVIdx)):  # for i in number of pixels
+            # if vList[maxVIdx[i],i]>0:
+            vmppList.append(vList[maxVIdx[i], i])
+            jmppList.append(jList[maxVIdx[i], i])
+        vmppList = np.array(vmppList)
+        jmppList = np.array(jmppList)
+
+        fillFactorList = 100 * vmppList * jmppList / (jscList * vocList)
+        jscList = jscList / cell_area
+
+        fillFactorList = np.delete(fillFactorList, dead_pixels)
+        jscList = np.delete(jscList, dead_pixels)
+        vocList = np.delete(vocList, dead_pixels)
+
+        # fillFactorList, jscList, vocList
+        return (fillFactorList, jscList, vocList)
+
+    def getDeadPixels(self, arr, headers):
+        length = len(headers) - 1
+
+        jvList = []
+        for i in range(2, length):  # remove timing and volts output
+            jvList.append(arr[:, i])
+
+        dead_pixels = []
+        for i in range(0, len(jvList), 2):
+            # custom_print(i)
+            # custom_print(jvList[i], jvList[i+1])
+            jvList[i] = [float(j) for j in jvList[i]]
+            jvList[i + 1] = [float(x) for x in jvList[i + 1]]
+            if (
+                np.mean(np.absolute(np.array(jvList[i]))) < 0.2
+                or np.mean(np.absolute(np.array(jvList[i + 1]))) < 0.2
+            ):
+                dead_pixels.append(int(i / 2))  # [9, 12, 13, 19, 21, 27, 30, 31]
+
+        return dead_pixels
 
     def create_legend_widget(self, ax):
         """Creates a custom legend with checkboxes to toggle line visibility."""
@@ -235,7 +367,9 @@ class PlotterWidget(QWidget):
             label = line.get_label()
             match = re.search(r"\(ID (\d+)\)|ID(\d+)", label, re.IGNORECASE)
             if match:
-                group_id = match.group(1) if match.group(1) is not None else match.group(2)
+                group_id = (
+                    match.group(1) if match.group(1) is not None else match.group(2)
+                )
                 groups.setdefault(group_id, []).append(line)
                 self.line_to_group[line] = group_id
             else:
@@ -259,7 +393,9 @@ class PlotterWidget(QWidget):
                 group_checkbox.setTristate(True)
                 group_checkbox.setCheckState(Qt.PartiallyChecked)
             group_checkbox.blockSignals(False)
-            group_checkbox.toggled.connect(lambda checked, gid=group_id: self.toggle_group_visibility(gid, checked))
+            group_checkbox.toggled.connect(
+                lambda checked, gid=group_id: self.toggle_group_visibility(gid, checked)
+            )
             self.group_checkboxes[group_id] = group_checkbox
             inner_layout.addWidget(group_checkbox)
 
@@ -271,7 +407,9 @@ class PlotterWidget(QWidget):
                 label_clean = re.sub(r"ID\d+", "", label_clean)
                 checkbox = QCheckBox(label_clean)
                 checkbox.setChecked(line.get_visible())
-                checkbox.toggled.connect(lambda checked, l=line: self.toggle_line_visibility(l, checked))
+                checkbox.toggled.connect(
+                    lambda checked, l=line: self.toggle_line_visibility(l, checked)
+                )
                 group_layout.addWidget(checkbox)
                 self.legend_checkboxes[line] = checkbox
             inner_layout.addLayout(group_layout)
@@ -283,7 +421,9 @@ class PlotterWidget(QWidget):
             for line in ungrouped:
                 checkbox = QCheckBox(line.get_label())
                 checkbox.setChecked(line.get_visible())
-                checkbox.toggled.connect(lambda checked, l=line: self.toggle_line_visibility(l, checked))
+                checkbox.toggled.connect(
+                    lambda checked, l=line: self.toggle_line_visibility(l, checked)
+                )
                 inner_layout.addWidget(checkbox)
                 self.legend_checkboxes[line] = checkbox
 

@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 from email import header
 from fileinput import filename
-from constants import Mode, ConstantsController
+from constants import Mode, Constants
 from data_visualization import data_plotter
 from helper.global_helpers import custom_print
 import serial
@@ -55,7 +55,7 @@ class SingleController:
         self.start = time.time()
 
         self.scan_arr_width = 0
-        self.pno_arr_width = 0
+        self.mppt_arr_width = 0
 
     def connect(self):
         try:
@@ -74,7 +74,7 @@ class SingleController:
                     )
                     if "HW_ID" in line:
                         HW_ID = line.split(":")[-1]
-                        self.arduinoID = str(ConstantsController.arduino_ID[HW_ID])
+                        self.arduinoID = str(Constants.arduino_ID[HW_ID])
                     if "Arduino Ready" in line:
                         done = True
             self.ser.reset_input_buffer()
@@ -90,164 +90,50 @@ class SingleController:
             self.ser = None
 
     def scan(self, params):
-        SCAN_RANGE = float(params[0])
-        SCAN_STEP_SIZE = float(params[1])
-        SCAN_READ_COUNT = int(params[2])
-        SCAN_RATE = int(params[3])
         LIGHT_STATUS = int(params[4])
         custom_print("Scan Initiated")
 
         if LIGHT_STATUS == 0:
-            light_status = "dark"
+            LIGHT_STATUS = "dark"
         else:
-            light_status = "light"
+            LIGHT_STATUS = "light"
 
         self.file_name = (
             self.folder_path
             + self.trial_name
             + self.today
-            + light_status
+            + LIGHT_STATUS
             + "ID"
             + self.arduinoID
             + "scan.csv"
         )
         self.mode = Mode.SCAN
-        self.parameters = (
-            "scan,"
-            + str(SCAN_RANGE)
-            + ","
-            + str(SCAN_STEP_SIZE)
-            + ","
-            + str(SCAN_READ_COUNT)
-            + ","
-            + str(SCAN_RATE)
-            + ","
-            + str(LIGHT_STATUS)
-            + ""
-        )
+        self.command = "scan," + ",".join(params[1:])
+        custom_print(f"Starting scan with parameters: {self.command}")
 
-        custom_print(f"Parameters: {self.parameters}")
-        self._start_scan(
-            SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status
-        )
-        self._read_data()
-        if os.path.exists(self.file_name):
-            data_plotter.create_graph(os.path.abspath(self.file_name))
-        else:
-            custom_print("File Not Found")
-
-    def _start_scan(
-        self, SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, LIGHT_STATUS
-    ):
-        custom_print("Starting Scan")
-        if not self.should_run:
-            custom_print("Run Blocked")
-
+        # Create header array
         voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
         amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
         header_arr = ["Time", "Voltage_Applied"]
-        sent = False
-        received = False
-        line = ""
-
-        while self.should_run and not sent:
-            try:
-                with self.write_lock:
-                    self.ser.write(self.parameters.encode())  # send data to arduino
-                    custom_print(f"Sent Scan Start Command {self.parameters}")
-                    sent = True
-            except serial.SerialException as e:
-                custom_print(f"Communication error on {self.port}. Error: {e}")
-                break
-
-        while self.should_run and not received:
-            try:
-                with self.reading_lock:
-                    line = self.ser.readline().decode().strip()
-                    # line = self.ser.readline().decode('unicode_escape').rstrip()
-                    custom_print(f"INIT STAGE ARDUINO {self.arduinoID} OUTPUT:", line)
-                    if "Measurement Started" in line:
-                        header_arr.extend(
-                            [
-                                f(value)
-                                for value in range(8)
-                                for f in (voltage_lambda, amperage_lambda)
-                            ]
-                        )
-                        received = True
-            except serial.SerialException as e:
-                custom_print(f"Communication error on {self.port}. Error: {e}")
-                break
-
+        header_arr.extend(
+            [f(value) for value in range(8) for f in (voltage_lambda, amperage_lambda)]
+        )
         header_arr.append("ARUDUINOID")
-
         self.scan_arr_width = len(header_arr)
 
-        self.arr = np.empty([7, len(header_arr)], dtype="object")
-        self.arr[0][0], self.arr[0][1] = "Voltage Range: ", SCAN_RANGE
-        self.arr[1][0], self.arr[1][1] = "Voltage Step Size: ", SCAN_STEP_SIZE
-        self.arr[2][0], self.arr[2][1] = "Voltage Read Count: ", SCAN_READ_COUNT
-        self.arr[3][0], self.arr[3][1] = "Voltage Delay Time: ", SCAN_RATE
-        self.arr[4][0], self.arr[4][1] = "Light Status: ", LIGHT_STATUS
-        self.arr[5][0], self.arr[5][1] = "Start Date: ", self.today
-        # self.arr[6][0], self.arr[6][1] = "End Date: ", datetime.now().strftime("%b-%d-%Y")
-        self.arr[6] = header_arr
-
-    def constant_voltage(self, params):
-        SCAN_RANGE = float(params[0])
-        SCAN_STEP_SIZE = 0.1
-        SCAN_READ_COUNT = 1
-        SCAN_RATE = 0
-        LIGHT_STATUS = 0
-        if LIGHT_STATUS == 0:
-            light_status = "dark"
-        else:
-            light_status = "light"
-        self.mode = Mode.SCAN
-        self.file_name = (
-            self.folder_path
-            + self.trial_name
-            + self.today
-            + light_status
-            + "ID"
-            + self.arduinoID
-            + "constant_voltage.csv"
-        )
-        custom_print("constant voltage started")
-
-        self.parameters = (
-            "constantVoltage,"
-            + str(SCAN_RANGE)
-            + ","
-            + str(SCAN_STEP_SIZE)
-            + ","
-            + str(SCAN_READ_COUNT)
-            + ","
-            + str(SCAN_RATE)
-            + ","
-            + str(LIGHT_STATUS)
-            + ""
-        )
-
-        custom_print(f"Parameters: {self.parameters}")
-        self._start_scan(
-            SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status
-        )
+        # Run measurement
+        self.send_command()
+        self.create_array(params, header_arr)
         self._read_data()
 
-    def pno(self, scan_file_name, params):
-        PNO_STARTING_VOLTAGE = float(params[0])
-        PNO_STEP_SIZE = float(params[1])
-        PNO_MEASUREMENTS_PER_STEP = int(params[2])
-        PNO_MEASUREMENT_DELAY = int(params[3])
-        PNO_MEASUREMENT_TIME = int(params[4])
+    def mppt(self, scan_file_name, params):
         self.file_name = (
             self.folder_path
             + self.trial_name
             + self.today
             + "ID"
             + self.arduinoID
-            + "PnO.csv"
+            + "mppt.csv"
         )
         self.scan_filename = scan_file_name
         self.mode = Mode.MPPT
@@ -258,91 +144,27 @@ class SingleController:
 
         # VMPP = "0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6"
         # TODO: reimplement vmpp
-        self.parameters = (
-            "PnO,"
-            + str(PNO_STARTING_VOLTAGE)
-            + ","
-            + str(PNO_STEP_SIZE)
-            + ","
-            + str(PNO_MEASUREMENTS_PER_STEP)
-            + ","
-            + str(PNO_MEASUREMENT_DELAY)
-            + ","
-            + str(PNO_MEASUREMENT_TIME)
-        )
+        self.command = "mppt," + ",".join(params[1:])
 
-        custom_print(f"Parameters:  {self.parameters}")
-        self._start_pno(
-            PNO_STARTING_VOLTAGE,
-            PNO_STEP_SIZE,
-            PNO_MEASUREMENTS_PER_STEP,
-            PNO_MEASUREMENT_DELAY,
-            PNO_MEASUREMENT_TIME,
-        )
-        custom_print(self.file_name)
-        self._read_data()
-        data_plotter.create_graph(os.path.abspath(self.file_name))
-
-    def _start_pno(
-        self,
-        PNO_STARTING_VOLTAGE,
-        PNO_STEP_SIZE,
-        PNO_MEASUREMENTS_PER_STEP,
-        PNO_MEASUREMENT_DELAY,
-        PNO_MEASUREMENT_TIME,
-    ):
-
+        # Create header array
         voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
         amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
         power_lambda = lambda y: "Pixel_" + str(y) + " PCE"
         header_arr = ["Time"]
         pce_header = []
-
-        done = False
-        line = ""
-        while self.should_run and not done:
-            try:
-                with self.write_lock:
-                    self.ser.write(self.parameters.encode())  # send data to arduino
-                    line = self.ser.readline().decode().strip()
-                    data_list = line.split(",")
-                    custom_print(f"INIT Arduino {self.arduinoID}", data_list)
-                    if "Measurement Started" in line:
-                        header_arr.extend(
-                            [
-                                f(value)
-                                for value in range(8)
-                                for f in (voltage_lambda, amperage_lambda)
-                            ]
-                        )
-                        pce_header.extend([power_lambda(value) for value in range(8)])
-                        done = True
-            except serial.SerialException as e:
-                custom_print(f"Communication error on {self.port}. Error: {e}")
-                break
-
+        header_arr.extend(
+            [f(value) for value in range(8) for f in (voltage_lambda, amperage_lambda)]
+        )
+        pce_header.extend([power_lambda(value) for value in range(8)])
         header_arr.extend(pce_header)
         header_arr.append("ARUDUINOID")
+        self.mppt_arr_width = len(header_arr)
 
-        self.pno_arr_width = len(header_arr)
-        self.arr = np.empty([7, len(header_arr)], dtype="object")
-        self.arr[0][0], self.arr[0][1] = "Voltage Range (V): ", PNO_STARTING_VOLTAGE
-        self.arr[1][0], self.arr[1][1] = "Voltage Step Size (V): ", PNO_STEP_SIZE
-        self.arr[2][0], self.arr[2][1] = (
-            "Voltage Read Count: ",
-            PNO_MEASUREMENTS_PER_STEP,
-        )
-        self.arr[3][0], self.arr[3][1] = (
-            "Voltage Delay Time (ms): ",
-            PNO_MEASUREMENT_DELAY,
-        )
-        self.arr[4][0], self.arr[4][1] = (
-            "Voltage Measurement Time (Hrs): ",
-            PNO_MEASUREMENT_TIME,
-        )
-        self.arr[5][0], self.arr[5][1] = "Start Date: ", self.today
-        # self.arr[6][0], self.arr[6][1] = "End Date: ", datetime.now().strftime("%b-%d-%Y")
-        self.arr[6] = header_arr
+        # Run measurement
+        custom_print(f"Starting MPPT with parameters:  {self.command}")
+        self.send_command()
+        self.create_array(params, header_arr)
+        self._read_data()
 
     def reset_arduino(self):
         """
@@ -353,11 +175,47 @@ class SingleController:
                 self.ser.setDTR(False)
                 time.sleep(0.1)  # Wait for 100ms
                 self.ser.setDTR(True)
-                print(f"Arduino has been reset.")
+                custom_print(f"Arduino has been reset.")
             else:
-                print(f"Arduino is not connected.")
+                custom_print(f"Arduino is not connected.")
         except Exception as e:
-            print(f"Failed to reset Arduino: {e}")
+            custom_print(f"Failed to reset Arduino: {e}")
+
+    def send_command(self):
+        sent = False
+        measurement_started = False
+        line = ""
+        while not sent:
+            try:
+                with self.write_lock:
+                    self.ser.write(self.command.encode())  # send data to arduino
+                    custom_print(f"Sent Scan Start Command {self.command}")
+                    sent = True
+            except serial.SerialException as e:
+                custom_print(f"Communication error on {self.port}. Error: {e}")
+                break
+
+        while not measurement_started:
+            try:
+                with self.reading_lock:
+                    line = self.ser.readline().decode().strip()
+                    # line = self.ser.readline().decode('unicode_escape').rstrip()
+                    custom_print(f"INIT STAGE ARDUINO {self.arduinoID} OUTPUT:", line)
+                    if "Measurement Started" in line:
+                        measurement_started = True
+            except serial.SerialException as e:
+                custom_print(f"Communication error on {self.port}. Error: {e}")
+                break
+
+    def create_array(self, params, header_arr):
+        num_params = len(params) + 2
+        self.arr = np.empty([num_params, len(header_arr)], dtype="object")
+        for idx, param in enumerate(params):
+            self.arr[idx][0] = Constants.params[self.mode][idx]
+            self.arr[idx][1] = param
+        self.arr[num_params - 2][0] = "Start Date"
+        self.arr[num_params - 2][1] = self.today
+        self.arr[num_params - 1] = header_arr
 
     def _read_data(self):
         """
@@ -384,7 +242,7 @@ class SingleController:
                                 self.arr, np.array([data_list], dtype="object"), axis=0
                             )
 
-                        if abs(time.time() - time_orig) > ConstantsController.save_time:
+                        if abs(time.time() - time_orig) > Constants.save_time:
                             self._save_data()
                             time_orig = time.time()
 
@@ -415,16 +273,16 @@ class SingleController:
             if self.mode == Mode.SCAN:
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
             elif self.mode == Mode.MPPT:
-                self.arr = np.empty([1, self.pno_arr_width], dtype="object")
+                self.arr = np.empty([1, self.mppt_arr_width], dtype="object")
         else:
             with open(self.file_name, "ab") as f:
                 np.savetxt(f, self.arr[1:, :], delimiter=",", fmt="%s")
             if self.mode == Mode.SCAN:
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
             elif self.mode == Mode.MPPT:
-                self.arr = np.empty([1, self.pno_arr_width], dtype="object")
+                self.arr = np.empty([1, self.mppt_arr_width], dtype="object")
 
-        custom_print("SAVED")
+        custom_print("SAVED DATA")
 
     def set_folder_path(self, new_folder_path):
         self.folder_path = new_folder_path
@@ -474,6 +332,48 @@ class SingleController:
         end = time.time()
         total_time = end - self.start
         custom_print("\n" + str(total_time))
+
+    def constant_voltage(self, params):
+        SCAN_RANGE = float(params[0])
+        SCAN_STEP_SIZE = 0.1
+        SCAN_READ_COUNT = 1
+        SCAN_RATE = 0
+        LIGHT_STATUS = 0
+        if LIGHT_STATUS == 0:
+            light_status = "dark"
+        else:
+            light_status = "light"
+        self.mode = Mode.SCAN
+        self.file_name = (
+            self.folder_path
+            + self.trial_name
+            + self.today
+            + light_status
+            + "ID"
+            + self.arduinoID
+            + "constant_voltage.csv"
+        )
+        custom_print("constant voltage started")
+
+        self.command = (
+            "constantVoltage,"
+            + str(SCAN_RANGE)
+            + ","
+            + str(SCAN_STEP_SIZE)
+            + ","
+            + str(SCAN_READ_COUNT)
+            + ","
+            + str(SCAN_RATE)
+            + ","
+            + str(LIGHT_STATUS)
+            + ""
+        )
+
+        custom_print(f"Parameters: {self.command}")
+        self._start_scan(
+            SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status
+        )
+        self._read_data()
 
 
 def find_vmpp(scan_file_name):

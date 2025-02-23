@@ -4,28 +4,19 @@
 
 #define WIRE Wire
 
-// Sensor instances
-Adafruit_INA219 ina219_0;
-Adafruit_INA219 ina219_1;
-Adafruit_INA219 ina219_2;
-Adafruit_INA219 ina219_3;
-Adafruit_INA219 ina219_4;
-Adafruit_INA219 ina219_5;
-Adafruit_INA219 ina219_6;
-Adafruit_INA219 ina219_7;
-Adafruit_INA219 allINA219[] = {ina219_0, ina219_1, ina219_2, ina219_3, ina219_4, ina219_5, ina219_6, ina219_7};
-
-Adafruit_MCP4725 dac_0;
-Adafruit_MCP4725 dac_1;
-Adafruit_MCP4725 dac_2;
-Adafruit_MCP4725 dac_3;
-Adafruit_MCP4725 dac_4;
-Adafruit_MCP4725 dac_5;
-Adafruit_MCP4725 dac_6;
-Adafruit_MCP4725 dac_7;
-Adafruit_MCP4725 allDAC[] = {dac_0, dac_1, dac_2, dac_3, dac_4, dac_5, dac_6, dac_7};
-
 // Global sensor variables
+Adafruit_INA219 adcDevices[NUM_ADCS] = {
+    Adafruit_INA219(ADC_I2C),
+    Adafruit_INA219(ADC_I2C+1),
+    Adafruit_INA219(ADC_I2C+2),
+    Adafruit_INA219(ADC_I2C+3),
+    Adafruit_INA219(ADC_I2C+4),
+    Adafruit_INA219(ADC_I2C+5),
+    Adafruit_INA219(ADC_I2C+6),
+    Adafruit_INA219(ADC_I2C+7)};
+
+Adafruit_MCP4725 dacDevices[NUM_DACS];
+
 float shunt_voltage;
 float bus_voltage;
 float current_mA;
@@ -33,109 +24,102 @@ float load_voltage;
 float power_mW;
 float current_mA_Flipped;
 
-bool getTCA9548Connected()
+void setupSensor_DAC(uint8_t ID)
 {
-    byte error, address;
-    int nDevices;
-    nDevices = 0;
-    int devices[128];
-
-    for (address = 1; address < 127; address++)
+    if (!dacDevices[ID].begin(DAC_I2C + ID))
     {
-        WIRE.beginTransmission(address);
-        error = WIRE.endTransmission();
-
-        if (error == 0)
-        {
-            devices[address] = 1;
-
-            nDevices++;
-        } else {
-            devices[address] = 0;
-        }
+        Serial.print("Failed to find MCP4725 at 0x");
+        Serial.println(DAC_I2C + ID, HEX);
     }
-
-    if (devices[TCA_ADDR_INA219] && devices[TCA_ADDR_MCP4725]) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-void setupSensor_INA219(Adafruit_INA219 *ina219, uint8_t ID)
-{
-    TCA9548A_INA219(ID);
-    if (!ina219->begin())
+    else
     {
-        Serial.print("ina219_");
-        Serial.print(ID);
-        Serial.print(" not detected");
-        while (1)
-            ;
-    }
-    ina219->setCalibration_16V_400mA();
-}
-
-void setupSensor_Dac(Adafruit_MCP4725 *dac, uint8_t ID)
-{
-    TCA9548A_MCP4725(ID);
-    if (!dac->begin())
-    {
-        Serial.print("dac_");
-        Serial.print(ID);
-        Serial.print(" not detected");
-        while (1)
-            ;
+        Serial.print("Found MCP4725 at 0x");
+        Serial.println(DAC_I2C + ID, HEX);
     }
 }
 
-void TCA9548A_INA219(uint8_t bus)
+void setVoltage_V(float voltage_val, uint8_t ID)
 {
-    Wire.beginTransmission(TCA_ADDR_INA219); // TCA9548A_INA219 address is 0x70
-    Wire.write(1 << bus);                    // send byte to select bus
-    Wire.endTransmission();
-}
-
-void TCA9548A_MCP4725(uint8_t bus)
-{
-    Wire.beginTransmission(TCA_ADDR_MCP4725); // TCA9548A_MCP475 address is 0x71
-    Wire.write(1 << bus);                     // send byte to select bus
-    Wire.endTransmission();
-}
-
-void getINA129(Adafruit_INA219 *ina219, uint8_t ID)
-{
-    TCA9548A_INA219(ID);
-    shunt_voltage = ina219->getShuntVoltage_mV();
-    bus_voltage = ina219->getBusVoltage_V();
-    current_mA = ina219->getCurrent_mA();
-    power_mW = ina219->getPower_mW();
-    current_mA_Flipped = current_mA * -1;
-    load_voltage = bus_voltage + (shunt_voltage / 1000);
-}
-
-void setVoltage(Adafruit_MCP4725 *dac, float voltage_val, uint8_t ID)
-{
-    TCA9548A_MCP4725(ID);
-    dac->setVoltage(convert_to_12bit(voltage_val), false);
+    dacDevices[ID].setVoltage(convert_to_12bit(voltage_val), false);
 }
 
 void zero()
 {
     for (int ID = 0; ID < 8; ID++)
     {
-        setVoltage(&allDAC[ID], 0, ID);
+        setVoltage_V(0, ID);
     }
     delay(30);
 }
 
+void setupSensor_ADC(uint8_t ID)
+{
+    if (!adcDevices[ID].begin())
+    {
+        Serial.print("Failed to find INA219 at 0x");
+        Serial.println(ADC_I2C + ID, HEX);
+    }
+    else
+    {
+        Serial.print("Found INA219 at 0x");
+        Serial.println(ADC_I2C + ID, HEX);
+    }
+}
+
+
+void getADC(uint8_t ID)
+{
+    shunt_voltage = adcDevices[ID].getShuntVoltage_mV();
+    bus_voltage = adcDevices[ID].getBusVoltage_V();
+    current_mA = adcDevices[ID].getCurrent_mA();
+    power_mW = adcDevices[ID].getPower_mW();
+    current_mA_Flipped = current_mA * -1;
+    load_voltage = bus_voltage + (shunt_voltage / 1000);
+}
+
+float getCurrent_A(uint8_t ID)
+{
+    float volts = adcDevices[ID].getShuntVoltage_mV()/1000.0;
+    return volts/VDD;
+}
+
+float get_current_flipped_A(uint8_t ID)
+{
+    float volts = adcDevices[ID].getShuntVoltage_mV()/1000.0;
+    return -1.0*volts/VDD;
+}
+
+float getCurrent_mA(uint8_t ID)
+{
+    float volts = adcDevices[ID].getShuntVoltage_mV()/1000.0;
+    return 1000.0*volts/VDD;
+}
+
+float get_current_flipped_mA(uint8_t ID)
+{
+    float volts = adcDevices[ID].getShuntVoltage_mV()/1000.0;
+    return -1000.0*volts/VDD;
+}
+
+float get_voltage_V(uint8_t ID)
+{
+    return (adcDevices[ID].getBusVoltage_V()
+        + (adcDevices[ID].getShuntVoltage_mV()/1000.0));
+}
+
+float getVoltage_mV(uint8_t ID)
+{
+    return (adcDevices[ID].getBusVoltage_V()*1000.0
+    + adcDevices[ID].getShuntVoltage_mV());
+}
+
 uint16_t convert_to_12bit(float val)
 {
-    if (val < 0 || val > 3.3)
+    if (val < 0 || val > VDD)
     {
         return 0;
     }
-    val = val * 4095.0 / 3.3;
+    val = val * 4095.0 / VDD;
     int bits = floor(val);
     return bits;
 }

@@ -3,28 +3,28 @@
 #include "../include/sensor.h"
 #include "../include/serial_com.h"
 #include "../include/helper.h"
-#include <Arduino.h>
 
 // Extern variables from main
-extern float Vset[8];
-extern bool pno_done;
-extern float voltage_starting_pno;
-extern float voltage_step_size_pno;
-extern int measurement_delay_pno;
-extern int measurements_per_step_pno;
-extern unsigned long measurement_time_mins;
+extern float vset[8];
+extern bool mppt_done;
+extern float voltage_starting_mppt;
+extern float voltage_step_size_mppt;
+extern int measurement_delay_mppt;
+extern int measurements_per_step_mppt;
+extern unsigned long measurement_time_mins_mppt;
+extern float area_of_collector_mppt;
 
 extern bool scan_done;
-extern float avgVolt[8];
-extern float avgCurr[8];
-extern int volt_Step_Count;
+extern float avg_volt[8];
+extern float avg_curr[8];
+extern int volt_step_count;
 extern float voltage_val;
 
-extern float voltage_Range_Scan;
-extern float voltage_Step_Size_Scan;
-extern int measurements_Per_Step_Scan;
-extern int measurement_Rate_Scan;
-extern int light_Status;
+extern float voltage_range_scan;
+extern float voltage_step_size_scan;
+extern int measurements_per_step_scan;
+extern int measurement_rate_scan;
+extern int light_status;
 
 extern bool constant_voltage_done;
 extern float constant_voltage;
@@ -32,92 +32,102 @@ extern float constant_voltage;
 extern float load_voltage;
 extern float current_mA_Flipped;
 
-void perturb_and_observe_classic()
+extern uint32_t uniqueID;
+
+const float measurement_time = 21;
+
+void perturbAndObserveClassic()
 {
     led(true);
     light_control(1);
     // TODO: use longer moving average or more complex filter
     float moving_average_n = 5;
     int count;
+    float temp_voltage = 0.0;
+    float temp_flipped_A = 0.0;
     float load_voltageArr[8];
-    float current_mA_FlippedArr[8];
-    float currentPower[8];
+    float current_mA_flipped_arr[8];
+    float current_power[8];
 
-    float prevPower[8] = {0};
-    int perturbDirection[8] = {1}; // Start by increasing voltage
+    float prev_power[8] = {0};
+    int perturb_direction[8] = {1}; // Start by increasing voltage
 
     for (int ID = 0; ID < 8; ++ID)
     {
         // Vset ---------------------------------------------------
-        setVoltage(&allDAC[ID], Vset[ID], ID);
+        vset[ID] = voltage_starting_mppt;
+        setVoltage_V(vset[ID], ID);
     }
 
-    delay(measurement_delay_pno);
+    delay(measurement_delay_mppt);
 
-    int startMillis = millis();
+    int start_millis = millis();
     Serial.print("measurement_time (min): ");
-    Serial.println(measurement_time_mins);
-    while ((millis() - startMillis) / (1000.0*60.0) < measurement_time_mins)
+    Serial.println(measurement_time_mins_mppt);
+    while ((millis() - start_millis) / (1000.0*60.0) < measurement_time_mins_mppt)
     {
         for (int ID = 0; ID < 8; ++ID)
         {
-            setVoltage(&allDAC[ID], Vset[ID], ID);
+            setVoltage_V(vset[ID], ID);
             load_voltageArr[ID] = 0.0;
-            current_mA_FlippedArr[ID] = 0.0;
-            currentPower[ID] = 0.0;
+            current_mA_flipped_arr[ID] = 0.0;
+            current_power[ID] = 0.0;
         }
 
-        delay(measurement_delay_pno);
+        delay(measurement_delay_mppt);
 
-        for (int meas = 0; meas < measurements_per_step_pno; meas++)
+        for (int meas = 0; meas < measurements_per_step_mppt; meas++)
         {
             for (int ID = 0; ID < 8; ++ID)
             {
+                temp_voltage = get_voltage_V(ID);
+                temp_flipped_A = get_current_flipped_A(ID);
                 // Measure current power at Vset[ID]
-                getINA129(&allINA219[ID], ID);
-                currentPower[ID] += load_voltage * current_mA_Flipped;
-                load_voltageArr[ID] += load_voltage;
-                current_mA_FlippedArr[ID] += current_mA_Flipped;
+                current_power[ID] += temp_voltage * temp_flipped_A;
+                load_voltageArr[ID] += temp_voltage;
+                current_mA_flipped_arr[ID] += get_current_flipped_mA(ID);
             }
         }
 
         for (int ID = 0; ID < 8; ++ID)
         {
-            currentPower[ID] /= measurements_per_step_pno;
-            load_voltageArr[ID] /= measurements_per_step_pno;
-            current_mA_FlippedArr[ID] /= measurements_per_step_pno;
+            current_power[ID] /= measurements_per_step_mppt;
+            load_voltageArr[ID] /= measurements_per_step_mppt;
+            current_mA_flipped_arr[ID] /= measurements_per_step_mppt;
 
             // moving average calculation
-            float smoothedPower = (prevPower[ID] * (moving_average_n - 1) + currentPower[ID]) / moving_average_n;
+            float smoothed_power = (
+                prev_power[ID] *(moving_average_n - 1) + current_power[ID])
+                / moving_average_n;
 
-            if (smoothedPower > prevPower[ID])
+            if (smoothed_power > prev_power[ID])
             {
                 // Power increased, continue in the same direction
-                Vset[ID] += perturbDirection[ID] * voltage_step_size_pno;
+                vset[ID] += perturb_direction[ID] * voltage_step_size_mppt;
             }
             else
             {
                 // Power decreased, reverse direction
-                perturbDirection[ID] *= -1;
-                Vset[ID] += perturbDirection[ID] * voltage_step_size_pno;
+                perturb_direction[ID] *= -1;
+                vset[ID] += perturb_direction[ID] * voltage_step_size_mppt;
             }
 
-            prevPower[ID] = smoothedPower;
+            prev_power[ID] = smoothed_power;
         }
 
-        Serial.print((millis() - startMillis) / 1000.0, 4);
+        Serial.print((millis() - start_millis) / 1000.0, 4);
         Serial.print(", ");
         for (int ID = 0; ID < 8; ++ID)
         {
             Serial.print(load_voltageArr[ID], 2);
             Serial.print(", ");
-            Serial.print(current_mA_FlippedArr[ID], 2);
+            Serial.print(current_mA_flipped_arr[ID], 2);
             Serial.print(", ");
         }
 
         for (int ID = 0; ID < 8; ++ID)
         {
-            Serial.print((prevPower[ID] / 1000) / (0.1 * 0.128)*100, 4);
+            Serial.print((prev_power[ID]) / (0.1 * area_of_collector_mppt*100, 4));
             Serial.print(", ");
         }
         Serial.print(0);
@@ -125,153 +135,152 @@ void perturb_and_observe_classic()
         Serial.println("");
     }
 
-    pno_done = true;
+    mppt_done = true;
     led(false);
 }
 
 // --------------------------------------------------------------------------------------
 
 // performs forward or backward JV scan of solar cell
-void scan(String dir)
+void scan(ScanDirection dir)
 {
     led(true);
 
-    // convert voltage_Range_Scan to mV, measurement_Rate_Scan = mV/s
-    int s = (voltage_Range_Scan * 1000) / measurement_Rate_Scan;
-    int steps = (voltage_Range_Scan * 1000) / (voltage_Step_Size_Scan * 1000);
+    // convert voltage_range_scan to mV, measurement_rate_scan = mV/s
+    int s = (voltage_range_scan * 1000) / measurement_rate_scan;
+    int steps = (voltage_range_scan * 1000) / (voltage_step_size_scan * 1000);
     // Serial.print(s); Serial.print(" "); Serial.println (steps);
 
-    // amount of time it takes to take measurement from all 8 ina219 on ARDUINO UNO
-    // must change this on different setup
-    int OFFSET = 35;
+    // Delay time for one measurement
+    int same_step_measurement_delay = 10;
 
-    // int delayTimeMS = (s * 1000) / steps - (OFFSET * measurements_Per_Step_Scan);
-    // if (delayTimeMS < 0)
-    // {
-    //     delayTimeMS = 0;
-    // }
+    // Calculate delay time to reach proper scan rate
+    // int floored_measurements = static_cast<int>(flooredValue);
+    float measurements = floor(voltage_range_scan / voltage_step_size_scan);
+    float scan_rate = measurement_rate_scan/1000.0;
+    float total_seconds = voltage_range_scan / scan_rate;
+    float ms_per_measurement = 1000.0 * total_seconds / measurements;
+    int delay_time_ms = max(0, (ms_per_measurement/measurements_per_step_scan - measurement_time));
 
-    int delayTimeMS = 300;
+    float direction = 1.0;
 
-    Serial.print("started scan with delay time: ");
-    Serial.println(delayTimeMS);
+    Serial.print("Started scan with delay time: ");
+    Serial.println(delay_time_ms);
 
-    float upperLimit;
-    if (dir == "backward")
+    uint32_t timestart = millis();
+
+    if (dir == SCAN_BACKWARD)
     {
-        voltage_val = voltage_Range_Scan;
+        voltage_val = voltage_range_scan;
+        direction = -1.0;
     }
-    else if (dir == "forward")
+    else if (dir == SCAN_FORWARD)
     {
         voltage_val = 0;
     }
-    upperLimit = voltage_Range_Scan;
 
     for (int ID = 0; ID < 8; ++ID)
     {
-        setVoltage(&allDAC[ID], voltage_val, ID);
+        setVoltage_V(voltage_val, ID);
     }
 
-    delay(delayTimeMS);
-    unsigned long startMillis = millis();
+    delay(delay_time_ms);
+    unsigned long start_millis = millis();
 
-    while (upperLimit >= voltage_val && voltage_val >= 0)
+    while (voltage_range_scan >= voltage_val && voltage_val >= 0)
     {
         // Serial.print(millis()); Serial.print(" "); Serial.println(volt_Step_Count); // used to measure offset
-        if (volt_Step_Count >= measurements_Per_Step_Scan)
+        if (volt_step_count < measurements_per_step_scan)
         {
-            delay(delayTimeMS); // to set the scan rate
-            unsigned long currMillis = millis() - startMillis;
+            for (int ID = 0; ID < 8; ++ID)
+            {
+                avg_volt[ID] += get_voltage_V(ID);
+                avg_curr[ID] += get_current_flipped_mA(ID);
+            }
+            volt_step_count++;
+            delay(delay_time_ms); // to set the scan rate
+        }
+        else
+        {
+            unsigned long curr_millis = millis() - start_millis;
 
-            Serial.print(currMillis / 1000.0, 4);
+            Serial.print(curr_millis / 1000.0, 4);
             Serial.print(",");
             Serial.print(voltage_val);
             Serial.print(",");
             for (int ID = 0; ID < 8; ++ID)
             {
-                Serial.print(avgVolt[ID] / volt_Step_Count, 4);
+                Serial.print(avg_volt[ID] / volt_step_count, 4);
                 Serial.print(",");
-                Serial.print(avgCurr[ID] / volt_Step_Count, 4);
+                Serial.print(avg_curr[ID] / volt_step_count, 4);
                 Serial.print(",");
             }
-            Serial.print(1);
+            Serial.print(uniqueID);
             Serial.println("");
 
             // reset all values in array to 0
-            memset(avgVolt, 0.0, sizeof(avgVolt));
-            memset(avgCurr, 0.0, sizeof(avgCurr));
-            volt_Step_Count = 0;
+            memset(avg_volt, 0.0, sizeof(avg_volt));
+            memset(avg_curr, 0.0, sizeof(avg_curr));
+            volt_step_count = 0;
 
             // set new voltage
-            if (dir == "backward")
-            {
-                voltage_val -= voltage_Step_Size_Scan;
-            }
-            else if (dir == "forward")
-            {
-                voltage_val += voltage_Step_Size_Scan;
-            }
+            voltage_val += direction*voltage_step_size_scan;
 
             for (int ID = 0; ID < 8; ID++)
             {
-                setVoltage(&allDAC[ID], voltage_val, ID);
+                setVoltage_V(voltage_val, ID);
             }
 
-            // Serial.println("");
+
         }
-        else
-        {
-            for (int ID = 0; ID < 8; ++ID)
-            {
-                getINA129(&allINA219[ID], ID);
-                avgVolt[ID] += load_voltage;
-                avgCurr[ID] += current_mA_Flipped;
-            }
-            volt_Step_Count++;
-        }
+
     }
 
+    Serial.print("mV/s: ");
+    float total_time_s = (millis() - timestart)/1000.0;
+    float mv_s = 1000.0*voltage_range_scan / total_time_s;
+    Serial.println(mv_s);
     scan_done = true;
     led(false);
 }
 
-void set_constant_voltage()
+void setConstantVoltage()
 {
     for (int ID = 0; ID < 8; ID++)
     {
-        setVoltage(&allDAC[ID], constant_voltage, ID);
+        setVoltage_V(constant_voltage, ID);
     }
 
-    unsigned long startMillis = millis();
+    unsigned long start_millis = millis();
     while (true)
     {
-        if (volt_Step_Count >= measurements_Per_Step_Scan)
+        if (volt_step_count >= measurements_per_step_scan)
         {
             delay(400);
-            unsigned long currMillis = millis() - startMillis;
+            unsigned long curr_millis = millis() - start_millis;
 
-            Serial.print(currMillis / 1000.0, 4);
+            Serial.print(curr_millis / 1000.0, 4);
             Serial.print(",");
             Serial.print(constant_voltage);
             Serial.print(",");
             for (int ID = 0; ID < 8; ++ID)
             {
-                Serial.print(avgVolt[ID] / volt_Step_Count, 4);
+                Serial.print(avg_volt[ID] / volt_step_count, 4);
                 Serial.print(",");
-                Serial.print(avgCurr[ID] / volt_Step_Count, 4);
+                Serial.print(avg_curr[ID] / volt_step_count, 4);
                 Serial.print(",");
             }
             Serial.print(1);
             Serial.println("");
 
             // reset all values in array to 0
-            memset(avgVolt, 0.0, sizeof(avgVolt));
-            memset(avgCurr, 0.0, sizeof(avgCurr));
-            volt_Step_Count = 0;
+            memset(avg_volt, 0.0, sizeof(avg_volt));
+            memset(avg_curr, 0.0, sizeof(avg_curr));
+            volt_step_count = 0;
 
             for (int ID = 0; ID < 8; ID++)
             {
-                setVoltage(&allDAC[ID], constant_voltage, ID);
+                setVoltage_V(constant_voltage, ID);
             }
 
             // Serial.println("");
@@ -280,11 +289,10 @@ void set_constant_voltage()
         {
             for (int ID = 0; ID < 8; ++ID)
             {
-                getINA129(&allINA219[ID], ID);
-                avgVolt[ID] += load_voltage;
-                avgCurr[ID] += current_mA_Flipped;
+                avg_volt[ID] += get_voltage_V(ID);
+                avg_curr[ID] += get_current_flipped_mA(ID);
             }
-            volt_Step_Count++;
+            volt_step_count++;
         }
     }
 }

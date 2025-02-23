@@ -30,7 +30,7 @@ def create_graph(file_location):
         custom_print(f"Creating Plots for: {file_location}")
         create_scan_graph(file_location, current_density=False)
         return create_scan_graph(file_location, current_density=True, saveInFolder = False)
-    elif (file_location.endswith("PnO.csv")):
+    elif (file_location.endswith("mppt.csv")):
         custom_print(f"Creating Plot for: {file_location}")
         return create_pce_graph(file_location)
     else:
@@ -135,7 +135,6 @@ def create_scan_graph(file_location,
     arr = np.loadtxt(file_location, delimiter=",", dtype=str)
 
     # custom_print("PC -> Graph Name", graph_name)
-    # C:/Users/achen/Dropbox/code/Stability-Setup/data/Nov-19-2024 17_01_11\Nov-19-2024 17_01_13lightID1scan.csv
     if saveInFolder:
         png_save_location = file_location[:-4]
     else:
@@ -239,29 +238,6 @@ def create_scan_graph(file_location,
     plt.savefig(box_plot_save_dir + plot_title, dpi=300, bbox_inches='tight')
 
     return png_save_dir
-
-def get_dead_pixels(graph_name) -> List[int]:
-    arr = np.loadtxt(graph_name, delimiter=",", dtype=str)
-    headers = arr[6,:]
-    arr = arr[7:, :]
-
-    # custom_print(arr)
-    length = (len(headers) - 1)
-
-    jvList = []
-    for i in range(2, length): # remove timing and volts output
-        jvList.append(arr[:,i])
-
-    dead_pixels = []
-    for i in range(0,len(jvList),2):
-        # custom_print(i)
-        # custom_print(jvList[i], jvList[i+1])
-        jvList[i] = [float(j) for j in jvList[i]]
-        jvList[i+1] = [float(x) for x in jvList[i+1]]
-        if np.mean(np.absolute(np.array(jvList[i]))) < 0.2 or np.mean(np.absolute(np.array(jvList[i+1]))) < 0.2:
-            dead_pixels.append(int(i/2))#[9, 12, 13, 19, 21, 27, 30, 31]
-
-    return dead_pixels
 
 def get_dead_pixels(graph_name) -> List[int]:
     arr = np.loadtxt(graph_name, delimiter=",", dtype=str)

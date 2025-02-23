@@ -4,13 +4,13 @@
 #include "../include/serial_com.h"
 #include <Arduino.h>
 
-void light_control(int light_Status)
+void light_control(int light_status)
 {
-    if (light_Status == 0)
+    if (light_status == 0)
     {
         Serial.println("Turn light off");
     }
-    else if (light_Status == 1)
+    else if (light_status == 1)
     {
         Serial.println("Turn light on");
     }
@@ -18,7 +18,6 @@ void light_control(int light_Status)
 
 void displaySensorVals(Adafruit_INA219 *ina219, int ID)
 {
-    TCA9548A_INA219(ID);
     Serial.println("------------------------------------");
     Serial.print("Sensor:     ");
     Serial.println(ID);
