@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class Mode(Enum):
     STOP = 0
     SCAN = 1
@@ -69,3 +68,5 @@ class Constants:
     save_time = 5
     serial_baud_rate = 115200
     arduino_ID = {"F05123D": 1}
+    kbPerDataPoint = 0.17
+    gbCalculationParams = ["Measurement Delay (ms)", "Time (mins)"]

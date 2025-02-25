@@ -1,8 +1,9 @@
-#app.py
+# app.py
 import json
 import os
 import threading
 from datetime import datetime
+from pathlib import Path
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QTabWidget, QVBoxLayout, QFormLayout,
@@ -14,11 +15,14 @@ from constants import Mode, Constants
 from helper.global_helpers import custom_print
 from controller.multi_arduino_controller import MultiController
 from gui.plotter_widget import PlotterWidget
-
+from controller import arduino_assignment
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.base_dir = Path(__file__).parent.parent
+        self.data_dir = os.path.join(self.base_dir, "data")
+        custom_print(self.base_dir)
         self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         self.setWindowTitle("Stability Setup")
         self.setGeometry(100, 100, 1200, 600)
@@ -29,8 +33,10 @@ class MainWindow(QMainWindow):
         self.run_buttons = {}
         self.stop_buttons = {}
         self.textboxes = {}
-        self.trial_name = None
+        self.trial_name = ""  # Initialize shared Trial Name value
+        self.trial_name_lineedits = []  # List to hold all Trial Name QLineEdits
         self.notification_email = None
+        self.common_param_lineedits = {}
 
         # CSV watcher, thread control, etc.
         self.csv_watcher = QFileSystemWatcher()
@@ -41,6 +47,8 @@ class MainWindow(QMainWindow):
 
         self.multi_controller = MultiController()
         self.folder_path = None
+
+        self.estimated_devices = max(1, len(arduino_assignment.get()))
 
         # File to store presets persistently.
         self.preset_file = os.path.join(os.path.dirname(__file__), "presets.json")
@@ -72,9 +80,8 @@ class MainWindow(QMainWindow):
         form_layout = QFormLayout()
         self.textboxes[mode] = []
 
-        # For the Plotter page, we just want a CSV folder selector...
         if mode == Mode.PLOTTER:
-            # Create a QLineEdit to hold the folder path.
+            # ... (existing Plotter code remains unchanged)
             line_edit = QLineEdit()
             default = Constants.defaults.get(mode, [""])[0]
             line_edit.setText(default)
@@ -82,32 +89,58 @@ class MainWindow(QMainWindow):
             self.textboxes[mode].append(("Data Location", line_edit))
 
             browse_button = QPushButton("Browse...")
-            browse_button.clicked.connect(
-                lambda _, le=line_edit: self.open_folder_dialog(le)
-            )
+            browse_button.clicked.connect(lambda _, le=line_edit: self.open_folder_dialog(le))
+
+            # Create a container with a horizontal layout for the QLineEdit, Browse, and (if needed) Create Plot button.
             container = QWidget()
             h_layout = QHBoxLayout(container)
             h_layout.setContentsMargins(0, 0, 0, 0)
             h_layout.addWidget(line_edit)
             h_layout.addWidget(browse_button)
+            # For Plotter, we also add the Create Plot button next to the browse button.
+            run_button = QPushButton("Create Plot")
+            run_button.clicked.connect(lambda _, m=mode: self.run_action(m))
+            self.run_buttons[mode] = run_button
+            h_layout.addWidget(run_button)
+
             form_layout.addRow("CSV Folder", container)
         else:
-            # For the other modes, add parameters from the constants file.
             if mode in Constants.params:
                 params = Constants.params[mode]
                 defaults = Constants.defaults.get(mode, [""] * len(params))
                 for param, default in zip(params, defaults):
                     line_edit = QLineEdit()
                     line_edit.setText(default)
+
+                    # If this parameter is common (e.g. "Trial Name" or "Email for Notification"),
+                    # add it to the common dictionary and connect its textChanged signal.
+                    if param in Constants.common_params:
+                        if param not in self.common_param_lineedits:
+                            self.common_param_lineedits[param] = []
+                        self.common_param_lineedits[param].append(line_edit)
+                        line_edit.textChanged.connect(lambda text, p=param, src=line_edit: self.on_common_param_changed(p, text, src))
+
+                    # Otherwise, for non-common parameters you might use individual handlers.
+                    # (For example, if you want specific behavior for "Time (mins)".)
+                    if param == "Time (mins)":
+                        line_edit.textChanged.connect(self.update_estimated_data_amount)
+
                     form_layout.addRow(param, line_edit)
                     self.textboxes[mode].append((param, line_edit))
+
+                # For MPPT mode, add the estimated data amount textbox.
+                if mode == Mode.MPPT:
+                    self.mppt_estimated_gb = QLineEdit()
+                    self.mppt_estimated_gb.setReadOnly(True)
+                    self.mppt_estimated_gb.setText("0.0")  # initial value
+                    self.update_estimated_data_amount()
+                    form_layout.addRow("Estimated Data Amount", self.mppt_estimated_gb)
+                    self.textboxes[mode].append(("Estimated Data Amount", self.mppt_estimated_gb))
             else:
                 form_layout.addRow(QLabel("No parameters defined for this mode."))
 
-        # For non-PLOTTER modes, add the preset buttons in the left column
-        # and the Stop/Run buttons in the right column.
         if mode != Mode.PLOTTER:
-            # Left column: container for "Save Preset" and "Load Preset" buttons.
+            # Left column: Preset buttons.
             preset_container = QWidget()
             preset_layout = QHBoxLayout(preset_container)
             preset_layout.setContentsMargins(0, 0, 0, 0)
@@ -118,7 +151,7 @@ class MainWindow(QMainWindow):
             load_button.clicked.connect(lambda _, m=mode: self.load_preset_action(m))
             preset_layout.addWidget(load_button)
 
-            # Right column: container for Stop and Run buttons.
+            # Right column: Stop and Run buttons.
             button_container = QWidget()
             button_layout = QHBoxLayout(button_container)
             button_layout.setContentsMargins(0, 0, 0, 0)
@@ -131,28 +164,55 @@ class MainWindow(QMainWindow):
             button_layout.addWidget(run_button)
             self.run_buttons[mode] = run_button
 
-            # Add the row to the form: left column contains preset buttons,
-            # right column contains the Stop and Run buttons.
             form_layout.addRow(preset_container, button_container)
-        else:
-            # For the Plotter tab, only the Run button is needed.
-            button_container = QWidget()
-            button_layout = QHBoxLayout(button_container)
-            button_layout.setContentsMargins(0, 0, 0, 0)
-            run_button = QPushButton("Create Plot")
-            run_button.clicked.connect(lambda _, m=mode: self.run_action(m))
-            button_layout.addWidget(run_button)
-            self.run_buttons[mode] = run_button
-            form_layout.addRow("", button_container)
 
         layout.addLayout(form_layout)
 
-        # For the Plotter tab, create and add our PlotterWidget.
         if mode == Mode.PLOTTER:
             self.plotter_widget = PlotterWidget()
             layout.addWidget(self.plotter_widget)
 
         self.update_buttons()
+
+    def update_estimated_data_amount(self):
+        time_text = None
+        delay_text = None
+        for param, textbox in self.textboxes.get(Mode.MPPT, []):
+            if param == "Time (mins)":
+                time_text = textbox.text()
+            elif param == "Measurement Delay (ms)":
+                delay_text = textbox.text()
+        try:
+            Time = float(time_text) if time_text else 0.0
+            Delay_ms = float(delay_text)/1000 if delay_text else 0.0
+            if Delay_ms == 0:
+                estimated = 0.0
+            else:
+                estimated = self.estimated_devices * (Constants.kbPerDataPoint * Time / Delay_ms)/1000000
+
+            unit = "kb"
+            if estimated > 1000000:
+                estimated = estimated/1000000
+                unit = "gb"
+            elif estimated > 1000:
+                estimated = estimated/1000
+                unit = "mb"
+
+            estimated = round(estimated, 2)
+            self.mppt_estimated_gb.setText(f"{str(estimated)} {unit}")
+        except ValueError:
+            self.mppt_estimated_gb.setText("Error")
+
+    def on_common_param_changed(self, param, text, source):
+        """
+        When a common parameter's text changes, update all QLineEdits associated
+        with that parameter (except the source that triggered the change).
+        """
+        for widget in self.common_param_lineedits.get(param, []):
+            if widget is not source:
+                widget.blockSignals(True)
+                widget.setText(text)
+                widget.blockSignals(False)
 
     def update_buttons(self):
         # Update button states based on running flags.
@@ -198,10 +258,11 @@ class MainWindow(QMainWindow):
 
             self.multi_controller.initializeMeasurement(
                 trial_name=self.trial_name,
+                data_dir=self.data_dir,
                 email=self.notification_email,
                 date=self.today,
                 plotting_mode=False)
-            self.data_location_line_edit.setText(self.multi_controller.folder_path)
+            self.data_location_line_edit.setText(self.multi_controller.trial_dir)
             self.multi_controller.run(mode, values)
             self.left_tabs.tabBar().setEnabled(False)
 
@@ -225,8 +286,7 @@ class MainWindow(QMainWindow):
         self.left_tabs.tabBar().setEnabled(True)
         while self.multi_controller.controllers:
             threading.Event().wait(0.1)
-        self.multi_controller.controllers = None
-        self.multi_controller = None
+        self.multi_controller.controllers = {}
         custom_print(f"Run finished on page: {Constants.pages.get(mode, 'Unknown')}")
 
     def stop_action(self, mode: Mode):
@@ -290,6 +350,8 @@ class MainWindow(QMainWindow):
             custom_print(f"Presets loaded for {Constants.pages.get(mode, 'Unknown')} mode.")
         else:
             custom_print(f"No presets saved for {Constants.pages.get(mode, 'Unknown')} mode.")
+
+        self.update_estimated_data_amount()
 
 
 if __name__ == "__main__":

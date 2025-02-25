@@ -24,7 +24,7 @@ class SingleController:
         SERIAL_BAUD_RATE: int,
         trial_name: str,
         date: str,
-        folder_path: str,
+        trial_dir: str,
     ) -> None:
         """
         Parameters
@@ -46,14 +46,12 @@ class SingleController:
 
         self.mode = ""
         self.scan_filename = ""
-        self.file_name = ""
+        self.file_path = ""
 
         self.arduinoID = None
-        self.trial_name = ""
-        if trial_name:
-            self.trial_name = trial_name + " "
+        self.trial_name = trial_name
         self.today = date
-        self.folder_path = folder_path
+        self.trial_dir = trial_dir
         self.start = time.time()
 
         self.scan_arr_width = 0
@@ -142,15 +140,17 @@ class SingleController:
         else:
             LIGHT_STATUS = "light"
 
-        self.file_name = (
-            self.folder_path
+        file_name = (
+            self.today
             + self.trial_name
-            + self.today
+            + "__"
+            + f"ID{self.arduinoID}"
+            + "__"
             + LIGHT_STATUS
-            + "ID"
-            + self.arduinoID
+            + "__"
             + "scan.csv"
         )
+        self.file_path = os.path.join(self.trial_dir, file_name)
         self.mode = Mode.SCAN
         self.command = "scan," + ",".join(params[len(Constants.common_params) :])
         custom_print(f"Starting scan with parameters: {self.command}")
@@ -171,14 +171,18 @@ class SingleController:
         self._read_data()
 
     def mppt(self, scan_file_name, params):
-        self.file_name = (
-            self.folder_path
+        file_name = (
+            self.today
             + self.trial_name
-            + self.today
-            + "ID"
-            + self.arduinoID
+            + "__"
+            + f"ID{self.arduinoID}"
+            + "__"
             + "mppt.csv"
         )
+
+        self.file_path = os.path.join(self.trial_dir, file_name)
+
+
         self.scan_filename = scan_file_name
         self.mode = Mode.MPPT
 
@@ -274,14 +278,14 @@ class SingleController:
         file_name
             file_name for file that was just saved
         """
-        if not os.path.exists(self.file_name):
-            np.savetxt(self.file_name, self.arr, delimiter=",", fmt="%s")
+        if not os.path.exists(self.file_path):
+            np.savetxt(self.file_path, self.arr, delimiter=",", fmt="%s")
             if self.mode == Mode.SCAN:
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
             elif self.mode == Mode.MPPT:
                 self.arr = np.empty([1, self.mppt_arr_width], dtype="object")
         else:
-            with open(self.file_name, "ab") as f:
+            with open(self.file_path, "ab") as f:
                 np.savetxt(f, self.arr[1:, :], delimiter=",", fmt="%s")
             if self.mode == Mode.SCAN:
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
@@ -289,9 +293,6 @@ class SingleController:
                 self.arr = np.empty([1, self.mppt_arr_width], dtype="object")
 
         custom_print("SAVED DATA")
-
-    def set_folder_path(self, new_folder_path):
-        self.folder_path = new_folder_path
 
     def find_vmpp(self, scan_file_name):
         arr = np.loadtxt(scan_file_name, delimiter=",", dtype=str)
@@ -350,8 +351,8 @@ class SingleController:
         else:
             light_status = "light"
         self.mode = Mode.SCAN
-        self.file_name = (
-            self.folder_path
+        self.file_path = (
+            self.trial_dir
             + self.trial_name
             + self.today
             + light_status

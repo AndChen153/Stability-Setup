@@ -14,13 +14,13 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QCheckBox,
+    QTabWidget,
 )
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from PySide6.QtCore import Qt
 from helper.global_helpers import custom_print
 
-# TODO: implement plotting all plots in a folder, based on date in file header
 class PlotterWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,13 +41,35 @@ class PlotterWidget(QWidget):
         self.plot_container_layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.plot_container)
 
+    def getPlotGroups(self, csv_files):
+        file_groups_dict = {}
+        for file in csv_files:
+            head, tail = os.path.split(file)
+            params = tail.split("__")
+            filetype = params[-1].split(".")[0]  # get scan or mppt from scan.csv
+            if "ID" not in params[1]:
+                test_name = params[1]
+            else:
+                test_name = ""
+
+            name_parts = [val for val in [test_name, params[0], filetype] if val]
+
+            plot_name = " ".join(name_parts)
+            if plot_name in file_groups_dict:
+                file_groups_dict[plot_name].append(file)
+            else:
+                file_groups_dict[plot_name] = [file]
+
+        return file_groups_dict
+
     def update_plot(self, folder_path: str):
-        """Loads CSV files from the given folder, creates the plot,
-        and builds the canvas, toolbar, and custom legend widget."""
+        """Loads CSV files from the given folder, creates plots for each group,
+        and builds a tabbed widget where each tab shows the respective plot."""
         if not os.path.isdir(folder_path):
-            custom_print(f"Invalid folder. {folder_path}")
+            custom_print(f"Invalid folder: {folder_path}")
             return
 
+        # Gather CSV files.
         csv_files = sorted(
             [
                 os.path.join(folder_path, f)
@@ -59,48 +81,63 @@ class PlotterWidget(QWidget):
             custom_print("No CSV files found in folder.")
             return
 
+        # Get the plot groups fromb the CSV files.
+        plot_groups = self.getPlotGroups(csv_files)
+
         # Clear any previous content.
         self._clear_layout(self.plot_container_layout)
 
-        # Create the plot.
-        fig, ax = plt.subplots()
+        # Create a QTabWidget to hold the different plots.
+        tab_widget = QTabWidget()
 
-        # Decide which plotting logic to use.
-        if "mppt" in os.path.basename(csv_files[0]).lower():
-            self._plot_pno(ax, csv_files, folder_path)
-        else:
-            self._plot_scan(ax, csv_files, folder_path)
+        # Iterate over each group.
+        for group_name, group_csv_files in plot_groups.items():
+            # Create a new tab widget.
+            tab = QWidget()
+            tab_layout = QVBoxLayout(tab)
+            tab_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Build the canvas and toolbar.
-        canvas = FigureCanvas(fig)
-        canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        toolbar = NavigationToolbar(canvas, self)
+            # Create a new matplotlib figure and axis for this group.
+            fig, ax = plt.subplots()
 
-        # Create the custom legend widget.
-        legend_widget = self.create_legend_widget(ax)
-        legend_widget.setFixedWidth(250)
+            # Decide which plotting method to use based on the first file in the group.
+            first_file = group_csv_files[0]
+            if "mppt" in os.path.basename(first_file).lower():
+                self._plot_pno(ax, group_csv_files, folder_path, group_name)
+            else:
+                self._plot_scan(ax, group_csv_files, folder_path, group_name)
 
-        # Layout the canvas, toolbar, and legend.
-        h_layout = QHBoxLayout()
-        h_layout.setContentsMargins(0, 0, 0, 0)
-        h_layout.addWidget(canvas, 1)
-        h_layout.addWidget(legend_widget)
+            # Create the canvas and toolbar.
+            canvas = FigureCanvas(fig)
+            canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            toolbar = NavigationToolbar(canvas, self)
 
-        container = QWidget()
-        container.setLayout(h_layout)
+            # Create the custom legend widget.
+            legend_widget = self.create_legend_widget(ax)
+            legend_widget.setFixedWidth(250)
 
-        v_layout = QVBoxLayout()
-        v_layout.setContentsMargins(0, 0, 0, 0)
-        v_layout.addWidget(toolbar)
-        v_layout.addWidget(container, 1)
+            # Layout the canvas, toolbar, and legend side by side.
+            h_layout = QHBoxLayout()
+            h_layout.setContentsMargins(0, 0, 0, 0)
+            h_layout.addWidget(canvas, 1)
+            h_layout.addWidget(legend_widget)
 
-        widget_container = QWidget()
-        widget_container.setLayout(v_layout)
+            container = QWidget()
+            container_layout = QVBoxLayout(container)
+            container_layout.setContentsMargins(0, 0, 0, 0)
+            container_layout.addWidget(toolbar)
+            container_layout.addLayout(h_layout)
 
-        self.plot_container_layout.addWidget(widget_container)
+            tab_layout.addWidget(container)
+            tab_widget.addTab(tab, group_name)
 
-        canvas.draw()
-        plt.close(fig)
+            # Render the canvas and close the figure to free resources.
+            canvas.draw()
+            plt.close(fig)
+
+        # Add the tab widget to the plot container layout.
+        self.plot_container_layout.addWidget(tab_widget)
+
 
     def _clear_layout(self, layout):
         while layout.count():
@@ -109,7 +146,7 @@ class PlotterWidget(QWidget):
             if widget is not None:
                 widget.deleteLater()
 
-    def _plot_pno(self, ax, csv_files, folder_path):
+    def _plot_pno(self, ax, csv_files, folder_path, plot_title):
         overall_min_time, overall_max_time = None, None
         for csv_file in csv_files:
             try:
@@ -174,7 +211,7 @@ class PlotterWidget(QWidget):
 
         ax.set_xlim(overall_min_time * 0.99, overall_max_time * 1.01)
         ax.set_ylim(0, 20)
-        ax.set_title(os.path.basename(folder_path) + " _mppt")
+        ax.set_title(plot_title)
         ax.set_xlabel("Time [hrs]")
         ax.set_ylabel("PCE [%]")
         ax.grid(True)
@@ -198,7 +235,7 @@ class PlotterWidget(QWidget):
             )
             self.line_label_texts = dict(zip(lines, label_texts))
 
-    def _plot_scan(self, ax, csv_files, folder_path):
+    def _plot_scan(self, ax, csv_files, folder_path, plot_title):
         for csv_file in csv_files:
             try:
                 arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
@@ -243,7 +280,7 @@ class PlotterWidget(QWidget):
             except Exception as e:
                 custom_print(f"Error processing file {csv_file}: {e}")
 
-        ax.set_title(os.path.basename(folder_path) + " Jmeas")
+        ax.set_title(plot_title)
         ax.set_xlabel("Bias [V]")
         ax.set_ylabel("Jmeas [mAcm-2]")
         ax.grid(True)

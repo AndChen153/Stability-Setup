@@ -1,15 +1,15 @@
 # multi_arduino_controller.py
-from controller.single_arduino_controller import SingleController
-from controller import arduino_assignment
-from controller.email_service import EmailSender
-from constants import Mode, Constants
-from data_visualization import data_plotter
-from datetime import datetime
 import threading
 import os
 import time
-from helper.global_helpers import custom_print
+from controller.email_service import EmailSender
+from datetime import datetime
 
+from controller.single_arduino_controller import SingleController
+from controller import arduino_assignment
+from constants import Mode, Constants
+from data_visualization import data_plotter
+from helper.global_helpers import custom_print
 
 class MultiController:
     def __init__(self):
@@ -18,16 +18,21 @@ class MultiController:
     def initializeMeasurement(
         self,
         trial_name: str,
+        data_dir: str,
         email: str,
         date: str,
         plot_location="",
         plotting_mode=False,
     ):
-        self.trial_name = ""
-        if trial_name:
-            self.trial_name = trial_name + " "
-        self.folder_path = "./data/" + trial_name + date + "/"
-        self.date = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
+        if trial_name != "":
+            self.trial_name = "__" + trial_name
+        else:
+            self.trial_name = ""
+        self.trial_dir = os.path.join(data_dir, f"{date}{self.trial_name}")
+
+        custom_print(self.trial_dir)
+
+        self.trial_date = datetime.now().strftime("%b-%d-%Y_%H-%M-%S")
         self.arduino_assignments = None
         self.controllers = {}
         self.active_threads = {}
@@ -42,16 +47,16 @@ class MultiController:
         if not self.plotting_mode:
             self.arduino_assignments = arduino_assignment.get()
 
-            if not os.path.exists(self.folder_path):
-                os.mkdir(self.folder_path)
+            if not os.path.exists(self.trial_dir):
+                os.mkdir(self.trial_dir)
 
             for ID, COM in enumerate(self.arduino_assignments):
                 controller = SingleController(
                     COM=COM,
                     SERIAL_BAUD_RATE=Constants.serial_baud_rate,
                     trial_name=self.trial_name,
-                    date=self.date,
-                    folder_path=self.folder_path,
+                    date=self.trial_date,
+                    trial_dir=self.trial_dir,
                 )
                 self.controllers[ID] = controller
 
@@ -118,10 +123,11 @@ class MultiController:
 
             if not (command == Mode.STOP):
                 # Start the new command in a new thread
+                custom_print(f"Started command {command} on controller {ID}.")
                 thread = threading.Thread(target=target, daemon=True)
                 thread.start()
                 self.active_threads[ID] = thread
-                custom_print(f"Started command {command} on controller {ID}.")
+
 
     def monitor_controllers(self):
         while True:
@@ -139,9 +145,9 @@ class MultiController:
                     break
 
             time.sleep(0.1)
-
-        self.email_sender.send_email(
-            subject="Stability Setup Notification - Test Finished",
-            body=f"{self.mode} named: {self.trial_name} started at {self.date} has finished.",
-            to_email=self.email,
-        )
+        if self.email:
+            self.email_sender.send_email(
+                subject="Stability Setup Notification - Test Finished",
+                body=f"{self.mode} named: {self.trial_name} started at {self.trial_date} has finished.",
+                to_email=self.email,
+            )

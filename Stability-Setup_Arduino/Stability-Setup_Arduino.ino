@@ -56,7 +56,6 @@ extern float area_of_collector_mppt = 0.0;
 volatile bool constant_voltage_done = true;
 float constant_voltage = 0.0;
 
-// TODO: remove this variable
 volatile bool measurement_running = !scan_done || !constant_voltage_done || !mppt_done;
 
 void setup(void)
