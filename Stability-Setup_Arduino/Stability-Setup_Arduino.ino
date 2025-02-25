@@ -28,26 +28,26 @@ char temp_chars[num_chars]; // temporary array for use when parsing
 char mode_from_pc[num_chars] = {0};
 
 // Perturb and Observe Variables
-extern float vset[8] = {0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6};
-extern volatile bool mppt_done = true;
-extern float voltage_starting_mppt = 0.0;
-extern float voltage_step_size_mppt = 0.000;
-extern int measurement_delay_mppt = 0;
-extern int measurements_per_step_mppt = 0;
-extern unsigned long measurement_time_mins_mppt = 0;
+float vset[8];
+volatile bool mppt_done = true;
+float voltage_starting_mppt = 0.0;
+float voltage_step_size_mppt = 0.000;
+int measurement_delay_mppt = 0;
+int measurements_per_step_mppt = 0;
+unsigned long measurement_time_mins_mppt = 0;
 
 // Scan Variables
 volatile bool scan_done = true;
 float avg_volt[8];
 float avg_curr[8];
-extern int volt_step_count = 0;
-extern float voltage_val = 0;
-extern uint16_t dac_val = 0;
-extern float voltage_range_scan = 0.0;
-extern float voltage_step_size_scan = 0.000;
-extern int measurements_per_step_scan = 0;
-extern int measurement_rate_scan = 0;
-extern int light_status = 0;
+int volt_step_count = 0;
+float voltage_val = 0;
+uint16_t dac_val = 0;
+float voltage_range_scan = 0.0;
+float voltage_step_size_scan = 0.000;
+int measurements_per_step_scan = 0;
+int measurement_rate_scan = 0;
+int light_status = 0;
 
 extern float area_of_collector_mppt = 0.0;
 

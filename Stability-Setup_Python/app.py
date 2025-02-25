@@ -1,19 +1,21 @@
 #app.py
+import json
+import os
+import threading
+from datetime import datetime
+
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QTabWidget, QVBoxLayout, QFormLayout,
     QLabel, QLineEdit, QPushButton, QFileDialog, QHBoxLayout, QSplitter
 )
 from PySide6.QtCore import Qt, QFileSystemWatcher
-import threading
-import os
-from datetime import datetime
+
 from constants import Mode, Constants
 from helper.global_helpers import custom_print
 from controller.multi_arduino_controller import MultiController
 from gui.plotter_widget import PlotterWidget
 
 
-# TODO fix SingleController not properly exiting
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -28,6 +30,7 @@ class MainWindow(QMainWindow):
         self.stop_buttons = {}
         self.textboxes = {}
         self.trial_name = None
+        self.notification_email = None
 
         # CSV watcher, thread control, etc.
         self.csv_watcher = QFileSystemWatcher()
@@ -36,8 +39,11 @@ class MainWindow(QMainWindow):
         self.running_thread = None
         self.stop_measurement_thread = threading.Event()
 
-        self.multi_controller = None
+        self.multi_controller = MultiController()
         self.folder_path = None
+
+        # File to store presets persistently.
+        self.preset_file = os.path.join(os.path.dirname(__file__), "presets.json")
 
         # Left side: Tab Widget for Scan/MPPT pages.
         self.left_tabs = QTabWidget()
@@ -58,6 +64,8 @@ class MainWindow(QMainWindow):
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 3)
         self.setCentralWidget(splitter)
+
+        # Note: Do not auto-load presets on startup. Defaults come from Constants.
 
     def setup_tab(self, mode, widget):
         layout = QVBoxLayout(widget)
@@ -84,7 +92,7 @@ class MainWindow(QMainWindow):
             h_layout.addWidget(browse_button)
             form_layout.addRow("CSV Folder", container)
         else:
-            # For the other modes, add parameters as before.
+            # For the other modes, add parameters from the constants file.
             if mode in Constants.params:
                 params = Constants.params[mode]
                 defaults = Constants.defaults.get(mode, [""] * len(params))
@@ -96,23 +104,47 @@ class MainWindow(QMainWindow):
             else:
                 form_layout.addRow(QLabel("No parameters defined for this mode."))
 
-        # Add the run (and if needed, stop) buttons.
-        button_container = QWidget()
-        button_layout = QHBoxLayout(button_container)
-        button_layout.setContentsMargins(0, 0, 0, 0)
+        # For non-PLOTTER modes, add the preset buttons in the left column
+        # and the Stop/Run buttons in the right column.
         if mode != Mode.PLOTTER:
+            # Left column: container for "Save Preset" and "Load Preset" buttons.
+            preset_container = QWidget()
+            preset_layout = QHBoxLayout(preset_container)
+            preset_layout.setContentsMargins(0, 0, 0, 0)
+            save_button = QPushButton("Save Preset")
+            save_button.clicked.connect(lambda _, m=mode: self.save_preset_action(m))
+            preset_layout.addWidget(save_button)
+            load_button = QPushButton("Load Preset")
+            load_button.clicked.connect(lambda _, m=mode: self.load_preset_action(m))
+            preset_layout.addWidget(load_button)
+
+            # Right column: container for Stop and Run buttons.
+            button_container = QWidget()
+            button_layout = QHBoxLayout(button_container)
+            button_layout.setContentsMargins(0, 0, 0, 0)
             stop_button = QPushButton("Stop")
             stop_button.clicked.connect(lambda _, m=mode: self.stop_action(m))
             button_layout.addWidget(stop_button)
             self.stop_buttons[mode] = stop_button
             run_button = QPushButton("Run")
-        else:
-            run_button = QPushButton("Plots")
-        run_button.clicked.connect(lambda _, m=mode: self.run_action(m))
-        button_layout.addWidget(run_button)
-        self.run_buttons[mode] = run_button
+            run_button.clicked.connect(lambda _, m=mode: self.run_action(m))
+            button_layout.addWidget(run_button)
+            self.run_buttons[mode] = run_button
 
-        form_layout.addRow("", button_container)
+            # Add the row to the form: left column contains preset buttons,
+            # right column contains the Stop and Run buttons.
+            form_layout.addRow(preset_container, button_container)
+        else:
+            # For the Plotter tab, only the Run button is needed.
+            button_container = QWidget()
+            button_layout = QHBoxLayout(button_container)
+            button_layout.setContentsMargins(0, 0, 0, 0)
+            run_button = QPushButton("Create Plot")
+            run_button.clicked.connect(lambda _, m=mode: self.run_action(m))
+            button_layout.addWidget(run_button)
+            self.run_buttons[mode] = run_button
+            form_layout.addRow("", button_container)
+
         layout.addLayout(form_layout)
 
         # For the Plotter tab, create and add our PlotterWidget.
@@ -136,7 +168,8 @@ class MainWindow(QMainWindow):
         folder_path = QFileDialog.getExistingDirectory(
             self,
             "Select CSV Folder",
-            "")
+            ""
+        )
         if folder_path:
             line_edit.setText(folder_path)
 
@@ -151,8 +184,6 @@ class MainWindow(QMainWindow):
                 self.plotter_widget.update_plot(folder_path)
             else:
                 custom_print("Invalid folder.")
-
-
         elif mode in [Mode.SCAN, Mode.MPPT]:
             self.running_left = True
             self.update_buttons()
@@ -161,10 +192,13 @@ class MainWindow(QMainWindow):
             for param, textbox in self.textboxes.get(mode, []):
                 if param == "Trial Name":
                     self.trial_name = textbox.text()
+                elif param == "Email for Notification":
+                    self.notification_email = textbox.text()
                 values.append(textbox.text())
 
-            self.multi_controller = MultiController(
+            self.multi_controller.initializeMeasurement(
                 trial_name=self.trial_name,
+                email=self.notification_email,
                 date=self.today,
                 plotting_mode=False)
             self.data_location_line_edit.setText(self.multi_controller.folder_path)
@@ -182,7 +216,6 @@ class MainWindow(QMainWindow):
     def wait_for_run_finish(self, mode):
         if mode != Mode.PLOTTER:
             while not self.stop_measurement_thread.is_set() and self.multi_controller.active_threads:
-                # Wait loop; add any condition for finishing the run.
                 threading.Event().wait(0.1)
         self.after_run(mode)
 
@@ -191,44 +224,73 @@ class MainWindow(QMainWindow):
         self.update_buttons()
         self.left_tabs.tabBar().setEnabled(True)
         while self.multi_controller.controllers:
-            # Wait loop for multi controller to finish exiting gracefully.
             threading.Event().wait(0.1)
-
         self.multi_controller.controllers = None
         self.multi_controller = None
-
         custom_print(f"Run finished on page: {Constants.pages.get(mode, 'Unknown')}")
 
     def stop_action(self, mode: Mode):
         custom_print(f"Stop button clicked on page: {Constants.pages.get(mode, 'Unknown')}")
-
-        # Signal all running threads to stop.
         self.stop_measurement_thread.set()
-
-        # If your multi_controller spawns its own threads, signal them to stop as well.
         if self.multi_controller is not None:
             self.multi_controller.run(Mode.STOP)
-
-        # Reset flags and update the UI.
         self.running_left = False
         self.update_buttons()
         self.left_tabs.tabBar().setEnabled(True)
 
-        # Optionally, if your wait thread is still running, join it with a timeout.
-        # if self.running_thread is not None and self.running_thread.is_alive():
-        #     custom_print("Waiting for the worker thread to finish...")
-        #     self.running_thread.join(timeout=2)  # Adjust timeout as needed.
-        #     if self.running_thread.is_alive():
-        #         custom_print("Warning: Worker thread did not finish in time.")
-        #     else:
-        #         custom_print("Worker thread stopped successfully.")
-
     def on_csv_changed(self, path):
         custom_print(f"CSV file or folder changed: {path}")
         if hasattr(self, 'plotter_widget'):
-            # If a change is detected, update the plot.
             folder_path = self.data_location_line_edit.text().strip()
             self.plotter_widget.update_plot(folder_path)
+
+    def save_preset_action(self, mode: Mode):
+        """
+        Gather current parameters for the given mode and save them
+        to a JSON file so they can be loaded later.
+        """
+        presets = {}
+        if os.path.exists(self.preset_file):
+            with open(self.preset_file, 'r') as f:
+                try:
+                    presets = json.load(f)
+                except json.JSONDecodeError:
+                    presets = {}
+
+        preset_for_mode = {}
+        for param, textbox in self.textboxes.get(mode, []):
+            preset_for_mode[param] = textbox.text()
+
+        presets[mode.name] = preset_for_mode
+
+        with open(self.preset_file, 'w') as f:
+            json.dump(presets, f, indent=4)
+        custom_print(f"Presets saved for {Constants.pages.get(mode, 'Unknown')} mode.")
+
+    def load_preset_action(self, mode: Mode):
+        """
+        Load presets for the given mode from the JSON file and update the text boxes.
+        """
+        if not os.path.exists(self.preset_file):
+            custom_print("No presets file found.")
+            return
+
+        with open(self.preset_file, 'r') as f:
+            try:
+                presets = json.load(f)
+            except json.JSONDecodeError:
+                custom_print("Error loading presets: JSON decode error.")
+                return
+
+        mode_key = mode.name
+        if mode_key in presets:
+            for param, textbox in self.textboxes.get(mode, []):
+                if param in presets[mode_key]:
+                    textbox.setText(presets[mode_key][param])
+            custom_print(f"Presets loaded for {Constants.pages.get(mode, 'Unknown')} mode.")
+        else:
+            custom_print(f"No presets saved for {Constants.pages.get(mode, 'Unknown')} mode.")
+
 
 if __name__ == "__main__":
     import sys

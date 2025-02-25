@@ -16,6 +16,7 @@ import threading
 import logging
 
 
+# TODO: stop measurement once PCE is below 50% of max
 class SingleController:
     def __init__(
         self,
@@ -41,6 +42,7 @@ class SingleController:
         self.write_lock = threading.Lock()
         self.should_run = True
         self.baud_rate = SERIAL_BAUD_RATE
+        self.run_finished = False
 
         self.mode = ""
         self.scan_filename = ""
@@ -89,83 +91,6 @@ class SingleController:
             self.ser.close()
             self.ser = None
 
-    def scan(self, params):
-        LIGHT_STATUS = int(params[4])
-        custom_print("Scan Initiated")
-
-        if LIGHT_STATUS == 0:
-            LIGHT_STATUS = "dark"
-        else:
-            LIGHT_STATUS = "light"
-
-        self.file_name = (
-            self.folder_path
-            + self.trial_name
-            + self.today
-            + LIGHT_STATUS
-            + "ID"
-            + self.arduinoID
-            + "scan.csv"
-        )
-        self.mode = Mode.SCAN
-        self.command = "scan," + ",".join(params[1:])
-        custom_print(f"Starting scan with parameters: {self.command}")
-
-        # Create header array
-        voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
-        amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
-        header_arr = ["Time", "Voltage_Applied"]
-        header_arr.extend(
-            [f(value) for value in range(8) for f in (voltage_lambda, amperage_lambda)]
-        )
-        header_arr.append("ARUDUINOID")
-        self.scan_arr_width = len(header_arr)
-
-        # Run measurement
-        self.send_command()
-        self.create_array(params, header_arr)
-        self._read_data()
-
-    def mppt(self, scan_file_name, params):
-        self.file_name = (
-            self.folder_path
-            + self.trial_name
-            + self.today
-            + "ID"
-            + self.arduinoID
-            + "mppt.csv"
-        )
-        self.scan_filename = scan_file_name
-        self.mode = Mode.MPPT
-
-        # if self.scan_filename:
-        #     VMPP = self.find_vmpp(scan_file_name)
-        #     custom_print(f"PC: VMPP-> {VMPP}")
-
-        # VMPP = "0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6"
-        # TODO: reimplement vmpp
-        self.command = "mppt," + ",".join(params[1:])
-
-        # Create header array
-        voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
-        amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
-        power_lambda = lambda y: "Pixel_" + str(y) + " PCE"
-        header_arr = ["Time"]
-        pce_header = []
-        header_arr.extend(
-            [f(value) for value in range(8) for f in (voltage_lambda, amperage_lambda)]
-        )
-        pce_header.extend([power_lambda(value) for value in range(8)])
-        header_arr.extend(pce_header)
-        header_arr.append("ARUDUINOID")
-        self.mppt_arr_width = len(header_arr)
-
-        # Run measurement
-        custom_print(f"Starting MPPT with parameters:  {self.command}")
-        self.send_command()
-        self.create_array(params, header_arr)
-        self._read_data()
-
     def reset_arduino(self):
         """
         Resets the specified Arduino by toggling the DTR signal.
@@ -206,6 +131,85 @@ class SingleController:
             except serial.SerialException as e:
                 custom_print(f"Communication error on {self.port}. Error: {e}")
                 break
+
+    def scan(self, params):
+        light_idx = Constants.params[Mode.SCAN].index("Scan Mode(dark = 0/light = 1)")
+        LIGHT_STATUS = int(params[light_idx])
+        custom_print("Scan Initiated")
+
+        if LIGHT_STATUS == 0:
+            LIGHT_STATUS = "dark"
+        else:
+            LIGHT_STATUS = "light"
+
+        self.file_name = (
+            self.folder_path
+            + self.trial_name
+            + self.today
+            + LIGHT_STATUS
+            + "ID"
+            + self.arduinoID
+            + "scan.csv"
+        )
+        self.mode = Mode.SCAN
+        self.command = "scan," + ",".join(params[len(Constants.common_params) :])
+        custom_print(f"Starting scan with parameters: {self.command}")
+
+        # Create header array
+        voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
+        amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
+        header_arr = ["Time", "Voltage_Applied"]
+        header_arr.extend(
+            [f(value) for value in range(8) for f in (voltage_lambda, amperage_lambda)]
+        )
+        header_arr.append("ARUDUINOID")
+        self.scan_arr_width = len(header_arr)
+
+        # Run measurement
+        self.send_command()
+        self.create_array(params, header_arr)
+        self._read_data()
+
+    def mppt(self, scan_file_name, params):
+        self.file_name = (
+            self.folder_path
+            + self.trial_name
+            + self.today
+            + "ID"
+            + self.arduinoID
+            + "mppt.csv"
+        )
+        self.scan_filename = scan_file_name
+        self.mode = Mode.MPPT
+
+        # if self.scan_filename:
+        #     VMPP = self.find_vmpp(scan_file_name)
+        #     custom_print(f"PC: VMPP-> {VMPP}")
+
+        # VMPP = "0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6"
+        # TODO: reimplement vmpp
+
+        self.command = "mppt," + ",".join(params[len(Constants.common_params) :])
+
+        # Create header array
+        voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
+        amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
+        power_lambda = lambda y: "Pixel_" + str(y) + " PCE"
+        header_arr = ["Time"]
+        pce_header = []
+        header_arr.extend(
+            [f(value) for value in range(8) for f in (voltage_lambda, amperage_lambda)]
+        )
+        pce_header.extend([power_lambda(value) for value in range(8)])
+        header_arr.extend(pce_header)
+        header_arr.append("ARUDUINOID")
+        self.mppt_arr_width = len(header_arr)
+
+        # Run measurement
+        custom_print(f"Starting MPPT with parameters:  {self.command}")
+        self.send_command()
+        self.create_array(params, header_arr)
+        self._read_data()
 
     def create_array(self, params, header_arr):
         num_params = len(params) + 2
@@ -256,7 +260,9 @@ class SingleController:
 
             except serial.SerialException as e:
                 custom_print(f"Communication error on {self.port}. Error: {e}")
+                self.run_finished = True
                 break
+        self.run_finished = True
 
     def _save_data(self) -> str:
         """

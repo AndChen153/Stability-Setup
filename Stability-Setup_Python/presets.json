@@ -1,0 +1,12 @@
+{
+    "SCAN": {
+        "Trial Name": "Tester",
+        "Email for Notification": "achen1192@gmail.com",
+        "Scan Range (V)": "0.2",
+        "Scan Step Size (V)": "0.03",
+        "Cell Area (mm^2)": "0.128",
+        "Scan Read Count": "5",
+        "Scan Rate (mV/s)": "50",
+        "Scan Mode(dark = 0/light = 1)": "1"
+    }
+}

@@ -1,20 +1,28 @@
 # multi_arduino_controller.py
 from controller.single_arduino_controller import SingleController
 from controller import arduino_assignment
+from controller.email_service import EmailSender
 from constants import Mode, Constants
 from data_visualization import data_plotter
 from datetime import datetime
 import threading
 import os
+import time
 from helper.global_helpers import custom_print
 
-#TODO: stop measurement once PCE is below 50% of max
+
 class MultiController:
-    def __init__(self,
-                 trial_name: str,
-                 date: str,
-                 plot_location="",
-                 plotting_mode=False):
+    def __init__(self):
+        self.email_sender = EmailSender()
+
+    def initializeMeasurement(
+        self,
+        trial_name: str,
+        email: str,
+        date: str,
+        plot_location="",
+        plotting_mode=False,
+    ):
         self.trial_name = ""
         if trial_name:
             self.trial_name = trial_name + " "
@@ -26,6 +34,9 @@ class MultiController:
         self.lock = threading.Lock()
         self.plotting_mode = plotting_mode
         self.plot_location = plot_location
+
+        self.email = email
+        self.mode = None
 
         # Initialize controllers
         if not self.plotting_mode:
@@ -56,6 +67,7 @@ class MultiController:
         """
         Runs a specified mode on all connected controllers.
         """
+        self.mode = mode
         if mode == Mode.PLOTTER:
             data_plotter.plot_all_in_folder(self.plot_location)
         else:
@@ -69,6 +81,11 @@ class MultiController:
                     custom_print(
                         f"Failed to run command '{mode}' on controller {controller_id}: {e}"
                     )
+
+            monitor_thread = threading.Thread(
+                target=self.monitor_controllers, daemon=True
+            )
+            monitor_thread.start()
 
     def run_command(self, ID, command, **kwargs):
         """
@@ -105,3 +122,26 @@ class MultiController:
                 thread.start()
                 self.active_threads[ID] = thread
                 custom_print(f"Started command {command} on controller {ID}.")
+
+    def monitor_controllers(self):
+        while True:
+            with self.lock:
+                # Remove any threads that have finished
+                finished_ids = [
+                    ID
+                    for ID, thread in self.active_threads.items()
+                    if not thread.is_alive()
+                ]
+                for ID in finished_ids:
+                    del self.active_threads[ID]
+
+                if not self.active_threads:
+                    break
+
+            time.sleep(0.1)
+
+        self.email_sender.send_email(
+            subject="Stability Setup Notification - Test Finished",
+            body=f"{self.mode} named: {self.trial_name} started at {self.date} has finished.",
+            to_email=self.email,
+        )

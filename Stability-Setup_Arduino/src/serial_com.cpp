@@ -91,11 +91,11 @@ void showParsedData()
     Serial.print("Mode: ");
     Serial.print(mode_from_pc);
     Serial.print(", Val1: ");
-    Serial.print(val1);
+    Serial.print(val1, 4);
     Serial.print(", Val2: ");
-    Serial.print(val2);
+    Serial.print(val2, 4);
     Serial.print(", Val3: ");
-    Serial.print(val3);
+    Serial.print(val3, 4);
     Serial.print(", Val4: ");
     Serial.print(val4);
     Serial.print(", Val5: ");

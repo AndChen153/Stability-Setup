@@ -20,7 +20,7 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as Navigation
 from PySide6.QtCore import Qt
 from helper.global_helpers import custom_print
 
-
+# TODO: implement plotting all plots in a folder, based on date in file header
 class PlotterWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
