@@ -233,7 +233,6 @@ class SingleController:
         """
         done = False
         line = ""
-        time_orig = time.time()
 
         while self.should_run and not done:
             try:
@@ -250,9 +249,8 @@ class SingleController:
                                 self.arr, np.array([data_list], dtype="object"), axis=0
                             )
 
-                        if abs(time.time() - time_orig) > Constants.save_time:
+                        if self.arr.shape[0] > Constants.line_per_save:
                             self._save_data()
-                            time_orig = time.time()
 
                         # if self.mode == "PNO" and abs(time.time() - pno_time_org) > pno_time_save * 60:
                         #     self._gen_pno_graphs(str(os.path.abspath(self.file_name)), self.scan_filename)

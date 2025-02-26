@@ -81,7 +81,6 @@ class MainWindow(QMainWindow):
         self.textboxes[mode] = []
 
         if mode == Mode.PLOTTER:
-            # ... (existing Plotter code remains unchanged)
             line_edit = QLineEdit()
             default = Constants.defaults.get(mode, [""])[0]
             line_edit.setText(default)
@@ -135,7 +134,7 @@ class MainWindow(QMainWindow):
                     self.mppt_estimated_gb.setText("0.0")  # initial value
                     self.update_estimated_data_amount()
                     form_layout.addRow("Estimated Data Amount", self.mppt_estimated_gb)
-                    self.textboxes[mode].append(("Estimated Data Amount", self.mppt_estimated_gb))
+                    # self.textboxes[mode].append(("Estimated Data Amount", self.mppt_estimated_gb))
             else:
                 form_layout.addRow(QLabel("No parameters defined for this mode."))
 
@@ -183,13 +182,13 @@ class MainWindow(QMainWindow):
             elif param == "Measurement Delay (ms)":
                 delay_text = textbox.text()
         try:
-            Time = float(time_text) if time_text else 0.0
-            Delay_ms = float(delay_text)/1000 if delay_text else 0.0
-            if Delay_ms == 0:
+            Time_s = float(time_text)*60 if time_text else 0.0
+            Delay_s = float(delay_text)/1000 if delay_text else 0.0
+            if Delay_s == 0:
                 estimated = 0.0
             else:
-                estimated = self.estimated_devices * (Constants.kbPerDataPoint * Time / Delay_ms)/1000000
-
+                estimated = self.estimated_devices * (Constants.kbPerDataPoint * Time_s / (Delay_s+0.1))
+            custom_print(estimated, Constants.kbPerDataPoint, Time_s, Delay_s)
             unit = "kb"
             if estimated > 1000000:
                 estimated = estimated/1000000

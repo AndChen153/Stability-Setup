@@ -65,8 +65,8 @@ class Constants:
         Mode.PLOTTER: [""],
     }
     plotModes = [Mode.PLOTTER]
-    save_time = 5
+    line_per_save = 5
     serial_baud_rate = 115200
     arduino_ID = {"F05123D": 1}
-    kbPerDataPoint = 0.17
+    kbPerDataPoint = 0.15
     gbCalculationParams = ["Measurement Delay (ms)", "Time (mins)"]
