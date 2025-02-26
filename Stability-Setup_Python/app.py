@@ -81,6 +81,7 @@ class MainWindow(QMainWindow):
         self.textboxes[mode] = []
 
         if mode == Mode.PLOTTER:
+            # --- Top Controls (CSV Folder Search Box) ---
             line_edit = QLineEdit()
             default = Constants.defaults.get(mode, [""])[0]
             line_edit.setText(default)
@@ -90,42 +91,78 @@ class MainWindow(QMainWindow):
             browse_button = QPushButton("Browse...")
             browse_button.clicked.connect(lambda _, le=line_edit: self.open_folder_dialog(le))
 
-            # Create a container with a horizontal layout for the QLineEdit, Browse, and (if needed) Create Plot button.
+            # Container for the CSV folder input and buttons.
             container = QWidget()
             h_layout = QHBoxLayout(container)
             h_layout.setContentsMargins(0, 0, 0, 0)
             h_layout.addWidget(line_edit)
             h_layout.addWidget(browse_button)
-            # For Plotter, we also add the Create Plot button next to the browse button.
-            run_button = QPushButton("Create Plot")
+
+            # Create Plot(s) button.
+            run_button = QPushButton("Create Plot(s)")
             run_button.clicked.connect(lambda _, m=mode: self.run_action(m))
             self.run_buttons[mode] = run_button
             h_layout.addWidget(run_button)
 
             form_layout.addRow("CSV Folder", container)
+            layout.addLayout(form_layout)
+
+            # --- Plot Container (for the plot tabs) ---
+            # Create a dedicated container for the plot widgets that will appear below the controls.
+            self.plot_container = QWidget()
+            self.plot_container.setLayout(QVBoxLayout())
+            layout.addWidget(self.plot_container)
         else:
             if mode in Constants.params:
                 params = Constants.params[mode]
                 defaults = Constants.defaults.get(mode, [""] * len(params))
                 for param, default in zip(params, defaults):
-                    line_edit = QLineEdit()
-                    line_edit.setText(default)
+                    if param == Constants.timeParam:
+                        # Create a container widget for the unit buttons and textbox
+                        container = QWidget()
+                        h_layout = QHBoxLayout(container)
+                        h_layout.setContentsMargins(0, 0, 0, 0)
 
-                    # If this parameter is common (e.g. "Trial Name" or "Email for Notification"),
-                    # add it to the common dictionary and connect its textChanged signal.
-                    if param in Constants.common_params:
-                        if param not in self.common_param_lineedits:
-                            self.common_param_lineedits[param] = []
-                        self.common_param_lineedits[param].append(line_edit)
-                        line_edit.textChanged.connect(lambda text, p=param, src=line_edit: self.on_common_param_changed(p, text, src))
+                        # Create unit toggle buttons
+                        mins_button = QPushButton("Mins")
+                        hrs_button = QPushButton("Hrs")
+                        # Create the QLineEdit for time value
+                        time_line_edit = QLineEdit()
+                        time_line_edit.setText(default)
 
-                    # Otherwise, for non-common parameters you might use individual handlers.
-                    # (For example, if you want specific behavior for "Time (mins)".)
-                    if param == "Time (mins)":
-                        line_edit.textChanged.connect(self.update_estimated_data_amount)
+                        h_layout.addWidget(mins_button)
+                        h_layout.addWidget(hrs_button)
+                        h_layout.addWidget(time_line_edit)
 
-                    form_layout.addRow(param, line_edit)
-                    self.textboxes[mode].append((param, line_edit))
+                        # Set default unit state to minutes.
+                        self.mppt_time_unit = "mins"
+                        self.mppt_time_line_edit = time_line_edit
+                        self.mppt_mins_button = mins_button
+                        self.mppt_hrs_button = hrs_button
+
+                        # Disable the Mins button since that is the active unit
+                        mins_button.setEnabled(False)
+
+                        # Connect button signals to switch units
+                        mins_button.clicked.connect(self.switch_to_minutes)
+                        hrs_button.clicked.connect(self.switch_to_hours)
+                        time_line_edit.textChanged.connect(self.update_estimated_data_amount)
+
+                        form_layout.addRow(param, container)
+                        # Store the QLineEdit (not the container) so that other functions work as before.
+                        self.textboxes[mode].append((param, time_line_edit))
+                    else:
+                        line_edit = QLineEdit()
+                        line_edit.setText(default)
+                        if param in Constants.common_params:
+                            if param not in self.common_param_lineedits:
+                                self.common_param_lineedits[param] = []
+                            self.common_param_lineedits[param].append(line_edit)
+                            line_edit.textChanged.connect(lambda text, p=param, src=line_edit: self.on_common_param_changed(p, text, src))
+                        # For other parameters (including those with no special behavior)
+                        form_layout.addRow(param, line_edit)
+                        self.textboxes[mode].append((param, line_edit))
+
 
                 # For MPPT mode, add the estimated data amount textbox.
                 if mode == Mode.MPPT:
@@ -137,6 +174,7 @@ class MainWindow(QMainWindow):
                     # self.textboxes[mode].append(("Estimated Data Amount", self.mppt_estimated_gb))
             else:
                 form_layout.addRow(QLabel("No parameters defined for this mode."))
+        layout.addLayout(form_layout)
 
         if mode != Mode.PLOTTER:
             # Left column: Preset buttons.
@@ -165,7 +203,7 @@ class MainWindow(QMainWindow):
 
             form_layout.addRow(preset_container, button_container)
 
-        layout.addLayout(form_layout)
+        # layout.addLayout(form_layout)
 
         if mode == Mode.PLOTTER:
             self.plotter_widget = PlotterWidget()
@@ -177,30 +215,66 @@ class MainWindow(QMainWindow):
         time_text = None
         delay_text = None
         for param, textbox in self.textboxes.get(Mode.MPPT, []):
-            if param == "Time (mins)":
+            if param == Constants.timeParam:
                 time_text = textbox.text()
             elif param == "Measurement Delay (ms)":
                 delay_text = textbox.text()
         try:
-            Time_s = float(time_text)*60 if time_text else 0.0
-            Delay_s = float(delay_text)/1000 if delay_text else 0.0
+            # Convert to seconds based on the current unit
+            if self.mppt_time_unit == "hrs":
+                Time_s = float(time_text) * 3600 if time_text else 0.0
+            else:
+                Time_s = float(time_text) * 60 if time_text else 0.0
+            Delay_s = float(delay_text) / 1000 if delay_text else 0.0
             if Delay_s == 0:
                 estimated = 0.0
             else:
-                estimated = self.estimated_devices * (Constants.kbPerDataPoint * Time_s / (Delay_s+0.1))
-            custom_print(estimated, Constants.kbPerDataPoint, Time_s, Delay_s)
+                estimated = self.estimated_devices * (Constants.kbPerDataPoint * Time_s / (Delay_s + 0.1))
+
             unit = "kb"
             if estimated > 1000000:
-                estimated = estimated/1000000
+                estimated = estimated / 1000000
                 unit = "gb"
             elif estimated > 1000:
-                estimated = estimated/1000
+                estimated = estimated / 1000
                 unit = "mb"
 
             estimated = round(estimated, 2)
             self.mppt_estimated_gb.setText(f"{str(estimated)} {unit}")
         except ValueError:
             self.mppt_estimated_gb.setText("Error")
+
+    def switch_to_minutes(self):
+        if self.mppt_time_unit == "mins":
+            return
+        try:
+            current_value = float(self.mppt_time_line_edit.text())
+            # Converting from hours to minutes:
+            new_value = current_value * 60
+            self.mppt_time_line_edit.setText(str(new_value))
+            self.mppt_time_unit = "mins"
+            # Update button states:
+            self.mppt_mins_button.setEnabled(False)
+            self.mppt_hrs_button.setEnabled(True)
+            self.update_estimated_data_amount()
+        except ValueError:
+            pass
+
+    def switch_to_hours(self):
+        if self.mppt_time_unit == "hrs":
+            return
+        try:
+            current_value = float(self.mppt_time_line_edit.text())
+            # Converting from minutes to hours:
+            new_value = current_value / 60
+            self.mppt_time_line_edit.setText(str(new_value))
+            self.mppt_time_unit = "hrs"
+            self.mppt_hrs_button.setEnabled(False)
+            self.mppt_mins_button.setEnabled(True)
+            self.update_estimated_data_amount()
+        except ValueError:
+            pass
+
 
     def on_common_param_changed(self, param, text, source):
         """
@@ -234,13 +308,12 @@ class MainWindow(QMainWindow):
 
     def run_action(self, mode: Mode):
         custom_print(f"Run button clicked on page: {Constants.pages.get(mode, 'Unknown')}")
-
         if mode == Mode.PLOTTER:
             self.running_plotter = True
             folder_path = self.data_location_line_edit.text().strip()
             if os.path.isdir(folder_path):
-                # Tell the PlotterWidget to update its plot.
-                self.plotter_widget.update_plot(folder_path)
+                plot_groups = self.getPlotGroups(folder_path)
+                self.update_plot_tabs(plot_groups)
             else:
                 custom_print("Invalid folder.")
         elif mode in [Mode.SCAN, Mode.MPPT]:
@@ -253,7 +326,16 @@ class MainWindow(QMainWindow):
                     self.trial_name = textbox.text()
                 elif param == "Email for Notification":
                     self.notification_email = textbox.text()
-                values.append(textbox.text())
+
+                if param == Constants.timeParam:
+                    time_text = textbox.text()
+                    if self.mppt_time_unit == "hrs":
+                        Time_m = int(time_text) * 60 if time_text else 0.0
+                    else:
+                        Time_m = int(time_text) if time_text else 0.0
+                    values.append(str(Time_m))
+                else:
+                    values.append(textbox.text())
 
             self.multi_controller.initializeMeasurement(
                 trial_name=self.trial_name,
@@ -351,6 +433,57 @@ class MainWindow(QMainWindow):
             custom_print(f"No presets saved for {Constants.pages.get(mode, 'Unknown')} mode.")
 
         self.update_estimated_data_amount()
+
+    def update_plot_tabs(self, plot_groups):
+        # Get the layout of the plot container.
+        plot_layout = self.plot_container.layout()
+
+        # Clear any existing plot widgets.
+        while plot_layout.count():
+            child = plot_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        # Create a new QTabWidget to hold individual plot tabs.
+        plot_tab_widget = QTabWidget()
+
+        # For each plot group, create a new PlotterWidget, update it with filepaths, and add it as a tab.
+        for title, filepaths in plot_groups.items():
+            plotter_widget = PlotterWidget()
+            # Make sure your PlotterWidget.update_plot can handle a list of filepaths.
+            plotter_widget.update_plot(title, filepaths)
+            plot_tab_widget.addTab(plotter_widget, title)
+
+        # Add the QTabWidget to the dedicated plot container.
+        plot_layout.addWidget(plot_tab_widget)
+
+    def getPlotGroups(self, folder_path):
+        csv_files = sorted(
+            [
+                os.path.join(folder_path, f)
+                for f in os.listdir(folder_path)
+                if f.lower().endswith(".csv")
+            ]
+        )
+        file_groups_dict = {}
+        for file in csv_files:
+            head, tail = os.path.split(file)
+            params = tail.split("__")
+            filetype = params[-1].split(".")[0]  # get scan or mppt from scan.csv
+            if "ID" not in params[1]:
+                test_name = params[1]
+            else:
+                test_name = ""
+
+            name_parts = [val for val in [test_name, params[0], filetype] if val]
+
+            plot_name = " ".join(name_parts)
+            if plot_name in file_groups_dict:
+                file_groups_dict[plot_name].append(file)
+            else:
+                file_groups_dict[plot_name] = [file]
+
+        return file_groups_dict
 
 
 if __name__ == "__main__":

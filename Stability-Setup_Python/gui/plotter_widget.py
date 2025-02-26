@@ -14,13 +14,13 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QCheckBox,
-    QTabWidget,
 )
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from PySide6.QtCore import Qt
 from helper.global_helpers import custom_print
 
+# TODO: implement plotting all plots in a folder, based on date in file header
 class PlotterWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,103 +41,56 @@ class PlotterWidget(QWidget):
         self.plot_container_layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.plot_container)
 
-    def getPlotGroups(self, csv_files):
-        file_groups_dict = {}
-        for file in csv_files:
-            head, tail = os.path.split(file)
-            params = tail.split("__")
-            filetype = params[-1].split(".")[0]  # get scan or mppt from scan.csv
-            if "ID" not in params[1]:
-                test_name = params[1]
-            else:
-                test_name = ""
+    def update_plot(self, plot_title: str, csv_files):
+        """Loads CSV files from the given folder, creates the plot,
+        and builds the canvas, toolbar, and custom legend widget."""
 
-            name_parts = [val for val in [test_name, params[0], filetype] if val]
-
-            plot_name = " ".join(name_parts)
-            if plot_name in file_groups_dict:
-                file_groups_dict[plot_name].append(file)
-            else:
-                file_groups_dict[plot_name] = [file]
-
-        return file_groups_dict
-
-    def update_plot(self, folder_path: str):
-        """Loads CSV files from the given folder, creates plots for each group,
-        and builds a tabbed widget where each tab shows the respective plot."""
-        if not os.path.isdir(folder_path):
-            custom_print(f"Invalid folder: {folder_path}")
-            return
-
-        # Gather CSV files.
-        csv_files = sorted(
-            [
-                os.path.join(folder_path, f)
-                for f in os.listdir(folder_path)
-                if f.lower().endswith(".csv")
-            ]
-        )
         if not csv_files:
             custom_print("No CSV files found in folder.")
             return
 
-        # Get the plot groups fromb the CSV files.
-        plot_groups = self.getPlotGroups(csv_files)
-
         # Clear any previous content.
         self._clear_layout(self.plot_container_layout)
 
-        # Create a QTabWidget to hold the different plots.
-        tab_widget = QTabWidget()
+        # Create the plot.
+        fig, ax = plt.subplots()
 
-        # Iterate over each group.
-        for group_name, group_csv_files in plot_groups.items():
-            # Create a new tab widget.
-            tab = QWidget()
-            tab_layout = QVBoxLayout(tab)
-            tab_layout.setContentsMargins(0, 0, 0, 0)
+        # Decide which plotting logic to use.
+        if "mppt" in os.path.basename(csv_files[0]).lower():
+            self._plot_pno(ax, csv_files, plot_title)
+        else:
+            self._plot_scan(ax, csv_files, plot_title)
 
-            # Create a new matplotlib figure and axis for this group.
-            fig, ax = plt.subplots()
+        # Build the canvas and toolbar.
+        canvas = FigureCanvas(fig)
+        canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        toolbar = NavigationToolbar(canvas, self)
 
-            # Decide which plotting method to use based on the first file in the group.
-            first_file = group_csv_files[0]
-            if "mppt" in os.path.basename(first_file).lower():
-                self._plot_pno(ax, group_csv_files, folder_path, group_name)
-            else:
-                self._plot_scan(ax, group_csv_files, folder_path, group_name)
+        # Create the custom legend widget.
+        legend_widget = self.create_legend_widget(ax)
+        legend_widget.setFixedWidth(250)
 
-            # Create the canvas and toolbar.
-            canvas = FigureCanvas(fig)
-            canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            toolbar = NavigationToolbar(canvas, self)
+        # Layout the canvas, toolbar, and legend.
+        h_layout = QHBoxLayout()
+        h_layout.setContentsMargins(0, 0, 0, 0)
+        h_layout.addWidget(canvas, 1)
+        h_layout.addWidget(legend_widget)
 
-            # Create the custom legend widget.
-            legend_widget = self.create_legend_widget(ax)
-            legend_widget.setFixedWidth(250)
+        container = QWidget()
+        container.setLayout(h_layout)
 
-            # Layout the canvas, toolbar, and legend side by side.
-            h_layout = QHBoxLayout()
-            h_layout.setContentsMargins(0, 0, 0, 0)
-            h_layout.addWidget(canvas, 1)
-            h_layout.addWidget(legend_widget)
+        v_layout = QVBoxLayout()
+        v_layout.setContentsMargins(0, 0, 0, 0)
+        v_layout.addWidget(toolbar)
+        v_layout.addWidget(container, 1)
 
-            container = QWidget()
-            container_layout = QVBoxLayout(container)
-            container_layout.setContentsMargins(0, 0, 0, 0)
-            container_layout.addWidget(toolbar)
-            container_layout.addLayout(h_layout)
+        widget_container = QWidget()
+        widget_container.setLayout(v_layout)
 
-            tab_layout.addWidget(container)
-            tab_widget.addTab(tab, group_name)
+        self.plot_container_layout.addWidget(widget_container)
 
-            # Render the canvas and close the figure to free resources.
-            canvas.draw()
-            plt.close(fig)
-
-        # Add the tab widget to the plot container layout.
-        self.plot_container_layout.addWidget(tab_widget)
-
+        canvas.draw()
+        plt.close(fig)
 
     def _clear_layout(self, layout):
         while layout.count():
@@ -146,65 +99,62 @@ class PlotterWidget(QWidget):
             if widget is not None:
                 widget.deleteLater()
 
-    def _plot_pno(self, ax, csv_files, folder_path, plot_title):
+    def _plot_pno(self, ax, csv_files, plot_title):
         overall_min_time, overall_max_time = None, None
         for csv_file in csv_files:
-            try:
-                arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
-                header_row = np.where(arr == "Time")[0][0]
+            arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
+            header_row = np.where(arr == "Time")[0][0]
 
-                meta_data = {}
-                for data in arr[:header_row, :2]:
-                    meta_data[data[0]] = data[1]
+            meta_data = {}
+            for data in arr[:header_row, :2]:
+                meta_data[data[0]] = data[1]
 
-                headers = arr[header_row, :]
-                arr = arr[header_row + 1 :, :]
+            headers = arr[header_row, :]
+            arr = arr[header_row + 1 :, :]
 
-                header_dict = {value: index for index, value in enumerate(headers)}
-                if "Time" not in header_dict:
-                    custom_print(f"'Time' header not found in {csv_file}")
-                    continue
-                pce_indices = [header_dict[key] for key in header_dict if "PCE" in key]
+            header_dict = {value: index for index, value in enumerate(headers)}
+            if "Time" not in header_dict:
+                custom_print(f"'Time' header not found in {csv_file}")
+                continue
+            pce_indices = [header_dict[key] for key in header_dict if "PCE" in key]
 
-                time = np.array(arr[:, header_dict["Time"]]).astype("float")
+            time = np.array(arr[:, header_dict["Time"]]).astype("float")
 
-                # Convert any non-numeric values.
-                pce_list = np.array(arr)
-                for i in range(len(pce_list)):
-                    pce_list[i] = [
-                        float(j) if j.strip() not in ["ovf", "nan"] else 0.0
-                        for j in pce_list[i]
-                    ]
+            # Convert any non-numeric values.
+            pce_list = np.array(arr)
+            for i in range(len(pce_list)):
+                pce_list[i] = [
+                    float(j) if j.strip() not in ["ovf", "nan"] else 0.0
+                    for j in pce_list[i]
+                ]
 
-                pce_list = pce_list.astype(float)
-                data = pce_list[:, pce_indices]
+            pce_list = pce_list.astype(float)
+            data = pce_list[:, pce_indices]
 
-                # Sample data if necessary.
-                if len(time) > 5000:
-                    step = int(np.ceil(len(time) / 5000))
-                    time = time[::step]
-                    data = data[::step, :]
+            # Sample data if necessary.
+            if len(time) > 5000:
+                step = int(np.ceil(len(time) / 5000))
+                time = time[::step]
+                data = data[::step, :]
 
-                time = time / 3600.0  # convert to hours
+            time = time / 3600.0  # convert to hours
 
-                if overall_min_time is None:
-                    overall_min_time = min(time)
-                    overall_max_time = max(time)
-                else:
-                    overall_min_time = min(overall_min_time, min(time))
-                    overall_max_time = max(overall_max_time, max(time))
+            if overall_min_time is None:
+                overall_min_time = min(time)
+                overall_max_time = max(time)
+            else:
+                overall_min_time = min(overall_min_time, min(time))
+                overall_max_time = max(overall_max_time, max(time))
 
-                # Plot each pixel.
-                NUM_PIXELS = data.shape[1]
-                for i in range(NUM_PIXELS):
-                    basename = os.path.basename(csv_file)
-                    match = re.search(r"ID(\d+)", basename, re.IGNORECASE)
-                    id_str = match.group(1) if match else ""
-                    label_suffix = f" (ID {id_str})" if id_str else ""
-                    lineName = f"Pixel {i+1}{label_suffix}"
-                    ax.plot(time, data[:, i], label=lineName)
-            except Exception as e:
-                custom_print(f"Error processing MPPT file {csv_file}: {e}")
+            # Plot each pixel.
+            NUM_PIXELS = data.shape[1]
+            for i in range(NUM_PIXELS):
+                basename = os.path.basename(csv_file)
+                match = re.search(r"ID(\d+)", basename, re.IGNORECASE)
+                id_str = match.group(1) if match else ""
+                label_suffix = f" (ID {id_str})" if id_str else ""
+                lineName = f"Pixel {i+1}{label_suffix}"
+                ax.plot(time, data[:, i], label=lineName)
 
         if overall_min_time is None or overall_max_time is None:
             overall_min_time, overall_max_time = 0, 1
@@ -235,7 +185,7 @@ class PlotterWidget(QWidget):
             )
             self.line_label_texts = dict(zip(lines, label_texts))
 
-    def _plot_scan(self, ax, csv_files, folder_path, plot_title):
+    def _plot_scan(self, ax, csv_files, plot_title):
         for csv_file in csv_files:
             try:
                 arr = np.loadtxt(csv_file, delimiter=",", dtype=str)

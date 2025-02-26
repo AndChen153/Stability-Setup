@@ -52,6 +52,8 @@ void perturbAndObserveClassic()
     float prev_power[8] = {0};
     int perturb_direction[8] = {1}; // Start by increasing voltage
 
+    int delay_per_measurement = measurement_delay_mppt/measurements_per_step_mppt;
+
     for (int ID = 0; ID < 8; ++ID)
     {
         // Vset ---------------------------------------------------
@@ -74,7 +76,7 @@ void perturbAndObserveClassic()
             current_power[ID] = 0.0;
         }
 
-        delay(measurement_delay_mppt);
+        delay(delay_per_measurement);
 
         for (int meas = 0; meas < measurements_per_step_mppt; meas++)
         {
@@ -87,6 +89,7 @@ void perturbAndObserveClassic()
                 load_voltageArr[ID] += temp_voltage;
                 current_mA_flipped_arr[ID] += get_current_flipped_mA(ID);
             }
+            delay(delay_per_measurement);
         }
 
         for (int ID = 0; ID < 8; ++ID)
