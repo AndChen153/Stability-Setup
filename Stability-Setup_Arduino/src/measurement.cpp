@@ -68,7 +68,7 @@ void perturbAndObserveClassic()
     Serial.println(measurement_time_mins_mppt);
     while ((millis() - start_millis) / (1000.0*60.0) < measurement_time_mins_mppt)
     {
-        for (int ID = 0; ID < 8; ++ID)
+        for (int ID = 7; ID >= 0; --ID)
         {
             setVoltage_V(vset[ID], ID);
             load_voltageArr[ID] = 0.0;
@@ -80,7 +80,7 @@ void perturbAndObserveClassic()
 
         for (int meas = 0; meas < measurements_per_step_mppt; meas++)
         {
-            for (int ID = 0; ID < 8; ++ID)
+            for (int ID = 7; ID >= 0; --ID)
             {
                 temp_voltage = get_voltage_V(ID);
                 temp_flipped_A = get_current_flipped_A(ID);
@@ -195,7 +195,7 @@ void scan(ScanDirection dir)
         // Serial.print(millis()); Serial.print(" "); Serial.println(volt_Step_Count); // used to measure offset
         if (volt_step_count < measurements_per_step_scan)
         {
-            for (int ID = 0; ID < 8; ++ID)
+            for (int ID = 7; ID >= 0; --ID)
             {
                 avg_volt[ID] += get_voltage_V(ID);
                 avg_curr[ID] += get_current_flipped_mA(ID);

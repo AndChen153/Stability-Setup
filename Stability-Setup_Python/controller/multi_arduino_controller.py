@@ -2,6 +2,7 @@
 import threading
 import os
 import time
+import json
 from controller.email_service import EmailSender
 from datetime import datetime
 
@@ -21,6 +22,7 @@ class MultiController:
         data_dir: str,
         email: str,
         date: str,
+        json_location,
         plot_location="",
         plotting_mode=False,
     ):
@@ -30,10 +32,10 @@ class MultiController:
             self.trial_name = ""
         self.trial_dir = os.path.join(data_dir, f"{date}{self.trial_name}")
 
-        custom_print(self.trial_dir)
-
         self.trial_date = datetime.now().strftime("%b-%d-%Y_%H-%M-%S")
-        self.arduino_assignments = None
+        self.arduino_ids = self.load_arduino_ids(json_location)
+        self.assigned_connected_arduinos = []
+        self.connected_arduinos_HWID = []
         self.controllers = {}
         self.active_threads = {}
         self.lock = threading.Lock()
@@ -43,54 +45,86 @@ class MultiController:
         self.email = email
         self.mode = None
 
+        self.unknownID = []
+        unique_Arduino_ID = True
+
         # Initialize controllers
-        if not self.plotting_mode:
-            self.arduino_assignments = arduino_assignment.get()
+        threads = []
 
-            if not os.path.exists(self.trial_dir):
-                os.mkdir(self.trial_dir)
+        # Define a worker function for each thread.
+        def init_controller(ID, COM):
+            nonlocal unique_Arduino_ID
+            controller = SingleController(
+                COM=COM,
+                SERIAL_BAUD_RATE=Constants.serial_baud_rate,
+                trial_name=self.trial_name,
+                date=self.trial_date,
+                trial_dir=self.trial_dir,
+                arduino_ids=self.arduino_ids,
+            )
+            connected_result = controller.connect()
+            if connected_result:
+                HW_ID, Arduino_ID = connected_result
+                Arduino_ID = int(Arduino_ID)
+                # Ensure thread-safe modifications to shared variables.
+                with self.lock:
+                    self.connected_arduinos_HWID.append(HW_ID)
+                    if Arduino_ID in self.controllers:
+                        unique_Arduino_ID = False
+                    elif (Arduino_ID is not None) and Arduino_ID == -1:
+                        self.unknownID.append(HW_ID)
+                    elif (Arduino_ID is not None) and Arduino_ID > -1:
+                        custom_print(f"Connected to {controller.port}.")
+                        self.assigned_connected_arduinos.append((HW_ID, Arduino_ID))
+                        self.controllers[Arduino_ID] = controller
+                    else:
+                        custom_print(f"Connection to {controller.port} failed.")
+            else:
+                return False
 
-            for ID, COM in enumerate(self.arduino_assignments):
-                controller = SingleController(
-                    COM=COM,
-                    SERIAL_BAUD_RATE=Constants.serial_baud_rate,
-                    trial_name=self.trial_name,
-                    date=self.trial_date,
-                    trial_dir=self.trial_dir,
-                )
-                self.controllers[ID] = controller
+        # Start a thread for each COM port in the assignment.
+        for ID, COM in enumerate(arduino_assignment.get()):
+            custom_print(f"Trying to connect to {COM}")
+            thread = threading.Thread(target=init_controller, args=(ID, COM))
+            thread.start()
+            threads.append(thread)
 
-                if controller.connect():
-                    custom_print(f"Connected to {controller.port}.")
-                else:
-                    custom_print(f"Connection to {controller.port} failed.")
+        # Wait for all threads to finish.
+        for thread in threads:
+            thread.join()
+
+        if self.unknownID or not unique_Arduino_ID:
+            return False
+        else:
+            return True
+
 
     def get_valid(self):
-        return bool(self.arduino_assignments) or self.plotting_mode
+        return bool(self.assigned_connected_arduinos) or self.plotting_mode
 
     def run(self, mode, params=[]):
         """
         Runs a specified mode on all connected controllers.
         """
+        if not os.path.exists(self.trial_dir):
+            os.mkdir(self.trial_dir)
         self.mode = mode
-        if mode == Mode.PLOTTER:
-            data_plotter.plot_all_in_folder(self.plot_location)
-        else:
-            kwargs = {
-                "params": params,
-            }
-            for controller_id in self.controllers:
-                try:
-                    self.run_command(controller_id, mode, **kwargs)
-                except Exception as e:
-                    custom_print(
-                        f"Failed to run command '{mode}' on controller {controller_id}: {e}"
-                    )
 
-            monitor_thread = threading.Thread(
-                target=self.monitor_controllers, daemon=True
-            )
-            monitor_thread.start()
+        kwargs = {
+            "params": params,
+        }
+        for controller_id in self.controllers:
+            try:
+                self.run_command(controller_id, mode, **kwargs)
+            except Exception as e:
+                custom_print(
+                    f"Failed to run command '{mode}' on controller {controller_id}: {e}"
+                )
+
+        monitor_thread = threading.Thread(
+            target=self.monitor_controllers, daemon=True
+        )
+        monitor_thread.start()
 
     def run_command(self, ID, command, **kwargs):
         """
@@ -115,8 +149,7 @@ class MultiController:
             elif command == Mode.MPPT:
                 target = lambda: self.controllers[ID].mppt("", **kwargs)
             elif command == Mode.STOP:
-                custom_print("STOPPING SINGLE CONTROLLER")
-                del self.controllers[ID]
+                custom_print(f"STOPPING SINGLE CONTROLLER {ID}")
             elif not (command == Mode.STOP):
                 custom_print(f"Unknown command: {command}")
                 return
@@ -148,6 +181,10 @@ class MultiController:
         if self.email:
             self.email_sender.send_email(
                 subject="Stability Setup Notification - Test Finished",
-                body=f"{self.mode} named: {self.trial_name} started at {self.trial_date} has finished.",
+                body=f"{self.mode} named: {self.trial_name[2:]} started at {self.trial_date} has finished.",
                 to_email=self.email,
             )
+
+    def load_arduino_ids(self, json_location):
+        with open(json_location, "r") as f:
+            return json.load(f)

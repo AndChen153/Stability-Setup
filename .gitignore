@@ -9,3 +9,5 @@ build/
 .env
 data/
 Legacy_Code/
+presets.json
+arduino_ids.json

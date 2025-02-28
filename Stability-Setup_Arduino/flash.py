@@ -3,11 +3,9 @@ import json
 import os
 import sys
 import threading
-
 import serial.tools.list_ports
 import logging
 from typing import Dict, List
-
 
 def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
     ports = [
@@ -15,6 +13,7 @@ def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
         for p in serial.tools.list_ports.comports()
     ]
     if not ports:
+        logging.error('%s No Arduino found', log_name)
         raise IOError()
     return ports
 
@@ -32,12 +31,9 @@ SKETCH_PATH = r".\Stability-Setup_Arduino\Stability-Setup_Arduino.ino"
 # Detect connected Arduino boards
 def list_arduino_boards():
     try:
-        result = subprocess.run(["arduino-cli", "board", "list", "--format", "json"],
-                                capture_output=True, text=True, check=True)
-        boards = json.loads(result.stdout.strip())
         detected_boards = []
-        for board in boards["detected_ports"]:
-            port = board["port"]['address']
+        for board in get():
+            port = board
             fqbn = 'arduino:avr:nano'
             detected_boards.append((port, fqbn))
         return detected_boards

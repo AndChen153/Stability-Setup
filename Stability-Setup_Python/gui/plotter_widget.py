@@ -20,7 +20,6 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as Navigation
 from PySide6.QtCore import Qt
 from helper.global_helpers import custom_print
 
-# TODO: implement plotting all plots in a folder, based on date in file header
 class PlotterWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -57,7 +56,7 @@ class PlotterWidget(QWidget):
 
         # Decide which plotting logic to use.
         if "mppt" in os.path.basename(csv_files[0]).lower():
-            self._plot_pno(ax, csv_files, plot_title)
+            self._plot_mppt(ax, csv_files, plot_title)
         else:
             self._plot_scan(ax, csv_files, plot_title)
 
@@ -99,7 +98,7 @@ class PlotterWidget(QWidget):
             if widget is not None:
                 widget.deleteLater()
 
-    def _plot_pno(self, ax, csv_files, plot_title):
+    def _plot_mppt(self, ax, csv_files, plot_title):
         overall_min_time, overall_max_time = None, None
         for csv_file in csv_files:
             arr = np.loadtxt(csv_file, delimiter=",", dtype=str)

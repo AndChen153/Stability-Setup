@@ -25,6 +25,7 @@ class SingleController:
         trial_name: str,
         date: str,
         trial_dir: str,
+        arduino_ids,
     ) -> None:
         """
         Parameters
@@ -43,12 +44,14 @@ class SingleController:
         self.should_run = True
         self.baud_rate = SERIAL_BAUD_RATE
         self.run_finished = False
+        self.arduino_ids = arduino_ids
 
         self.mode = ""
         self.scan_filename = ""
         self.file_path = ""
 
-        self.arduinoID = None
+        self.HW_ID = 0
+        self.arduinoID = Constants.unknown_Arduino_ID
         self.trial_name = trial_name
         self.today = date
         self.trial_dir = trial_dir
@@ -57,32 +60,33 @@ class SingleController:
         self.scan_arr_width = 0
         self.mppt_arr_width = 0
 
+
     def connect(self):
         try:
-            # self.ser = serial.Serial(self.port, self.baud_rate)
             self.ser = serial.Serial(self.port, self.baud_rate, timeout=1)
             self.reset_arduino()
-
-            time.sleep(0.5)
+            # time.sleep(0.5)
             done = False
             while not done:
                 with self.reading_lock:
                     line = self.ser.readline().decode().strip()
                     # line = self.ser.readline().decode('unicode_escape').rstrip()
-                    custom_print(
-                        f"Pre-Init Stage Arduino {self.arduinoID} Output:", line
-                    )
+                    if line:
+                        custom_print(
+                            f"Boot Stage Arduino {self.arduinoID} Output:", line
+                        )
                     if "HW_ID" in line:
-                        HW_ID = line.split(":")[-1]
-                        self.arduinoID = str(Constants.arduino_ID[HW_ID])
+                        self.HW_ID = line.split(":")[-1]
+                        if self.HW_ID in self.arduino_ids:
+                            self.arduinoID = str(self.arduino_ids[self.HW_ID])
                     if "Arduino Ready" in line:
                         done = True
             self.ser.reset_input_buffer()
 
         except serial.SerialException as e:
             custom_print(f"Failed to connect to {self.port}. Error: {e}")
-            return False
-        return True
+            return ()
+        return (self.HW_ID, self.arduinoID)
 
     def disconnect(self):
         if self.ser is not None:
@@ -152,7 +156,7 @@ class SingleController:
         )
         self.file_path = os.path.join(self.trial_dir, file_name)
         self.mode = Mode.SCAN
-        self.command = "scan," + ",".join(params[len(Constants.common_params) :])
+        self.command = "scan," + ",".join(params)
         custom_print(f"Starting scan with parameters: {self.command}")
 
         # Create header array
@@ -193,7 +197,7 @@ class SingleController:
         # VMPP = "0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6"
         # TODO: reimplement vmpp
 
-        self.command = "mppt," + ",".join(params[len(Constants.common_params) :])
+        self.command = "mppt," + ",".join(params)
 
         # Create header array
         voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"

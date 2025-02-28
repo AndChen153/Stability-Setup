@@ -31,11 +31,11 @@ void setupSensor_DAC(uint8_t ID)
         Serial.print("Failed to find MCP4725 at 0x");
         Serial.println(DAC_I2C + ID, HEX);
     }
-    else
-    {
-        Serial.print("Found MCP4725 at 0x");
-        Serial.println(DAC_I2C + ID, HEX);
-    }
+    // else
+    // {
+    //     Serial.print("Found MCP4725 at 0x");
+    //     Serial.println(DAC_I2C + ID, HEX);
+    // }
 }
 
 void setVoltage_V(float voltage_val, uint8_t ID)
@@ -59,11 +59,11 @@ void setupSensor_ADC(uint8_t ID)
         Serial.print("Failed to find INA219 at 0x");
         Serial.println(ADC_I2C + ID, HEX);
     }
-    else
-    {
-        Serial.print("Found INA219 at 0x");
-        Serial.println(ADC_I2C + ID, HEX);
-    }
+    // else
+    // {
+    //     Serial.print("Found INA219 at 0x");
+    //     Serial.println(ADC_I2C + ID, HEX);
+    // }
 }
 
 
