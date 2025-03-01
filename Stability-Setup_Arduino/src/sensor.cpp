@@ -80,25 +80,22 @@ void getADC(uint8_t ID)
 float getCurrent_A(uint8_t ID)
 {
     float volts = adcDevices[ID].getShuntVoltage_mV()/1000.0;
-    return volts/VDD;
+    return volts/R;
 }
 
 float get_current_flipped_A(uint8_t ID)
 {
     float volts = adcDevices[ID].getShuntVoltage_mV()/1000.0;
-    return -1.0*volts/VDD;
+    return -1.0*volts/R;
 }
 
-float getCurrent_mA(uint8_t ID)
-{
-    float volts = adcDevices[ID].getShuntVoltage_mV()/1000.0;
-    return 1000.0*volts/VDD;
+float getCurrent_mA(uint8_t ID) {
+    return adcDevices[ID].getShuntVoltage_mV() / R;
 }
 
 float get_current_flipped_mA(uint8_t ID)
 {
-    float volts = adcDevices[ID].getShuntVoltage_mV()/1000.0;
-    return -1000.0*volts/VDD;
+    return -1.0*adcDevices[ID].getShuntVoltage_mV() / R;
 }
 
 float get_voltage_V(uint8_t ID)

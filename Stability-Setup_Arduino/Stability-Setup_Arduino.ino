@@ -28,7 +28,7 @@ char temp_chars[num_chars]; // temporary array for use when parsing
 char mode_from_pc[num_chars] = {0};
 
 // Perturb and Observe Variables
-float vset[8];
+float vset[8] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
 volatile bool mppt_done = true;
 float voltage_starting_mppt = 0.0;
 float voltage_step_size_mppt = 0.000;

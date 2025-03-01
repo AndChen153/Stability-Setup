@@ -40,6 +40,7 @@ void perturbAndObserveClassic()
 {
     led(true);
     light_control(1);
+    // Serial.println("")
     // TODO: use longer moving average or more complex filter
     float moving_average_n = 5;
     int count;
@@ -48,9 +49,10 @@ void perturbAndObserveClassic()
     float load_voltageArr[8];
     float current_mA_flipped_arr[8];
     float current_power[8];
+    float current_power_calc = 0;
 
-    float prev_power[8] = {0};
-    int perturb_direction[8] = {1}; // Start by increasing voltage
+    float prev_power[8] = {0,0,0,0,0,0,0,0};
+    int perturb_direction[8] = {1, 1, 1, 1, 1, 1, 1, 1}; // Start by increasing voltage
 
     int delay_per_measurement = measurement_delay_mppt/measurements_per_step_mppt;
 
@@ -68,7 +70,7 @@ void perturbAndObserveClassic()
     Serial.println(measurement_time_mins_mppt);
     while ((millis() - start_millis) / (1000.0*60.0) < measurement_time_mins_mppt)
     {
-        for (int ID = 7; ID >= 0; --ID)
+        for (int ID = 0; ID < 8; ++ID)
         {
             setVoltage_V(vset[ID], ID);
             load_voltageArr[ID] = 0.0;
@@ -80,14 +82,21 @@ void perturbAndObserveClassic()
 
         for (int meas = 0; meas < measurements_per_step_mppt; meas++)
         {
-            for (int ID = 7; ID >= 0; --ID)
+            for (int ID = 0; ID < 8; ++ID)
             {
-                temp_voltage = get_voltage_V(ID);
-                temp_flipped_A = get_current_flipped_A(ID);
-                // Measure current power at Vset[ID]
-                current_power[ID] += temp_voltage * temp_flipped_A;
-                load_voltageArr[ID] += temp_voltage;
-                current_mA_flipped_arr[ID] += get_current_flipped_mA(ID);
+                // temp_voltage = get_voltage_V(ID);
+                // temp_flipped_A = get_current_flipped_mA(ID);
+                // // Measure current power at Vset[ID]
+                // current_power[ID] += temp_voltage * temp_flipped_A;
+                // load_voltageArr[ID] += temp_voltage;
+                // current_mA_flipped_arr[ID] += get_current_flipped_mA(ID);
+
+                load_voltage = get_voltage_V(ID);
+                current_mA_Flipped = get_current_flipped_mA(ID);
+
+                current_power[ID] += load_voltage * current_mA_Flipped;
+                load_voltageArr[ID] += load_voltage;
+                current_mA_flipped_arr[ID] += current_mA_Flipped;
             }
             delay(delay_per_measurement);
         }
@@ -98,9 +107,11 @@ void perturbAndObserveClassic()
             load_voltageArr[ID] /= measurements_per_step_mppt;
             current_mA_flipped_arr[ID] /= measurements_per_step_mppt;
 
+            current_power_calc = load_voltageArr[ID] * current_mA_flipped_arr[ID];
+
             // moving average calculation
             float smoothed_power = (
-                prev_power[ID] *(moving_average_n - 1) + current_power[ID])
+                prev_power[ID] *(moving_average_n - 1) + current_power_calc)
                 / moving_average_n;
 
             if (smoothed_power > prev_power[ID])
@@ -117,6 +128,13 @@ void perturbAndObserveClassic()
 
             prev_power[ID] = smoothed_power;
         }
+        for (int ID = 0; ID < 8; ++ID)
+        {
+            Serial.print(vset[ID], 3);
+            Serial.print(", ");
+        }
+        Serial.print("1");
+        Serial.println();
 
         Serial.print((millis() - start_millis) / 1000.0, 4);
         Serial.print(", ");
@@ -130,10 +148,13 @@ void perturbAndObserveClassic()
 
         for (int ID = 0; ID < 8; ++ID)
         {
-            Serial.print((prev_power[ID]) / (0.1 * area_of_collector_mppt*100, 4));
+            // Serial.print((prev_power[ID]/1000) / (0.1 * area_of_collector_mppt*100, 4), 5);
+            // Serial.print(prev_power[ID], 5);
+            Serial.print((prev_power[ID] / 1000) / (0.1 * 0.128)*100, 4);
+
             Serial.print(", ");
         }
-        Serial.print(0);
+        Serial.print(uniqueID);
 
         Serial.println("");
     }

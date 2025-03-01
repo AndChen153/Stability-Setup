@@ -33,6 +33,7 @@ class MultiController:
         self.trial_dir = os.path.join(data_dir, f"{date}{self.trial_name}")
 
         self.trial_date = datetime.now().strftime("%b-%d-%Y_%H-%M-%S")
+        #TODO: create arduino file if not present
         self.arduino_ids = self.load_arduino_ids(json_location)
         self.assigned_connected_arduinos = []
         self.connected_arduinos_HWID = []

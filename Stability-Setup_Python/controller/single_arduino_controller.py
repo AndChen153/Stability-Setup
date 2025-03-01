@@ -135,8 +135,9 @@ class SingleController:
                 break
 
     def scan(self, params):
-        light_idx = Constants.params[Mode.SCAN].index("Scan Mode(dark = 0/light = 1)")
-        LIGHT_STATUS = int(params[light_idx])
+        #TODO fix light scan param
+        light_idx = Constants.params[Mode.SCAN].index("Scan Mode")
+        LIGHT_STATUS = 1 #int(params[light_idx])
         custom_print("Scan Initiated")
 
         if LIGHT_STATUS == 0:
@@ -248,7 +249,7 @@ class SingleController:
 
                         custom_print(f"ARDUINO{self.arduinoID}: {line}")
 
-                        if len(data_list) > 10:
+                        if len(data_list) > 13:
                             self.arr = np.append(
                                 self.arr, np.array([data_list], dtype="object"), axis=0
                             )

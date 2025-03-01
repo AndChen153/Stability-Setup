@@ -424,13 +424,13 @@ class MainWindow(QMainWindow):
                         params.append(str(Time_m))
                     else:
                         params.append(textbox.text())
+            #TODO: fix with light
+            # range_popup = SelectionPopup(
+            #     parent=self, title="Range Warning", current_values=params, mode=mode
+            # )
 
-            range_popup = SelectionPopup(
-                parent=self, title="Range Warning", current_values=params, mode=mode
-            )
-
-            if not range_popup.exec_():
-                return
+            # if not range_popup.exec_():
+            #     return
 
             result = self.multi_controller.initializeMeasurement(
                 trial_name=self.trial_name,
@@ -488,16 +488,18 @@ class MainWindow(QMainWindow):
         self.after_run(mode)
 
     def after_run(self, mode: Mode):
-        self.running_left = False
-        self.update_buttons()
-        self.marquee_timer.stop()
-        self.status_bar.clearMessage()
-        self.left_tabs.tabBar().setEnabled(True)
-
+    
         if mode in Constants.left_modes:
+            self.running_left = False
+            self.update_buttons()
+            self.marquee_timer.stop()
+            self.status_bar.clearMessage()
+            self.left_tabs.tabBar().setEnabled(True)
             while self.multi_controller.controllers:
                 threading.Event().wait(0.1)
             self.multi_controller.controllers = {}
+
+        
         custom_print(f"Run finished on page: {Constants.pages.get(mode, 'Unknown')}")
 
     def stop_action(self, mode: Mode):
