@@ -14,13 +14,15 @@ from helper.global_helpers import custom_print
 
 class MultiController:
     def __init__(self):
-        self.email_sender = EmailSender()
+        pass
 
     def initializeMeasurement(
         self,
         trial_name: str,
         data_dir: str,
         email: str,
+        email_user: str,
+        email_pass: str,
         date: str,
         json_location,
         plot_location="",
@@ -44,6 +46,7 @@ class MultiController:
         self.plot_location = plot_location
 
         self.email = email
+        self.email_sender = EmailSender(email_user, email_pass)
         self.mode = None
 
         self.unknownID = []

@@ -7,10 +7,10 @@ from helper.global_helpers import custom_print
 load_dotenv()
 
 class EmailSender:
-    def __init__(self):
+    def __init__(self, username, password):
         # Retrieve credentials and settings from environment variables
-        self.username = os.environ.get("EMAIL_USER")
-        self.password = os.environ.get("EMAIL_PASS")
+        self.username = username
+        self.password = password
         self.smtp_server = "smtp.gmail.com"
         self.smtp_port = 465
 

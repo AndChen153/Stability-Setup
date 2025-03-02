@@ -47,6 +47,7 @@ class MainWindow(QMainWindow):
 
         self.userSettings = os.path.join(os.path.dirname(__file__), "userSettings.json")
 
+
         # Running flags, button dictionaries, textboxes, etc.
         self.running_left = False
         self.running_plotter = False
@@ -55,8 +56,12 @@ class MainWindow(QMainWindow):
         self.textboxes = {}
         self.trial_name = ""  # Initialize shared Trial Name value
         self.trial_name_lineedits = []  # List to hold all Trial Name QLineEdits
-        self.notification_email = None
         self.common_param_lineedits = {}
+
+        # Email
+        self.notification_email = None
+        self.email_user = self.load_json(self.userSettings, "email_settings")["user"]
+        self.email_pass = self.load_json(self.userSettings, "email_settings")["pass"]
 
         # CSV watcher, thread control, etc.
         self.csv_watcher = QFileSystemWatcher()
@@ -97,7 +102,6 @@ class MainWindow(QMainWindow):
 
         # Right side: Plotter page.
         self.plotter_panel = PlotterPanel(default_folder=Constants.defaults.get(Mode.PLOTTER, [""])[0])
-
 
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(left_container)
@@ -261,6 +265,8 @@ class MainWindow(QMainWindow):
             trial_name=self.trial_name,
             data_dir=self.data_dir,
             email=self.notification_email,
+            email_user=self.email_user,
+            email_pass=self.email_pass,
             date=self.today,
             json_location=self.userSettings,
             plotting_mode=False,
@@ -387,6 +393,8 @@ class MainWindow(QMainWindow):
             trial_name=self.trial_name,
             data_dir=self.data_dir,
             email=self.notification_email,
+            email_user=self.email_user,
+            email_pass=self.email_pass,
             date=self.today,
             json_location=self.arduino_assignment_json,
             plotting_mode=False,
@@ -512,6 +520,17 @@ class MainWindow(QMainWindow):
         else:
             btn.setText(Constants.light_mode_text)
             btn.setChecked(False)
+
+    def load_json(self, json_file, to_load):
+        """Load JSON data from the specified file and extract the 'arduino_ids' section."""
+        try:
+            with open(json_file, "r") as f:
+                full_data = json.load(f)
+            return full_data.get(to_load, {})
+        except Exception as e:
+            custom_print(f"Error loading JSON: {e}")
+            return {}
+
 
 
 if __name__ == "__main__":
