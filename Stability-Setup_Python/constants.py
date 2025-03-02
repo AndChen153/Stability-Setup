@@ -10,7 +10,10 @@ class Mode(Enum):
     PLOTTER = 4
 
 class Constants:
-    timeParam = "Measurement Time"
+    time_param = "Measurement Time"
+    light_mode_text = "Light"
+    dark_mode_text = "Dark"
+    scan_mode_param = "Scan Mode"
     pages = {
         Mode.SCAN: "Scan",
         Mode.MPPT: "MPPT",
@@ -28,7 +31,7 @@ class Constants:
             "Cell Area (mm^2)",
             "Scan Read Count",
             "Scan Rate (mV/s)",
-            "Scan Mode",
+            scan_mode_param,
         ],
         Mode.MPPT: [
             "Starting Voltage (V)",
@@ -36,7 +39,7 @@ class Constants:
             "Cell Area (mm^2)",
             "Measurements Per Step",
             "Measurement Delay (ms)",
-            timeParam,
+            time_param,
         ],
         Mode.PLOTTER: ["Data Location"],
     }
@@ -47,14 +50,14 @@ class Constants:
             "0.128",
             "5",
             "50",
-            "light",
+            light_mode_text,
         ],
         Mode.MPPT: [
             "0.50",
-            "0.01",
+            "0.005",
             "0.128",
-            "5",
-            "300",
+            "10",
+            "1000",
             "60",
         ],
         Mode.PLOTTER: [""],
@@ -64,23 +67,23 @@ class Constants:
             (0, 3.3),
             (0.0001, 0.1),
             (0, 1000),
-            (2, 10),
+            (5, 10),
             (25, 100),
             (0, 1),
         ],
         Mode.MPPT: [
             (0.1, 1.5),
-            (0.005, 0.1),
+            (0.001, 0.02),
             (0, 1000),
-            (2, 10),
-            (50, 2000),
+            (10, 20),
+            (500, 2000),
             (1, 600000),
         ],
     }
     plotModes = [Mode.PLOTTER]
-    line_per_save = 15
+    line_per_save = 20
     serial_baud_rate = 115200
     kbPerDataPoint = 0.15
-    gbCalculationParams = ["Measurement Delay (ms)", timeParam]
+    gbCalculationParams = ["Measurement Delay (ms)", time_param]
     unknown_Arduino_ID = -1
     warning_precursor = "Some of your values are outside of the recommended ranges, running a trial with these values may result in the program crashing or not performing as expected. Press Continue if you would like to proceed. \n"

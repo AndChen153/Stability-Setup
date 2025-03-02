@@ -1,5 +1,6 @@
 import sys
 import json
+import os
 from PySide6.QtWidgets import (
     QApplication,
     QWidget,
@@ -26,19 +27,10 @@ class IDWidget(QWidget):
         super().__init__(parent)
         self.connected_Arduino = []
         self.json_file = json_file
-        self.data = {}
-        self.spinboxes = {}  # To store spinboxes by key
+        self.data = {}  # This will hold only the "arduino_ids" section.
+        self.spinboxes = {}  # To store spinboxes by key.
         self.load_json()
         self.init_ui()
-
-    def load_json(self):
-        """Load JSON data from the specified file."""
-        try:
-            with open(self.json_file, "r") as f:
-                self.data = json.load(f)
-        except Exception as e:
-            custom_print(f"Error loading JSON: {e}")
-            self.data = {}
 
     def init_ui(self):
         """Initialize the UI with a scrollable layout and a refresh button."""
@@ -78,11 +70,33 @@ class IDWidget(QWidget):
         custom_print(f"Updated {key} to {new_value}")
         self.save_json()
 
-    def save_json(self):
-        """Save the current data back to the JSON file."""
+    def load_json(self):
+        """Load JSON data from the specified file and extract the 'arduino_ids' section."""
         try:
+            with open(self.json_file, "r") as f:
+                full_data = json.load(f)
+            self.data = full_data.get("arduino_ids", {})
+        except Exception as e:
+            custom_print(f"Error loading JSON: {e}")
+            self.data = {}
+
+    def save_json(self):
+        """
+        Save the updated arduino_ids back to the centralized JSON file.
+        This function loads the full file first, updates only the 'arduino_ids' section,
+        and then writes it back.
+        """
+        try:
+            # Load the full data from the file if it exists.
+            if os.path.exists(self.json_file):
+                with open(self.json_file, "r") as f:
+                    full_data = json.load(f)
+            else:
+                full_data = {}
+            # Update the 'arduino_ids' section with current data.
+            full_data["arduino_ids"] = self.data
             with open(self.json_file, "w") as f:
-                json.dump(self.data, f, indent=4)
+                json.dump(full_data, f, indent=4)
             custom_print("JSON saved.")
         except Exception as e:
             custom_print(f"Error saving JSON: {e}")
@@ -104,7 +118,7 @@ class IDWidget(QWidget):
         Additionally, highlight in red any spinboxes whose value is unknown
         or if the same value appears more than once.
         """
-        # Use the container_layout (which is inside the scroll area)
+        # Use the container_layout (which is inside the scroll area).
         main_layout = self.container_layout
         if main_layout is None:
             return
@@ -113,7 +127,7 @@ class IDWidget(QWidget):
         self.clear_layout(main_layout)
         self.spinboxes = {}
 
-        # Count the occurrences of each value to detect duplicates.
+        # Count occurrences of each value to detect duplicates.
         value_counts = {}
         for key, value in self.data.items():
             value_counts[value] = value_counts.get(value, 0) + 1
@@ -133,7 +147,7 @@ class IDWidget(QWidget):
         disconnected_header.setStyleSheet("font-weight: bold;")
         disconnected_layout.addWidget(disconnected_header)
 
-        # Iterate over each key-value pair in the data.
+        # Iterate over each key-value pair in the 'arduino_ids' data.
         for key, value in self.data.items():
             row_layout = QHBoxLayout()
             key_label = QLabel(key)

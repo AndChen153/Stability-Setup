@@ -33,7 +33,7 @@ class MultiController:
         self.trial_dir = os.path.join(data_dir, f"{date}{self.trial_name}")
 
         self.trial_date = datetime.now().strftime("%b-%d-%Y_%H-%M-%S")
-        #TODO: create arduino file if not present
+
         self.arduino_ids = self.load_arduino_ids(json_location)
         self.assigned_connected_arduinos = []
         self.connected_arduinos_HWID = []
@@ -162,7 +162,6 @@ class MultiController:
                 thread.start()
                 self.active_threads[ID] = thread
 
-
     def monitor_controllers(self):
         while True:
             with self.lock:
@@ -187,5 +186,12 @@ class MultiController:
             )
 
     def load_arduino_ids(self, json_location):
-        with open(json_location, "r") as f:
-            return json.load(f)
+        """Load JSON data from the specified file and extract the 'arduino_ids' section."""
+        try:
+            with open(json_location, "r") as f:
+                full_data = json.load(f)
+            return full_data.get("arduino_ids", {})
+        except Exception as e:
+            custom_print(f"Error loading JSON: {e}")
+            return {}
+

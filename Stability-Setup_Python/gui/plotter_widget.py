@@ -502,3 +502,5 @@ class PlotterWidget(QWidget):
         canvas = self.findChild(FigureCanvas)
         if canvas:
             canvas.draw_idle()
+
+

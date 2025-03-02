@@ -13,7 +13,6 @@ def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
         for p in serial.tools.list_ports.comports()
     ]
     if not ports:
-        logging.error('%s No Arduino found', log_name)
         raise IOError()
     return ports
 

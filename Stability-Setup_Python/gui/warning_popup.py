@@ -27,18 +27,6 @@ class PopupNotificationBase:
     def customize(self, msg_box: QMessageBox):
         pass
 
-
-class ContinuePopup(PopupNotificationBase):
-    def __init__(self, parent=None, title="", message="", **kwargs):
-        # Call the superclass initializer with remaining arguments.
-        super().__init__(parent=parent, title=title, message=message, **kwargs)
-
-    def customize(self, msg_box: QMessageBox):
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        ok_button = msg_box.button(QMessageBox.Ok)
-        if ok_button:
-            ok_button.setText("Continue")
-
 class SelectionPopup(PopupNotificationBase):
     def __init__(self, parent=None, title="", message="", current_values=None, mode=None, **kwargs):
         # Call the superclass initializer with remaining arguments.
@@ -67,7 +55,7 @@ class SelectionPopup(PopupNotificationBase):
         for param_name, value, recommended_range in zip(self.outside_param,
                                                         self.outside_value,
                                                         self.outside_range):
-            warning_strings.append(f"{param_name} value of {value} outside of recommended range of {recommended_range}")
+            warning_strings.append(f"{param_name} value of {value} outside of recommended range of {recommended_range}.")
         warning_string = "\n".join(warning_strings)
         msg_box.setText(warning_string)
         ok_button = msg_box.button(QMessageBox.Ok)

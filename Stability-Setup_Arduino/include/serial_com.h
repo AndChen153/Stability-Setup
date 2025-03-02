@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-static const byte num_chars = 32;
+static const byte num_chars = 128;
 
 enum serialCommResult {
     NONE,

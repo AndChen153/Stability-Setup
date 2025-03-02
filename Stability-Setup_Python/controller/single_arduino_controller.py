@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 import threading
 import logging
 
-
 # TODO: stop measurement once PCE is below 50% of max
 class SingleController:
     def __init__(
@@ -49,6 +48,7 @@ class SingleController:
         self.mode = ""
         self.scan_filename = ""
         self.file_path = ""
+        self.mppt_compressed_file_path = ""
 
         self.HW_ID = 0
         self.arduinoID = Constants.unknown_Arduino_ID
@@ -135,9 +135,8 @@ class SingleController:
                 break
 
     def scan(self, params):
-        #TODO fix light scan param
-        light_idx = Constants.params[Mode.SCAN].index("Scan Mode")
-        LIGHT_STATUS = 1 #int(params[light_idx])
+        light_idx = Constants.params[Mode.SCAN].index(Constants.scan_mode_param)
+        LIGHT_STATUS = int(params[light_idx])
         custom_print("Scan Initiated")
 
         if LIGHT_STATUS == 0:
@@ -157,7 +156,7 @@ class SingleController:
         )
         self.file_path = os.path.join(self.trial_dir, file_name)
         self.mode = Mode.SCAN
-        self.command = "scan," + ",".join(params)
+        self.command = "scan," + ",".join(params) + ","
         custom_print(f"Starting scan with parameters: {self.command}")
 
         # Create header array
@@ -172,21 +171,21 @@ class SingleController:
 
         # Run measurement
         self.send_command()
-        self.create_array(params, header_arr)
+        self._create_array(params, header_arr)
+        self._save_data()
         self._read_data()
 
     def mppt(self, scan_file_name, params):
-        file_name = (
+        file_name_base = (
             self.today
             + self.trial_name
             + "__"
             + f"ID{self.arduinoID}"
             + "__"
-            + "mppt.csv"
         )
 
-        self.file_path = os.path.join(self.trial_dir, file_name)
-
+        self.file_path = os.path.join(self.trial_dir, file_name_base+ "mppt.csv")
+        self.mppt_compressed_file_path = os.path.join(self.trial_dir, file_name_base+ "compressedmppt.csv")
 
         self.scan_filename = scan_file_name
         self.mode = Mode.MPPT
@@ -198,7 +197,7 @@ class SingleController:
         # VMPP = "0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6"
         # TODO: reimplement vmpp
 
-        self.command = "mppt," + ",".join(params)
+        self.command = "mppt," + ",".join(params) + ","
 
         # Create header array
         voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
@@ -217,10 +216,11 @@ class SingleController:
         # Run measurement
         custom_print(f"Starting MPPT with parameters:  {self.command}")
         self.send_command()
-        self.create_array(params, header_arr)
+        self._create_array(params, header_arr)
+        self._save_data()
         self._read_data()
 
-    def create_array(self, params, header_arr):
+    def _create_array(self, params, header_arr):
         num_params = len(params) + 2
         self.arr = np.empty([num_params, len(header_arr)], dtype="object")
         for idx, param in enumerate(params):
@@ -244,7 +244,7 @@ class SingleController:
                 with self.reading_lock:
                     line = self.ser.readline().decode("unicode_escape").rstrip()
                     data_list = line.split(",")
-                    if len(data_list) > 0:
+                    if len(data_list) > 1:
                         # custom_print(data_list)
 
                         custom_print(f"ARDUINO{self.arduinoID}: {line}")
@@ -286,6 +286,7 @@ class SingleController:
             if self.mode == Mode.SCAN:
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
             elif self.mode == Mode.MPPT:
+                np.savetxt(self.mppt_compressed_file_path, self.arr, delimiter=",", fmt="%s")
                 self.arr = np.empty([1, self.mppt_arr_width], dtype="object")
         else:
             with open(self.file_path, "ab") as f:
@@ -293,9 +294,15 @@ class SingleController:
             if self.mode == Mode.SCAN:
                 self.arr = np.empty([1, self.scan_arr_width], dtype="object")
             elif self.mode == Mode.MPPT:
+                float_array = self.arr[1:, :].astype(float)
+                result_array = np.nan_to_num(float_array, nan=0.0)
+                avg_array = np.mean(result_array, axis=0)[np.newaxis,:]
+                with open(self.mppt_compressed_file_path, "ab") as f:
+                    np.savetxt(f, avg_array.astype(str), delimiter=",", fmt="%s")
+
                 self.arr = np.empty([1, self.mppt_arr_width], dtype="object")
 
-        custom_print("SAVED DATA")
+        custom_print(f"ARDUINO {self.arduinoID} SAVED DATA")
 
     def find_vmpp(self, scan_file_name):
         arr = np.loadtxt(scan_file_name, delimiter=",", dtype=str)

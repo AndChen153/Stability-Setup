@@ -24,7 +24,6 @@ class EmailSender:
         Sends an email with the given subject and body to the specified recipient.
         """
         if not self.username or not self.password:
-            # TODO: add link here to instructions
             custom_print("Missing email credentials. Please set EMAIL_USER and EMAIL_PASS in your .env file.")
             return
         # Construct the email message
