@@ -22,6 +22,8 @@ int val6;
 const int idAddress = 0;
 uint32_t uniqueID;
 
+extern const byte num_chars;
+
 // const byte num_chars = 32;
 char received_chars[num_chars];
 char temp_chars[num_chars]; // temporary array for use when parsing
@@ -57,7 +59,7 @@ volatile bool constant_voltage_done = true;
 float constant_voltage = 0.0;
 
 volatile bool measurement_running = !scan_done || !constant_voltage_done || !mppt_done;
-
+// TODO: implement settling time
 void setup(void)
 {
     long seed = analogRead(A0) + analogRead(A1) + analogRead(A2);
@@ -85,7 +87,7 @@ void setup(void)
 
     // Initialize sensors
     for (uint8_t ID = 0; ID < 8; ID++)
-    {
+    {   
         setupSensor_ADC(ID);
     }
 

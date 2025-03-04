@@ -244,7 +244,7 @@ class SingleController:
                 with self.reading_lock:
                     line = self.ser.readline().decode("unicode_escape").rstrip()
                     data_list = line.split(",")
-                    if len(data_list) > 1:
+                    if len(data_list) > 0:
                         # custom_print(data_list)
 
                         custom_print(f"ARDUINO{self.arduinoID}: {line}")

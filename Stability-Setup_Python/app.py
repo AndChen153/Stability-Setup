@@ -35,7 +35,7 @@ from gui.warning_popup import SelectionPopup
 from gui.preset_manager import PresetManager
 from controller import arduino_assignment
 
-
+#TODO: fix light/dark button
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -396,7 +396,7 @@ class MainWindow(QMainWindow):
             email_user=self.email_user,
             email_pass=self.email_pass,
             date=self.today,
-            json_location=self.arduino_assignment_json,
+            json_location=self.userSettings,
             plotting_mode=False,
         )
 
@@ -423,7 +423,8 @@ class MainWindow(QMainWindow):
 
             self.running_left = True
             self.update_buttons()
-            self.data_location_line_edit.setText(self.multi_controller.trial_dir)
+            #TODO: fix the auto population
+            # self.data_location_line_edit.setText(self.multi_controller.trial_dir)
             self.multi_controller.run(mode, params)
             self.left_tabs.tabBar().setEnabled(False)
 
@@ -539,5 +540,6 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     window = MainWindow()
-    window.showMaximized()
+    # window.showMaximized()
+    window.show()
     sys.exit(app.exec())
