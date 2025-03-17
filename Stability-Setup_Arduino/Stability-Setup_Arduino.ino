@@ -60,6 +60,7 @@ float constant_voltage = 0.0;
 
 volatile bool measurement_running = !scan_done || !constant_voltage_done || !mppt_done;
 // TODO: implement settling time
+// TODO: implement blinking for ID
 void setup(void)
 {
     long seed = analogRead(A0) + analogRead(A1) + analogRead(A2);
@@ -87,7 +88,7 @@ void setup(void)
 
     // Initialize sensors
     for (uint8_t ID = 0; ID < 8; ID++)
-    {   
+    {
         setupSensor_ADC(ID);
     }
 

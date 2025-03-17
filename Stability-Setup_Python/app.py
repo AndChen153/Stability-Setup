@@ -36,6 +36,11 @@ from gui.preset_manager import PresetManager
 from controller import arduino_assignment
 
 #TODO: fix light/dark button
+#TODO: Add metrics for JV scan
+#TODO: add box plots
+#TODO: add option to switch between
+#TODO: queue up measurements
+#TODO: Create saved measurement combinations
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()

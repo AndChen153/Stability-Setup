@@ -65,7 +65,7 @@ class Constants:
     recommended_values = {
         Mode.SCAN: [
             (0, 3.3),
-            (0.0001, 0.1),
+            (0.001, 0.1),
             (0, 1000),
             (5, 10),
             (25, 100),

@@ -20,6 +20,8 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as Navigation
 from PySide6.QtCore import Qt
 from helper.global_helpers import custom_print
 
+#TODO: make plot full data selection more obvious
+#TODO: add raw current/current density measurement
 class PlotterWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
