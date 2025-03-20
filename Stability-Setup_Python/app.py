@@ -41,6 +41,29 @@ from controller import arduino_assignment
 #TODO: add option to switch between
 #TODO: queue up measurements
 #TODO: Create saved measurement combinations
+
+#TODO: fix arduino mppt cell area value
+#TODO: better control over which arduino is running what, i.e. 8 total devices, run 8, stop 4, start 4 again
+#TODO: dynamic visualization of data, live plotting
+#TODO: live control over arduino settings, i.e. change mppt step size mid trial
+#TODO: dynamic step size optimization, gradient descent, optimizer algorithm that tries to find the maximum pce
+#TODO: fix incosistencies between plotter widget and raw data 
+#TODO: add popup when run is finished
+
+#TODO: fix null time error when plotting empty plot:
+
+
+# Traceback (most recent call last):
+#   File "c:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Python\gui\plotter_panel.py", line 72, in create_plots
+#     self.update_plot_tabs(plot_groups)
+#   File "c:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Python\gui\plotter_panel.py", line 88, in update_plot_tabs
+#     plotter_widget.update_plot(title, filepaths)
+#   File "c:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Python\gui\plotter_widget.py", line 61, in update_plot
+#     self._plot_mppt(ax, csv_files, plot_title)
+#   File "c:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Python\gui\plotter_widget.py", line 144, in _plot_mppt
+#     overall_min_time = min(time)
+# ValueError: min() arg is an empty sequence
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()

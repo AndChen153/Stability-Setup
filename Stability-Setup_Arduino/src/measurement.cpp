@@ -110,9 +110,10 @@ void perturbAndObserveClassic()
             current_power_calc = load_voltageArr[ID] * current_mA_flipped_arr[ID];
 
             // moving average calculation
-            float smoothed_power = (
-                prev_power[ID] *(moving_average_n - 1) + current_power_calc)
-                / moving_average_n;
+            float smoothed_power = current_power_calc;
+            // (
+            //     prev_power[ID] *(moving_average_n - 1) + current_power_calc)
+            //     / moving_average_n;
 
             if (smoothed_power > prev_power[ID])
             {
@@ -150,7 +151,7 @@ void perturbAndObserveClassic()
         {
             // Serial.print((prev_power[ID]/1000) / (0.1 * area_of_collector_mppt*100, 4), 5);
             // Serial.print(prev_power[ID], 5);
-            Serial.print((prev_power[ID] / 1000) / (0.1 * 0.128)*100, 4);
+            Serial.print((prev_power[ID] / 1000) / (0.1 * 0.0625)*100, 4);
 
             Serial.print(", ");
         }
