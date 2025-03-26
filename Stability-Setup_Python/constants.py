@@ -84,6 +84,8 @@ class Constants:
     line_per_save = 20
     serial_baud_rate = 115200
     kbPerDataPoint = 0.15
+    plottingKBThreshold = 1000
     gbCalculationParams = ["Measurement Delay (ms)", time_param]
+    fileTypes = ("scan.csv", "mppt.csv", "compressedmppt.csv")
     unknown_Arduino_ID = -1
     warning_precursor = "Some of your values are outside of the recommended ranges, running a trial with these values may result in the program crashing or not performing as expected. Press Continue if you would like to proceed. \n"

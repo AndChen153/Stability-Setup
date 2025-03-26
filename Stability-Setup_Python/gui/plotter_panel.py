@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from gui.plotter_widget import PlotterWidget
 from helper.global_helpers import custom_print
+from constants import Constants
 
 class PlotterPanel(QWidget):
     def __init__(self, default_folder: str = "", parent=None):
@@ -45,11 +46,6 @@ class PlotterPanel(QWidget):
         create_plots_button = QPushButton("Create Plot(s)")
         create_plots_button.clicked.connect(self.create_plots)
         h_layout.addWidget(create_plots_button)
-
-        self.checkbox = QCheckBox("Plot Full Data")
-        self.checkbox.setChecked(False)  # Sets the checkbox as checked
-        self.checkbox.toggled.connect(self.on_checkbox_toggled)
-        h_layout.addWidget(self.checkbox)
 
         form_layout.addRow("CSV Folder", container)
 
@@ -98,16 +94,31 @@ class PlotterPanel(QWidget):
             [
                 os.path.join(folder_path, f)
                 for f in os.listdir(folder_path)
-                if f.lower().endswith(".csv")
+                if f.lower().endswith(Constants.fileTypes)
             ]
         )
+
         file_groups_dict = {}
+
+        if not csv_files:
+            QMessageBox.information(self,
+                "Warning",
+                "Selected file location has no plottable files")
+            return file_groups_dict
         for file in csv_files:
             head, tail = os.path.split(file)
-            if self.checkbox.isChecked() and tail.endswith("__compressedmppt.csv"):
-                continue
-            elif not self.checkbox.isChecked() and tail.endswith("__mppt.csv"):
-                continue
+
+            # use compressed file if above certain file size threshold
+            if tail.endswith("__mppt.csv"):
+                file_size_kb = os.path.getsize(file) / 1024
+                if file_size_kb > Constants.plottingKBThreshold:
+                    continue
+            elif tail.endswith("__compressedmppt.csv"):
+                filename = file.replace("__compressedmppt", "__mppt")
+                file_size_kb = os.path.getsize(filename) / 1024
+                if file_size_kb < Constants.plottingKBThreshold:
+                    continue
+
             params = tail.split("__")
             # Assume the last part before the extension indicates the file type
             filetype = params[-1].split(".")[0]
@@ -117,9 +128,3 @@ class PlotterPanel(QWidget):
             plot_name = " ".join(name_parts)
             file_groups_dict.setdefault(plot_name, []).append(file)
         return file_groups_dict
-
-    def on_checkbox_toggled(self, checked):
-        if checked:
-            QMessageBox.information(self,
-                "Warning",
-                "Plotting the complete dataset for MPPT trials could potentially cause the software to crash.")
