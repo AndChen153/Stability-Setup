@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
     QStatusBar,
 )
 from PySide6.QtCore import Qt, QFileSystemWatcher, QTimer
+from PySide6.QtGui import QIcon
 
 from constants import Mode, Constants
 from helper.global_helpers import custom_print
@@ -38,7 +39,6 @@ from controller import arduino_assignment
 #TODO: fix light/dark button
 #TODO: Add metrics for JV scan
 #TODO: add box plots
-#TODO: add option to switch between
 #TODO: queue up measurements
 #TODO: Create saved measurement combinations
 
@@ -47,11 +47,9 @@ from controller import arduino_assignment
 #TODO: dynamic visualization of data, live plotting
 #TODO: live control over arduino settings, i.e. change mppt step size mid trial
 #TODO: dynamic step size optimization, gradient descent, optimizer algorithm that tries to find the maximum pce
-#TODO: fix incosistencies between plotter widget and raw data 
-#TODO: add popup when run is finished
+#TODO: fix incosistencies between plotter widget and raw data
 
 #TODO: fix null time error when plotting empty plot:
-
 
 # Traceback (most recent call last):
 #   File "c:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Python\gui\plotter_panel.py", line 72, in create_plots
@@ -484,6 +482,9 @@ class MainWindow(QMainWindow):
                 threading.Event().wait(0.1)
             self.multi_controller.controllers = {}
 
+        QMessageBox.information(self,
+                "Notification",
+                f"{Constants.pages.get(mode, 'Unknown')} Trial Finished")
 
         custom_print(f"Run finished on page: {Constants.pages.get(mode, 'Unknown')}")
 
@@ -565,9 +566,11 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
 
     import sys
-
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(r"Stability-Setup_Python\assets\LOGO.png"))
     window = MainWindow()
     # window.showMaximized()
+    window.setWindowIcon(QIcon(r"Stability-Setup_Python\assets\LOGO.png"))  # Sets the window icon
+    window.setWindowTitle("Stability Measurement System")
     window.show()
     sys.exit(app.exec())

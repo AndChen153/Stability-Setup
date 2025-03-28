@@ -20,7 +20,6 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as Navigation
 from PySide6.QtCore import Qt
 from helper.global_helpers import custom_print
 
-#TODO: make plot full data selection more obvious
 #TODO: add raw current/current density measurement
 class PlotterWidget(QWidget):
     def __init__(self, parent=None):
@@ -101,7 +100,7 @@ class PlotterWidget(QWidget):
                 widget.deleteLater()
 
     def _plot_mppt(self, ax, csv_files, plot_title):
-        overall_min_time, overall_max_time = None, None
+        overall_min_time, overall_max_time, overall_max_pce = None, None, None
         for csv_file in csv_files:
             arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
             header_row = np.where(arr == "Time")[0][0]
@@ -132,13 +131,13 @@ class PlotterWidget(QWidget):
             pce_list = pce_list.astype(float)
             data = pce_list[:, pce_indices]
 
-            # Sample data if necessary.
+            # Sample data if necessary
             if len(time) > 5000:
                 step = int(np.ceil(len(time) / 5000))
                 time = time[::step]
                 data = data[::step, :]
 
-            time = time / 3600.0  # convert to hours
+            time = time / 60.0  # convert to minutes from seconds
 
             if overall_min_time is None:
                 overall_min_time = min(time)
@@ -146,6 +145,11 @@ class PlotterWidget(QWidget):
             else:
                 overall_min_time = min(overall_min_time, min(time))
                 overall_max_time = max(overall_max_time, max(time))
+
+            if overall_max_pce is None:
+                overall_max_pce = np.max(data)
+            else:
+                overall_max_pce = max(overall_max_pce, np.max(data))
 
             # Plot each pixel.
             NUM_PIXELS = data.shape[1]
@@ -161,9 +165,13 @@ class PlotterWidget(QWidget):
             overall_min_time, overall_max_time = 0, 1
 
         ax.set_xlim(overall_min_time * 0.99, overall_max_time * 1.01)
-        ax.set_ylim(0, 20)
+        ax.set_ylim(0, overall_max_pce*1.15)
         ax.set_title(plot_title)
-        ax.set_xlabel("Time [hrs]")
+        if overall_max_time > 60:
+            time /= 60.0
+            ax.set_xlabel("Time [hrs]")
+        else:
+            ax.set_xlabel("Time [min]")
         ax.set_ylabel("PCE [%]")
         ax.grid(True)
 
