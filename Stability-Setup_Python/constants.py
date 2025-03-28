@@ -1,7 +1,6 @@
 # constants.py
 from enum import Enum
 
-
 class Mode(Enum):
     STOP = 0
     SCAN = 1
@@ -14,14 +13,13 @@ class Constants:
     light_mode_text = "Light"
     dark_mode_text = "Dark"
     scan_mode_param = "Scan Mode"
-    pages = {
+    trial_manager = "Trial Manager"
+    results_viewer = "Results Viewer"
+    arduino_manager = "Arduino Manager"
+    run_modes = {
         Mode.SCAN: "Scan",
         Mode.MPPT: "MPPT",
-        Mode.PLOTTER: "Graph Viewer",
-        Mode.LOGGER: "Log Viewer"
     }
-    right_modes = [Mode.PLOTTER, Mode.LOGGER]
-    left_modes = [Mode.SCAN, Mode.MPPT]
     common_params = ["Trial Name", "Email for Notification"]
     common_defaults = ["", ""]
     params = {

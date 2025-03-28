@@ -98,6 +98,7 @@ class IDWidget(QWidget):
             with open(self.json_file, "w") as f:
                 json.dump(full_data, f, indent=4)
             custom_print("JSON saved.")
+            self.refresh_ui()
         except Exception as e:
             custom_print(f"Error saving JSON: {e}")
 

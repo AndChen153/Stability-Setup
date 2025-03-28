@@ -1,42 +1,12 @@
 {
     "arduino_ids": {
-        "8F39E7B9": 2,
-        "DDA7FF77": 4,
-        "B6E16E54": 3,
+        "8F39E7B9": 4,
+        "DDA7FF77": 3,
+        "B6E16E54": 2,
         "F05123D": 1
     },
     "presets": {
         "SCAN": {
-            "khj": {
-                "Trial Name": "khj",
-                "Email for Notification": "asdf333",
-                "Scan Range (V)": "1.233",
-                "Scan Step Size (V)": "0.03",
-                "Cell Area (mm^2)": "0.128",
-                "Scan Read Count": "5",
-                "Scan Rate (mV/s)": "50",
-                "Scan Mode": "dark"
-            },
-            "khj33": {
-                "Trial Name": "khj33",
-                "Email for Notification": "asdf",
-                "Scan Range (V)": "1.233",
-                "Scan Step Size (V)": "0.03",
-                "Cell Area (mm^2)": "0.128",
-                "Scan Read Count": "5",
-                "Scan Rate (mV/s)": "50",
-                "Scan Mode": "dark"
-            },
-            "khj333": {
-                "Trial Name": "khj333",
-                "Email for Notification": "asdf333",
-                "Scan Range (V)": "1.233",
-                "Scan Step Size (V)": "0.03",
-                "Cell Area (mm^2)": "0.128",
-                "Scan Read Count": "5",
-                "Scan Rate (mV/s)": "33",
-                "Scan Mode": "dark"
-            },
             "4 Device First Test": {
                 "Trial Name": "4 Device First Test",
                 "Email for Notification": "",

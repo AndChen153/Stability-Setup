@@ -17,6 +17,10 @@ class PresetManager:
         self.preset_dropdown = preset_dropdown
         self.popup_callback = popup_callback
 
+    def populate_all(self):
+        for mode in self.preset_dropdown.keys():
+            self.populate_dropdown(mode)
+
     def _load_file(self):
         if os.path.exists(self.preset_file):
             with open(self.preset_file, "r") as f:
@@ -59,7 +63,7 @@ class PresetManager:
         presets[mode.name][trial_name] = preset_for_mode
 
         self._save_presets(presets)
-        custom_print(f"Preset '{trial_name}' saved for {Constants.pages.get(mode, 'Unknown')} mode.")
+        custom_print(f"Preset '{trial_name}' saved for {Constants.run_modes.get(mode, 'Unknown')} mode.")
         self.populate_dropdown(mode)
 
     def delete_preset(self, mode: Mode):
@@ -76,16 +80,18 @@ class PresetManager:
         if mode.name in presets and trial_name in presets[mode.name]:
             del presets[mode.name][trial_name]
             self._save_presets(presets)
-            custom_print(f"Preset '{trial_name}' deleted for {Constants.pages.get(mode, 'Unknown')} mode.")
+            custom_print(f"Preset '{trial_name}' deleted for {Constants.run_modes.get(mode, 'Unknown')} mode.")
             self.populate_dropdown(mode)
         else:
-            self.popup_callback(f"Preset '{trial_name}' not found for {Constants.pages.get(mode, 'Unknown')} mode.")
+            self.popup_callback(f"Preset '{trial_name}' not found for {Constants.run_modes.get(mode, 'Unknown')} mode.")
 
     def populate_dropdown(self, mode: Mode):
         presets = self._load_presets()
         presets_for_mode = presets.get(mode.name, {})
         dropdown: QComboBox = self.preset_dropdown.get(mode)
-        if dropdown is not None:
+        if not dropdown:
+            return
+        else:
             dropdown.blockSignals(True)
             dropdown.clear()
             dropdown.addItem("Select Preset")
@@ -106,4 +112,4 @@ class PresetManager:
                 for param, textbox in self.textboxes.get(mode, []):
                     if param in preset:
                         textbox.setText(preset[param])
-                custom_print(f"Preset '{trial_name}' loaded for {Constants.pages.get(mode, 'Unknown')} mode.")
+                custom_print(f"Preset '{trial_name}' loaded for {Constants.run_modes.get(mode, 'Unknown')} mode.")

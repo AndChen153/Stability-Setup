@@ -11,10 +11,9 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QTabWidget,
     QMessageBox,
-    QCheckBox
 )
 from PySide6.QtCore import Qt
-from gui.plotter_widget import PlotterWidget
+from gui.results_viewer.plotter_widget import PlotterWidget
 from helper.global_helpers import custom_print
 from constants import Constants
 
