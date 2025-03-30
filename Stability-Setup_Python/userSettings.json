@@ -6,30 +6,13 @@
         "F05123D": 1
     },
     "presets": {
-        "SCAN": {
-            "4 Device First Test": {
-                "Trial Name": "4 Device First Test",
-                "Email for Notification": "",
-                "Scan Range (V)": "1.2",
-                "Scan Step Size (V)": "0.03",
-                "Cell Area (mm^2)": "0.128",
-                "Scan Read Count": "5",
-                "Scan Rate (mV/s)": "50",
-                "Scan Mode": "Light"
-            }
-        },
-        "MPPT": {
-            "TESTING PRESET 1": {
-                "Trial Name": "TESTING PRESET 1",
-                "Email for Notification": "achen1192@gmail.com",
-                "Starting Voltage (V)": "0.50",
-                "Step Size (V)": "0.01",
-                "Cell Area (mm^2)": "0.128",
-                "Measurements Per Step": "5",
-                "Measurement Delay (ms)": "300",
-                "Measurement Time": "10000"
-            }
-        }
+        "Preset1": [{"scan":["scan1", "scan2", "scan3", "scan4", "scan5", "scan6"]},
+                {"mppt":["mppt1", "mppt2", "mppt3", "mppt4", "mppt5", "mppt6"]},
+                {"scan":["scan1", "scan2", "scan3", "scan4", "scan5", "scan6"]}
+                ],
+        "Preset2": [{"scan":["scan1", "scan2", "scan3", "scan4", "scan5", "scan6"]},
+                {"mppt":["mppt1", "mppt2", "mppt3", "mppt4", "mppt5", "mppt6"]}
+                ]
     },
     "email_settings": {
         "user": "stabilitysetuplab@gmail.com",

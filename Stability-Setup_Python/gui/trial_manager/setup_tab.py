@@ -12,18 +12,13 @@ class SetupTab(QWidget):
     runRequested = Signal(object, list)   # emits (mode, params)
     stopRequested = Signal(object)          # emits mode
 
-    def __init__(self, mode, preset_manager, common_param_lineedits=None, parent=None):
+    def __init__(self, mode, parent=None):
         """
         :param mode: The mode (from Constants) for which this tab is built.
-        :param preset_manager: A reference to the preset manager.
-        :param common_param_lineedits: A dict for common parameter QLineEdits.
         """
         super().__init__(parent)
         self.mode = mode
-        self.preset_manager = preset_manager
-        self.common_param_lineedits = common_param_lineedits if common_param_lineedits is not None else {}
         self.textboxes = []  # List of tuples: (parameter name, widget)
-        self.preset_dropdown = None
         self.run_button = None
         self.stop_button = None
 
@@ -43,43 +38,10 @@ class SetupTab(QWidget):
         layout = QVBoxLayout(self)
         form_layout = QFormLayout()
 
-        # --- Preset Dropdown and Buttons ---
-        preset_container = QWidget()
-        preset_layout = QHBoxLayout(preset_container)
-        preset_layout.setContentsMargins(0, 0, 0, 0)
-
-        self.preset_dropdown = QComboBox()
-        self.preset_dropdown.addItem("Select Preset")
-        self.preset_dropdown.setSizeAdjustPolicy(
-            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
-        )
-        self.preset_dropdown.setMinimumContentsLength(10)
-
-        save_button = QPushButton("Save Preset")
-        save_button.setMaximumWidth(150)
-        delete_button = QPushButton("Delete Preset")
-        delete_button.setMaximumWidth(150)
-
-        # Connect the dropdown and buttons to the preset manager callbacks.
-        self.preset_dropdown.currentIndexChanged.connect(
-            lambda index: self.preset_manager.preset_selected(self.mode)
-        )
-        save_button.clicked.connect(
-            lambda: self.preset_manager.save_preset(self.mode)
-        )
-        delete_button.clicked.connect(
-            lambda: self.preset_manager.delete_preset(self.mode)
-        )
-
-        preset_layout.addWidget(self.preset_dropdown)
-        preset_layout.addWidget(save_button)
-        preset_layout.addWidget(delete_button)
-        form_layout.addRow(preset_container)
-
         # --- Build Parameter Fields ---
         if self.mode in Constants.params:
-            params = Constants.common_params + Constants.params[self.mode]
-            defaults = Constants.common_defaults + Constants.defaults.get(
+            params = Constants.params[self.mode]
+            defaults = Constants.defaults.get(
                 self.mode, [""] * len(params)
             )
             for param, default in zip(params, defaults):
@@ -126,13 +88,6 @@ class SetupTab(QWidget):
                     # Standard parameter field
                     line_edit = QLineEdit()
                     line_edit.setText(default)
-                    if param in Constants.common_params:
-                        if param not in self.common_param_lineedits:
-                            self.common_param_lineedits[param] = []
-                        self.common_param_lineedits[param].append(line_edit)
-                        line_edit.textChanged.connect(
-                            lambda text, p=param, src=line_edit: self.on_common_param_changed(p, text, src)
-                        )
                     form_layout.addRow(param, line_edit)
                     self.textboxes.append((param, line_edit))
 
@@ -224,14 +179,6 @@ class SetupTab(QWidget):
             self.update_estimated_data_amount()
         except ValueError:
             pass
-
-    def on_common_param_changed(self, param, text, source):
-        """Update all common parameter fields with the same parameter name."""
-        for widget in self.common_param_lineedits.get(param, []):
-            if widget is not source:
-                widget.blockSignals(True)
-                widget.setText(text)
-                widget.blockSignals(False)
 
     def update_buttons(self):
         """Update button enabled/disabled states (for now, run enabled and stop disabled)."""

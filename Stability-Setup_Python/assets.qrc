@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/"><!-- The prefix defines the base path for access -->
+    <file alias="icons/start.png">assets/start.png</file>
+    <file alias="icons/logo.png">assets/logo.png</file>
+    <file alias="icons/edit.png">assets/edit.png</file>
+    <file alias="icons/delete.png">assets/delete.png</file>
+    <!-- Add other assets as needed -->
+</qresource>
+</RCC>

@@ -20,8 +20,6 @@ class Constants:
         Mode.SCAN: "Scan",
         Mode.MPPT: "MPPT",
     }
-    common_params = ["Trial Name", "Email for Notification"]
-    common_defaults = ["", ""]
     params = {
         Mode.SCAN: [
             "Scan Range (V)",

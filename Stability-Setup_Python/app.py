@@ -11,9 +11,12 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QMessageBox,
     QStatusBar,
+    QSplitter,
+    QStyleFactory
 )
-from PySide6.QtCore import QFileSystemWatcher, QTimer
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, QFileSystemWatcher, QTimer
+from PySide6.QtGui import QIcon, QPalette, QColor
+import assets_rc
 
 from constants import Mode, Constants
 from helper.global_helpers import custom_print
@@ -21,6 +24,8 @@ from controller.multi_arduino_controller import MultiController
 from gui.arduino_manager.id_widget import IDWidget
 from gui.results_viewer.plotter_panel import PlotterPanel
 from gui.trial_manager.setup_tabs import SetupTabs
+from gui.trial_manager.preset_window_widget import PresetQueueWidget
+from gui.trial_manager.preset_loader import PresetManager
 from gui.warning_popup import SelectionPopup
 from controller import arduino_assignment
 
@@ -71,7 +76,6 @@ class MainWindow(QMainWindow):
         self.textboxes = {}
         self.trial_name = ""  # Initialize shared Trial Name value
         self.trial_name_lineedits = []  # List to hold all Trial Name QLineEdits
-        self.common_param_lineedits = {}
         self.tab_components = {}
 
         # Email
@@ -99,22 +103,29 @@ class MainWindow(QMainWindow):
         self.ID_widget.refreshRequested.connect(self.initializeArduinoConnections)
 
         self.setup_tabs = SetupTabs(
-            self.userSettingsJson,
             self.tab_components,
             self.textboxes,
-            self.common_param_lineedits,
         )
+
         # Connect each SetupTab's signals to the MainWindow's action handlers.
         self.setup_tabs.connect_signals(self.run_action, self.stop_action)
 
+        self.preset_queue = PresetQueueWidget()
 
-        # Right side: Plotter page.
+        self.splitter = QSplitter(Qt.Horizontal)
+        self.splitter.addWidget(self.preset_queue)
+        self.splitter.addWidget(self.setup_tabs)
+
+        self.preset_manager = PresetManager(
+            self.userSettingsJson
+        )
+
         self.plotter_panel = PlotterPanel(
             default_folder=Constants.defaults.get(Mode.PLOTTER, [""])[0]
         )
 
         tabs = QTabWidget()
-        tabs.addTab(self.setup_tabs, Constants.trial_manager)
+        tabs.addTab(self.splitter, Constants.trial_manager)
         tabs.addTab(self.ID_widget, Constants.arduino_manager)
         tabs.addTab(self.plotter_panel, Constants.results_viewer)
 
@@ -311,12 +322,26 @@ if __name__ == "__main__":
 
     import sys
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(r"Stability-Setup_Python\assets\LOGO.png"))
+
+    # Force Light mode
+    app.setStyle(QStyleFactory.create('Fusion'))
+    light_palette = QPalette()
+    light_palette.setColor(QPalette.Window, QColor(255, 255, 255))
+    light_palette.setColor(QPalette.WindowText, QColor(0, 0, 0))
+    light_palette.setColor(QPalette.Base, QColor(240, 240, 240))
+    light_palette.setColor(QPalette.AlternateBase, QColor(225, 225, 225))
+    light_palette.setColor(QPalette.ToolTipBase, QColor(255, 255, 220))
+    light_palette.setColor(QPalette.ToolTipText, QColor(0, 0, 0))
+    light_palette.setColor(QPalette.Text, QColor(0, 0, 0))
+    light_palette.setColor(QPalette.Button, QColor(240, 240, 240))
+    light_palette.setColor(QPalette.ButtonText, QColor(0, 0, 0))
+    light_palette.setColor(QPalette.BrightText, QColor(255, 0, 0))
+
+    app.setPalette(light_palette)
+
     window = MainWindow()
     # window.showMaximized()
-    window.setWindowIcon(
-        QIcon(r"Stability-Setup_Python\assets\LOGO.png")
-    )  # Sets the window icon
+    window.setWindowIcon(QIcon( ":/icons/logo.png"))
     window.setWindowTitle("Stability Measurement System")
     window.show()
     sys.exit(app.exec())
