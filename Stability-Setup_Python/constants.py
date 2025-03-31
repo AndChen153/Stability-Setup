@@ -18,7 +18,11 @@ class Constants:
     arduino_manager = "Arduino Manager"
     run_modes = {
         Mode.SCAN: "Scan",
-        Mode.MPPT: "MPPT",
+        Mode.MPPT: "Mppt",
+    }
+    run_modes_reversed = {
+        "Scan": Mode.SCAN,
+        "Mppt": Mode.MPPT,
     }
     params = {
         Mode.SCAN: [

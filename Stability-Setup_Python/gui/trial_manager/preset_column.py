@@ -8,19 +8,31 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QLineEdit,
-    QAbstractItemView
+    QAbstractItemView,
 )
 import os
+import assets_rc
 from PySide6.QtGui import QIcon
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Signal, Slot, Qt
 from constants import Mode, Constants
 from helper.global_helpers import custom_print
-import assets_rc
+from gui.trial_manager.preset_data_class import Preset, Trial
+from gui.trial_manager.dragable_list import DraggableListWidget
 
 
 class PresetColumnWidget(QWidget):
-    def __init__(self):
+    preset_selected = Signal(Preset)
+    preset_added = Signal(Preset)
+    # Emitted BEFORE a preset is removed from the list/data model
+    preset_deleted = Signal(Preset)
+     # Emitted AFTER a preset's name has been validated and is ready to be changed
+    preset_renamed = Signal(Preset, str)
+    preset_moved = Signal(Preset, int)
+
+    def __init__(self, presets):
         super().__init__()
+        self.presets = presets
+
         # Set up the overall vertical layout
         main_layout = QVBoxLayout(self)
 
@@ -29,29 +41,41 @@ class PresetColumnWidget(QWidget):
         main_layout.addWidget(self.title_label)
 
         # Create a QListWidget to hold the rows
-        self.list_widget = QListWidget()
+        self.list_widget = DraggableListWidget(self)
         # Enable dragging and dropping of items within this list
         self.list_widget.setDragEnabled(True)
         self.list_widget.setAcceptDrops(True)
         self.list_widget.setDropIndicatorShown(True)
         self.list_widget.setDragDropMode(QAbstractItemView.InternalMove)
+        self.list_widget.presetMoved.connect(self.handle_item_moved)
+
+        # Connect itemClicked for selection -> show correct trial list
+        self.list_widget.itemClicked.connect(self.handle_row_clicked_or_selected)
+        # Also connect currentItemChanged for selection via keyboard/programmatically
         main_layout.addWidget(self.list_widget)
 
-        # Add a couple of initial rows
-        self.add_row("Preset 1")
-        self.add_row("Preset 2")
+        # Populate Rows
+        for name in self.presets:
+            self.add_row(name)
 
         # Add the "Add Row" widget as the last item in the list widget
         self.add_button_item = QListWidgetItem(self.list_widget)
-        self.add_row_widget = AddPresetRowWidget(self)
-        self.add_button_item.setSizeHint(self.add_row_widget.sizeHint())
-        self.list_widget.addItem(self.add_button_item)
-        self.list_widget.setItemWidget(self.add_button_item, self.add_row_widget)
 
-    def add_row(self, text, insert_index=None):
+        self.add_new_preset_button = QPushButton("Create New Preset")
+        self.add_new_preset_button.clicked.connect(self._handle_add_request)
+
+        self.list_widget.addItem(self.add_button_item)
+        self.list_widget.setItemWidget(self.add_button_item, self.add_new_preset_button)
+
+    def add_row(self, preset:Preset, insert_index=None, select=False):
         """Insert a new row widget before the add button row."""
         new_item = QListWidgetItem()
-        row_widget = PresetRow(text, self.list_widget)
+        row_widget = PresetRow(preset, self.list_widget, new_item)
+        row_widget.edit_button_clicked.connect(self.handle_row_clicked_or_selected)
+        row_widget.name_changed.connect(self._handle_preset_name_edit)
+        row_widget.delete_requested.connect(self._handle_preset_removal)
+
+
         new_item.setSizeHint(row_widget.sizeHint())
 
         # If no explicit index is provided, insert before the last item (the add button)
@@ -61,29 +85,89 @@ class PresetColumnWidget(QWidget):
 
         self.list_widget.insertItem(insert_index, new_item)
         self.list_widget.setItemWidget(new_item, row_widget)
+        if select:
+            self.list_widget.setCurrentItem(new_item)
 
-    def add_new_row(self):
-        """Callback for the add button to insert a new row."""
-        self.add_row("New Item")
+
+    def handle_row_clicked_or_selected(self, item: QListWidgetItem):
+        """This method is called when any item in the list_widget is clicked."""
+
+        widget = self.list_widget.itemWidget(item)
+
+        if isinstance(widget, PresetRow):
+            preset = widget.preset # Get current name from QLineEdit
+            custom_print(f"Preset row clicked/selected: '{preset.name}' at index {self.list_widget.row(item)}")
+
+            self.preset_selected.emit(preset)
+            self.list_widget.setCurrentItem(item) # Ensure visual selection
+
+    def on_preset_deletion_confirmed(self, preset: Preset):
+        # Iterate through the list widget items to find the matching preset.
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            widget = self.list_widget.itemWidget(item)
+            if widget and widget.preset == preset:
+                # Remove the item once deletion is confirmed.
+                self.list_widget.takeItem(i)
+                break
+
+    @Slot(Preset, int)
+    def handle_item_moved(self, preset, new_index):
+        custom_print(f"Preset moved: preset {preset} moved to index {new_index}")
+        self.preset_moved.emit(preset, new_index)
+
+    @Slot()
+    def _handle_add_request(self):
+        """Handles the signal from AddPresetRowWidget."""
+        custom_print("Sending new preset signal")
+        new_preset = Preset(name="New Preset") # Create with default vals
+        # Emit the signal to notify the parent *before* adding visually
+        self.preset_added.emit(new_preset)
+        # Add preset to page
+        self.add_row(new_preset, select = True)
+
+    @Slot()
+    def _handle_preset_name_edit(self, preset:Preset, name:str):
+        custom_print("Sending new preset signal")
+        # Emit the signal to notify the parent *before* adding visually
+        self.preset_renamed.emit(preset, name)
+
+    @Slot()
+    def _handle_preset_removal(self, preset:Preset):
+        custom_print("Sending new preset signal")
+        # Emit the signal to notify the parent *before* adding visually
+        self.preset_deleted.emit(preset)
+
+
 
 
 class PresetRow(QWidget):
-    def __init__(self, text, parent_list):
+    delete_requested = Signal(Preset)
+    name_changed = Signal(Preset, str)
+    edit_button_clicked = Signal(QListWidgetItem)
+
+
+    def __init__(self, preset:Preset, parent_list: QListWidget, list_item: QListWidgetItem):
         super().__init__()
         self.parent_list = parent_list
+        self.list_item = list_item  # Store the item this widget belongs to
+        self.preset = preset
 
         # Set up a horizontal layout for the row
         layout = QHBoxLayout(self)
 
         # Row name is editable (QLineEdit)
-        self.name_edit = QLineEdit(text)
+        name = preset.name
+        self.name_edit = QLineEdit(name)
+        self.name_edit.editingFinished.connect(self._handle_name_editing_finished)
+
         layout.addWidget(self.name_edit)
 
         start_icon_filepath = ":/icons/start.png"
         edit_icon_filepath = ":/icons/edit.png"
         delete_icon_filepath = ":/icons/delete.png"
 
-        icon_size = QSize(20, 20) # Define a consistent size
+        icon_size = QSize(20, 20)  # Define a consistent size
 
         # --- Start Button ---
         self.start_button = QPushButton()
@@ -93,7 +177,7 @@ class PresetRow(QWidget):
             self.start_button.setIconSize(icon_size)
         else:
             print(f"Warning: Could not load icon: {start_icon_filepath}")
-            self.start_button.setText("S") # Fallback
+            self.start_button.setText("S")  # Fallback
         self.start_button.setToolTip("Start Preset")
 
         # --- Edit Button ---
@@ -104,8 +188,9 @@ class PresetRow(QWidget):
             self.edit_button.setIconSize(icon_size)
         else:
             print(f"Warning: Could not load icon: {edit_icon_filepath}")
-            self.edit_button.setText("E") # Fallback
+            self.edit_button.setText("E")  # Fallback
         self.edit_button.setToolTip("View / Edit Preset")
+        self.edit_button.clicked.connect(self._emit_edit_button_signal)
 
         # --- Delete Button ---
         self.delete_button = QPushButton()
@@ -115,9 +200,10 @@ class PresetRow(QWidget):
             self.delete_button.setIconSize(icon_size)
         else:
             print(f"Warning: Could not load icon: {delete_icon_filepath}")
-            self.delete_button.setText("X") # Fallback
+            self.delete_button.setText("X")  # Fallback
         self.delete_button.setToolTip("Delete Preset")
-        self.delete_button.clicked.connect(self.remove_row)
+        self.delete_button.clicked.connect(self._request_delete)
+        # self.delete_button.clicked.connect(self.remove_row)
 
         layout.addWidget(self.start_button)
         layout.addWidget(self.edit_button)
@@ -135,18 +221,30 @@ class PresetRow(QWidget):
                 self.parent_list.takeItem(index)
                 break
 
+    @Slot()  # Decorator indicating this is a slot
+    def _emit_edit_button_signal(self):
+        self.edit_button_clicked.emit(self.list_item)
 
-class AddPresetRowWidget(QWidget):
-    def __init__(self, main_widget):
-        super().__init__()
-        self.main_widget = main_widget
-        layout = QHBoxLayout(self)
-        self.add_preset = QPushButton("Create New Preset")
-        layout.addWidget(self.add_preset)
-        layout.addStretch()
-        self.add_preset.clicked.connect(self.handle_add)
+    @Slot()
+    def _handle_name_editing_finished(self):
+        """Handle text changes in the name editor."""
+        new_name = self.name_edit.text().strip()
+        if new_name and new_name != self.preset.name:
+            custom_print(f"PresetRow: Name edit finished for '{self.preset.name}'. New potential name: '{new_name}'")
+            # Emit signal with the Preset object and the new desired name
+            self.name_changed.emit(self.preset, new_name)
+        else:
+             # If name is unchanged or empty, reset QLineEdit to original name
+             self.name_edit.setText(self.preset.name)
 
-    def handle_add(self):
-        """When clicked, instruct the main widget to add a new row."""
-        self.main_widget.add_new_row()
+    @Slot()
+    def _emit_edit_button_signal(self):
+        """Internal slot to emit the custom signal with the stored list item for selection."""
+        self.edit_button_clicked.emit(self.list_item)
+
+    @Slot()
+    def _request_delete(self):
+        """Emit signal indicating this row's preset should be deleted."""
+        custom_print(f"PresetRow: Delete requested for '{self.preset.name}'")
+        self.delete_requested.emit(self.preset)
 

@@ -6,18 +6,20 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Signal
 from constants import Mode, Constants
+from helper.global_helpers import custom_print
 
 class SetupTab(QWidget):
     # Signals to notify the parent (MainWindow) when a run or stop is requested.
-    runRequested = Signal(object, list)   # emits (mode, params)
-    stopRequested = Signal(object)          # emits mode
-
-    def __init__(self, mode, parent=None):
+    valueChanged = Signal(int, str)
+    def __init__(self, mode:Mode, params: list[str], parent=None):
         """
         :param mode: The mode (from Constants) for which this tab is built.
         """
         super().__init__(parent)
+        if not Mode:
+            return
         self.mode = mode
+        self.initial_params = list(params)
         self.textboxes = []  # List of tuples: (parameter name, widget)
         self.run_button = None
         self.stop_button = None
@@ -41,10 +43,8 @@ class SetupTab(QWidget):
         # --- Build Parameter Fields ---
         if self.mode in Constants.params:
             params = Constants.params[self.mode]
-            defaults = Constants.defaults.get(
-                self.mode, [""] * len(params)
-            )
-            for param, default in zip(params, defaults):
+            defaults = self.initial_params
+            for idx, (param, default) in enumerate(zip(params, defaults)):
                 if param == Constants.time_param:
                     # Build a container for time (with Mins/Hrs buttons)
                     container = QWidget()
@@ -71,6 +71,7 @@ class SetupTab(QWidget):
                     time_line_edit.textChanged.connect(self.update_estimated_data_amount)
 
                     form_layout.addRow(param, container)
+                    time_line_edit.textChanged.connect(lambda new_value, index=idx: self.valueChanged.emit(index, new_value))
                     self.textboxes.append((param, time_line_edit))
                 elif self.mode == Mode.SCAN and param == "Scan Mode":
                     # Build a toggle button for scan mode
@@ -88,8 +89,10 @@ class SetupTab(QWidget):
                     # Standard parameter field
                     line_edit = QLineEdit()
                     line_edit.setText(default)
+                    line_edit.textChanged.connect(lambda new_value, index=idx: self.valueChanged.emit(index, new_value))
                     form_layout.addRow(param, line_edit)
                     self.textboxes.append((param, line_edit))
+
 
             # For MPPT mode, add the estimated data amount field.
             if self.mode == Mode.MPPT:
@@ -99,23 +102,21 @@ class SetupTab(QWidget):
                 self.mppt_estimated_gb.setStyleSheet("QLineEdit { border: none; background-color: transparent; }")
                 self.update_estimated_data_amount()
                 form_layout.addRow("Estimated Data Amount", self.mppt_estimated_gb)
-        else:
-            form_layout.addRow(QLabel("No parameters defined for this mode."))
 
         # --- Run and Stop Buttons ---
-        button_container = QWidget()
-        button_layout = QHBoxLayout(button_container)
-        button_layout.setContentsMargins(0, 0, 0, 0)
-        self.stop_button = QPushButton("Stop")
-        self.stop_button.clicked.connect(lambda: self.stopRequested.emit(self.mode))
-        button_layout.addWidget(self.stop_button)
-        self.run_button = QPushButton("Run")
-        self.run_button.clicked.connect(self.handle_run)
-        button_layout.addWidget(self.run_button)
-        form_layout.addRow(QWidget(), button_container)
+        # button_container = QWidget()
+        # button_layout = QHBoxLayout(button_container)
+        # button_layout.setContentsMargins(0, 0, 0, 0)
+        # self.stop_button = QPushButton("Stop")
+        # self.stop_button.clicked.connect(lambda: self.stopRequested.emit(self.mode))
+        # button_layout.addWidget(self.stop_button)
+        # self.run_button = QPushButton("Run")
+        # self.run_button.clicked.connect(self.handle_run)
+        # button_layout.addWidget(self.run_button)
+        # form_layout.addRow(QWidget(), button_container)
 
         layout.addLayout(form_layout)
-        self.update_buttons()
+        # self.update_buttons()
 
     def update_estimated_data_amount(self):
         """Compute and update the estimated data amount based on time and delay."""
@@ -219,7 +220,6 @@ class SetupTab(QWidget):
             else:
                 params.append(widget.text())
         # Emit the run request with the collected parameters.
-        self.runRequested.emit(self.mode, params)
         # Update buttons to reflect that a run is in progress.
         self.run_button.setEnabled(False)
         self.stop_button.setEnabled(True)

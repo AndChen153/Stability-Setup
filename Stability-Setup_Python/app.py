@@ -25,7 +25,6 @@ from gui.arduino_manager.id_widget import IDWidget
 from gui.results_viewer.plotter_panel import PlotterPanel
 from gui.trial_manager.setup_tabs import SetupTabs
 from gui.trial_manager.preset_window_widget import PresetQueueWidget
-from gui.trial_manager.preset_loader import PresetManager
 from gui.warning_popup import SelectionPopup
 from controller import arduino_assignment
 
@@ -80,12 +79,9 @@ class MainWindow(QMainWindow):
 
         # Email
         self.notification_email = None
-        self.email_user = self.load_json(self.userSettingsJson, "email_settings")[
-            "user"
-        ]
-        self.email_pass = self.load_json(self.userSettingsJson, "email_settings")[
-            "pass"
-        ]
+        email_settings = self.load_json(self.userSettingsJson, "email_settings")
+        self.email_user = email_settings["user"]
+        self.email_pass = email_settings["pass"]
 
         # CSV watcher, thread control, etc.
         self.csv_watcher = QFileSystemWatcher()
@@ -102,30 +98,22 @@ class MainWindow(QMainWindow):
         self.ID_widget = IDWidget(self.userSettingsJson)
         self.ID_widget.refreshRequested.connect(self.initializeArduinoConnections)
 
-        self.setup_tabs = SetupTabs(
-            self.tab_components,
-            self.textboxes,
-        )
+        # self.setup_tabs = SetupTabs(
+        #     self.tab_components,
+        #     self.textboxes,
+        # )
 
         # Connect each SetupTab's signals to the MainWindow's action handlers.
-        self.setup_tabs.connect_signals(self.run_action, self.stop_action)
+        # self.setup_tabs.connect_signals(self.run_action, self.stop_action)
 
-        self.preset_queue = PresetQueueWidget()
-
-        self.splitter = QSplitter(Qt.Horizontal)
-        self.splitter.addWidget(self.preset_queue)
-        self.splitter.addWidget(self.setup_tabs)
-
-        self.preset_manager = PresetManager(
-            self.userSettingsJson
-        )
+        self.preset_queue = PresetQueueWidget(self.userSettingsJson)
 
         self.plotter_panel = PlotterPanel(
             default_folder=Constants.defaults.get(Mode.PLOTTER, [""])[0]
         )
 
         tabs = QTabWidget()
-        tabs.addTab(self.splitter, Constants.trial_manager)
+        tabs.addTab(self.preset_queue, Constants.trial_manager)
         tabs.addTab(self.ID_widget, Constants.arduino_manager)
         tabs.addTab(self.plotter_panel, Constants.results_viewer)
 

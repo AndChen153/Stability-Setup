@@ -6,13 +6,64 @@
         "F05123D": 1
     },
     "presets": {
-        "Preset1": [{"scan":["scan1", "scan2", "scan3", "scan4", "scan5", "scan6"]},
-                {"mppt":["mppt1", "mppt2", "mppt3", "mppt4", "mppt5", "mppt6"]},
-                {"scan":["scan1", "scan2", "scan3", "scan4", "scan5", "scan6"]}
-                ],
-        "Preset2": [{"scan":["scan1", "scan2", "scan3", "scan4", "scan5", "scan6"]},
-                {"mppt":["mppt1", "mppt2", "mppt3", "mppt4", "mppt5", "mppt6"]}
-                ]
+        "8557870c-24d7-493b-bf72-00f4acca3173": {
+            "trial_name": "One Trial",
+            "trial": [
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "79768614-3ae1-49c0-b4c3-005a780af3df",
+                    "trial_params": [
+                        "0.50",
+                        "0.005",
+                        "0.128",
+                        "10",
+                        "1000",
+                        "60"
+                    ]
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "267f168c-84ee-482e-8fb9-8578abffe0d0",
+                    "trial_params": [
+                        "1.2",
+                        "0.03",
+                        "0.128",
+                        "5",
+                        "50",
+                        "Light"
+                    ]
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "9a6ec27f-f2c4-47a9-ad0d-9580534c0e20",
+                    "trial_params": [
+                        "1.2",
+                        "0.03",
+                        "0.128",
+                        "5",
+                        "50",
+                        "Light"
+                    ]
+                }
+            ]
+        },
+        "6b08d205-deee-44a3-b73e-29d94f6a4bcc": {
+            "trial_name": "New Preset",
+            "trial": [
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "84c67803-7ccd-44cb-8c3e-506ab712a834",
+                    "trial_params": [
+                        "1.2",
+                        "0.03",
+                        "0.128",
+                        "5",
+                        "50",
+                        "Light"
+                    ]
+                }
+            ]
+        }
     },
     "email_settings": {
         "user": "stabilitysetuplab@gmail.com",
