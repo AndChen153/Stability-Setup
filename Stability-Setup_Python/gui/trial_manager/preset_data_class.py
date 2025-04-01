@@ -7,7 +7,7 @@ class Trial:
         :param trial_type: A string, e.g. "Scan" or "mppt"
         :param params: A list of string parameters.
         """
-        self.trial_type = trial_type
+        self.trial_type:Mode = trial_type
         self.params = params
         self.id = id if id else uuid.uuid4() # Unique ID per Trial
 

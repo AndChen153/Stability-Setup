@@ -22,7 +22,6 @@ class SingleController:
         COM: str,
         SERIAL_BAUD_RATE: int,
         trial_name: str,
-        date: str,
         trial_dir: str,
         arduino_ids,
     ) -> None:
@@ -53,13 +52,12 @@ class SingleController:
         self.HW_ID = 0
         self.arduinoID = Constants.unknown_Arduino_ID
         self.trial_name = trial_name
-        self.today = date
+        self.date = None
         self.trial_dir = trial_dir
         self.start = time.time()
 
         self.scan_arr_width = 0
         self.mppt_arr_width = 0
-
 
     def connect(self):
         try:
@@ -145,7 +143,7 @@ class SingleController:
             LIGHT_STATUS = "light"
 
         file_name = (
-            self.today
+            self.date
             + self.trial_name
             + "__"
             + f"ID{self.arduinoID}"
@@ -177,7 +175,7 @@ class SingleController:
 
     def mppt(self, scan_file_name, params):
         file_name_base = (
-            self.today
+            self.date
             + self.trial_name
             + "__"
             + f"ID{self.arduinoID}"
@@ -227,7 +225,7 @@ class SingleController:
             self.arr[idx][0] = Constants.params[self.mode][idx]
             self.arr[idx][1] = param
         self.arr[num_params - 2][0] = "Start Date"
-        self.arr[num_params - 2][1] = self.today
+        self.arr[num_params - 2][1] = self.date
         self.arr[num_params - 1] = header_arr
 
     def _read_data(self):
@@ -364,7 +362,7 @@ class SingleController:
         self.file_path = (
             self.trial_dir
             + self.trial_name
-            + self.today
+            + self.date
             + light_status
             + "ID"
             + self.arduinoID

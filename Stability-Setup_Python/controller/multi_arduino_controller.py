@@ -11,10 +11,12 @@ from controller import arduino_assignment
 from constants import Mode, Constants
 from data_visualization import data_plotter
 from helper.global_helpers import custom_print
+from PySide6.QtCore import QObject, Signal, Slot, Qt
 
-class MultiController:
+class MultiController(QObject):
+    finished = Signal()
     def __init__(self):
-        pass
+        super().__init__()
 
     def initializeMeasurement(
         self,
@@ -34,8 +36,7 @@ class MultiController:
             self.trial_name = ""
         self.trial_dir = os.path.join(data_dir, f"{date}{self.trial_name}")
 
-        self.trial_date = datetime.now().strftime("%b-%d-%Y_%H-%M-%S")
-
+        self.trial_date = None
         self.arduino_ids = self.load_arduino_ids(json_location)
         self.assigned_connected_arduinos = []
         self.connected_arduinos_HWID = []
@@ -62,7 +63,6 @@ class MultiController:
                 COM=COM,
                 SERIAL_BAUD_RATE=Constants.serial_baud_rate,
                 trial_name=self.trial_name,
-                date=self.trial_date,
                 trial_dir=self.trial_dir,
                 arduino_ids=self.arduino_ids,
             )
@@ -161,6 +161,7 @@ class MultiController:
             if not (command == Mode.STOP):
                 # Start the new command in a new thread
                 custom_print(f"Started command {command} on controller {ID}.")
+                self.controllers[ID].date = datetime.now().strftime("%b-%d-%Y_%H-%M-%S")
                 thread = threading.Thread(target=target, daemon=True)
                 thread.start()
                 self.active_threads[ID] = thread
@@ -168,19 +169,16 @@ class MultiController:
     def monitor_controllers(self):
         while True:
             with self.lock:
-                # Remove any threads that have finished
                 finished_ids = [
-                    ID
-                    for ID, thread in self.active_threads.items()
+                    ID for ID, thread in self.active_threads.items()
                     if not thread.is_alive()
                 ]
                 for ID in finished_ids:
                     del self.active_threads[ID]
-
                 if not self.active_threads:
                     break
-
             time.sleep(0.1)
+        self.finished.emit()
         if self.email:
             self.email_sender.send_email(
                 subject="Stability Setup Notification - Test Finished",

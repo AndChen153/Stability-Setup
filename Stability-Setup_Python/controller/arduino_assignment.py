@@ -16,7 +16,7 @@ def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
 def get():
     connected_arduinos = []
     for device in _show_all_com_devices():
-        if "USB-SERIAL CH340" in device.description:
+        if any(substr in device.description for substr in ["USB-SERIAL CH340", "Arduino Mega 2560"]):
             connected_arduinos.append(device.device)
 
     return connected_arduinos

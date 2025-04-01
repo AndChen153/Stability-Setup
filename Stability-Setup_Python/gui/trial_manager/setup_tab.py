@@ -10,7 +10,7 @@ from helper.global_helpers import custom_print
 
 class SetupTab(QWidget):
     # Signals to notify the parent (MainWindow) when a run or stop is requested.
-    valueChanged = Signal(int, str)
+    valueChanged = Signal(list)
     def __init__(self, mode:Mode, params: list[str], parent=None):
         """
         :param mode: The mode (from Constants) for which this tab is built.
@@ -71,14 +71,15 @@ class SetupTab(QWidget):
                     time_line_edit.textChanged.connect(self.update_estimated_data_amount)
 
                     form_layout.addRow(param, container)
-                    time_line_edit.textChanged.connect(lambda new_value, index=idx: self.valueChanged.emit(index, new_value))
+                    time_line_edit.textChanged.connect(self.handle_run)
                     self.textboxes.append((param, time_line_edit))
                 elif self.mode == Mode.SCAN and param == "Scan Mode":
+                    #TODO: fix this
                     # Build a toggle button for scan mode
                     self.toggle_button = QPushButton()
                     self.toggle_button.setCheckable(True)
-                    self.toggle_button.setText(default)
-                    if default.lower() == Constants.dark_mode_text:
+                    self.toggle_button.setText("Light")
+                    if default == "1":
                         self.toggle_button.setChecked(True)
                     else:
                         self.toggle_button.setChecked(False)
@@ -89,7 +90,7 @@ class SetupTab(QWidget):
                     # Standard parameter field
                     line_edit = QLineEdit()
                     line_edit.setText(default)
-                    line_edit.textChanged.connect(lambda new_value, index=idx: self.valueChanged.emit(index, new_value))
+                    line_edit.textChanged.connect(self.handle_run)
                     form_layout.addRow(param, line_edit)
                     self.textboxes.append((param, line_edit))
 
@@ -102,19 +103,7 @@ class SetupTab(QWidget):
                 self.mppt_estimated_gb.setStyleSheet("QLineEdit { border: none; background-color: transparent; }")
                 self.update_estimated_data_amount()
                 form_layout.addRow("Estimated Data Amount", self.mppt_estimated_gb)
-
-        # --- Run and Stop Buttons ---
-        # button_container = QWidget()
-        # button_layout = QHBoxLayout(button_container)
-        # button_layout.setContentsMargins(0, 0, 0, 0)
-        # self.stop_button = QPushButton("Stop")
-        # self.stop_button.clicked.connect(lambda: self.stopRequested.emit(self.mode))
-        # button_layout.addWidget(self.stop_button)
-        # self.run_button = QPushButton("Run")
-        # self.run_button.clicked.connect(self.handle_run)
-        # button_layout.addWidget(self.run_button)
-        # form_layout.addRow(QWidget(), button_container)
-
+                
         layout.addLayout(form_layout)
         # self.update_buttons()
 
@@ -219,7 +208,5 @@ class SetupTab(QWidget):
                     params.append("1")
             else:
                 params.append(widget.text())
-        # Emit the run request with the collected parameters.
-        # Update buttons to reflect that a run is in progress.
-        self.run_button.setEnabled(False)
-        self.stop_button.setEnabled(True)
+
+        self.valueChanged.emit(params)

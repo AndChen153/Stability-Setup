@@ -23,11 +23,11 @@ from gui.trial_manager.trial_column import TrialColumnWidget
 from gui.trial_manager.preset_data_class import Preset, Trial
 from gui.trial_manager.preset_loader import PresetManager
 from gui.trial_manager.setup_tab import SetupTab
-from PySide6.QtCore import Slot
-
+from PySide6.QtCore import Slot, Signal
 
 # Container widget that holds the two list widgets side by side
 class PresetQueueWidget(QWidget):
+    run_start = Signal(Preset)
     def __init__(self, presetsJson):
         super().__init__()
         self.setWindowTitle("Two List Widgets Side by Side")
@@ -53,6 +53,7 @@ class PresetQueueWidget(QWidget):
         self.preset_column.preset_renamed.connect(self.handle_preset_renamed)
         self.preset_column.preset_deleted.connect(self.handle_preset_deleted)
         self.preset_column.preset_moved.connect(self.handle_preset_moved)
+        self.preset_column.preset_start.connect(self.handle_preset_start)
 
         # Set left column width
         min_column_width_presets = 270
@@ -111,8 +112,7 @@ class PresetQueueWidget(QWidget):
             f"PresetQueueWidget: Preset list updated. Count: {len(self.presets)}"
         )
         self.currently_selected_preset = new_preset
-        self.preset_column.handle_row_clicked_or_selected(preset=new_preset)
-        self.trials_column.update_trials(new_preset)  # Clear right panel
+        self.trials_column.update_trials(new_preset)
         self.preset_manager.save_presets_to_json(self.presets)
         self.clear_params_tab()
 
@@ -202,6 +202,12 @@ class PresetQueueWidget(QWidget):
             self.presets.insert(new_index, preset)
         self.preset_manager.save_presets_to_json(self.presets)
 
+    @Slot(Preset)
+    def handle_preset_start(self, preset:Preset):
+        custom_print(f"Start requested for '{preset.name}'")
+        self.handle_preset_selection(preset)
+        self.run_start.emit(preset)
+
 
     @Slot(Preset, Trial)
     def handle_trial_deleted(self, preset: Preset, trial: Trial):
@@ -284,13 +290,13 @@ class PresetQueueWidget(QWidget):
         # Add the new widget to the layout
         self.layout.addWidget(self.param_tab, 1)
 
-    @Slot(int, str)
-    def handle_trial_value_edit(self, idx:int, new_value:str):
+    @Slot(list)
+    def handle_trial_value_edit(self, params: list[str]):
         custom_print(
-            f"PresetQueueWidget: Editing {self.currently_selected_trial} value {idx} to {new_value}."
+            f"PresetQueueWidget: Set new params: {params}"
         )
 
-        self.currently_selected_trial.params[idx] = new_value
+        self.currently_selected_trial.params = params
 
         self.preset_manager.save_presets_to_json(self.presets)
 
@@ -309,7 +315,6 @@ class PresetQueueWidget(QWidget):
         else:
             preset.trials.insert(new_index, trial)
         self.preset_manager.save_presets_to_json(self.presets)
-
 
 
 if __name__ == "__main__":

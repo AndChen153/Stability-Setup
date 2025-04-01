@@ -128,6 +128,13 @@ class TrialColumnWidget(QWidget):
     def _trial_edit(self, trial:Trial):
         custom_print(f"{trial} Trial edited")
         self.edit_requested.emit(self.selected_preset, trial)
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            widget = self.list_widget.itemWidget(item)
+            if widget and widget.trial == trial:
+                self.list_widget.setCurrentItem(item)
+                break
+
 
 class TrialRow(QWidget):
     delete_requested = Signal(Trial)

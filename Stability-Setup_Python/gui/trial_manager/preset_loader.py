@@ -44,7 +44,7 @@ class PresetManager:
 
         loaded_presets = []
 
-        for ID, data in reversed(presets_data.items()):
+        for ID, data in presets_data.items():
             trial_name = data["trial_name"]
             trials = data["trial"]
 

@@ -19,7 +19,6 @@ from helper.global_helpers import custom_print
 from gui.trial_manager.preset_data_class import Preset, Trial
 from gui.trial_manager.dragable_list import DraggableListWidget
 
-
 class PresetColumnWidget(QWidget):
     preset_selected = Signal(Preset)
     preset_added = Signal(Preset)
@@ -28,6 +27,7 @@ class PresetColumnWidget(QWidget):
      # Emitted AFTER a preset's name has been validated and is ready to be changed
     preset_renamed = Signal(Preset, str)
     preset_moved = Signal(Preset, int)
+    preset_start = Signal(Preset)
 
     def __init__(self, presets):
         super().__init__()
@@ -74,14 +74,14 @@ class PresetColumnWidget(QWidget):
         row_widget.edit_button_clicked.connect(self.handle_row_clicked_or_selected)
         row_widget.name_changed.connect(self._handle_preset_name_edit)
         row_widget.delete_requested.connect(self._handle_preset_removal)
-
+        row_widget.start_button_clicked.connect(self._handle_preset_start)
 
         new_item.setSizeHint(row_widget.sizeHint())
 
         # If no explicit index is provided, insert before the last item (the add button)
         if insert_index is None:
             count = self.list_widget.count()
-            insert_index = count - 1 if count > 0 else 0
+            insert_index = count
 
         self.list_widget.insertItem(insert_index, new_item)
         self.list_widget.setItemWidget(new_item, row_widget)
@@ -90,8 +90,6 @@ class PresetColumnWidget(QWidget):
 
 
     def handle_row_clicked_or_selected(self, item: QListWidgetItem):
-        """This method is called when any item in the list_widget is clicked."""
-
         widget = self.list_widget.itemWidget(item)
 
         if isinstance(widget, PresetRow):
@@ -107,7 +105,7 @@ class PresetColumnWidget(QWidget):
             item = self.list_widget.item(i)
             widget = self.list_widget.itemWidget(item)
             if widget and widget.preset == preset:
-                # Remove the item once deletion is confirmed.
+                # Remove the item
                 self.list_widget.takeItem(i)
                 break
 
@@ -118,7 +116,6 @@ class PresetColumnWidget(QWidget):
 
     @Slot()
     def _handle_add_request(self):
-        """Handles the signal from AddPresetRowWidget."""
         custom_print("Sending new preset signal")
         new_preset = Preset(name="New Preset") # Create with default vals
         # Emit the signal to notify the parent *before* adding visually
@@ -128,23 +125,22 @@ class PresetColumnWidget(QWidget):
 
     @Slot()
     def _handle_preset_name_edit(self, preset:Preset, name:str):
-        custom_print("Sending new preset signal")
-        # Emit the signal to notify the parent *before* adding visually
         self.preset_renamed.emit(preset, name)
 
     @Slot()
     def _handle_preset_removal(self, preset:Preset):
-        custom_print("Sending new preset signal")
-        # Emit the signal to notify the parent *before* adding visually
         self.preset_deleted.emit(preset)
 
-
-
+    @Slot(Preset)
+    def _handle_preset_start(self, preset:Preset):
+        custom_print(f"PresetRow: Start requested for '{preset.name}'")
+        self.preset_start.emit(preset)
 
 class PresetRow(QWidget):
     delete_requested = Signal(Preset)
     name_changed = Signal(Preset, str)
     edit_button_clicked = Signal(QListWidgetItem)
+    start_button_clicked = Signal(Preset)
 
 
     def __init__(self, preset:Preset, parent_list: QListWidget, list_item: QListWidgetItem):
@@ -179,6 +175,7 @@ class PresetRow(QWidget):
             print(f"Warning: Could not load icon: {start_icon_filepath}")
             self.start_button.setText("S")  # Fallback
         self.start_button.setToolTip("Start Preset")
+        self.start_button.clicked.connect(self._request_start)
 
         # --- Edit Button ---
         self.edit_button = QPushButton()
@@ -221,13 +218,12 @@ class PresetRow(QWidget):
                 self.parent_list.takeItem(index)
                 break
 
-    @Slot()  # Decorator indicating this is a slot
+    @Slot()
     def _emit_edit_button_signal(self):
         self.edit_button_clicked.emit(self.list_item)
 
     @Slot()
     def _handle_name_editing_finished(self):
-        """Handle text changes in the name editor."""
         new_name = self.name_edit.text().strip()
         if new_name and new_name != self.preset.name:
             custom_print(f"PresetRow: Name edit finished for '{self.preset.name}'. New potential name: '{new_name}'")
@@ -239,12 +235,16 @@ class PresetRow(QWidget):
 
     @Slot()
     def _emit_edit_button_signal(self):
-        """Internal slot to emit the custom signal with the stored list item for selection."""
         self.edit_button_clicked.emit(self.list_item)
 
     @Slot()
     def _request_delete(self):
-        """Emit signal indicating this row's preset should be deleted."""
         custom_print(f"PresetRow: Delete requested for '{self.preset.name}'")
         self.delete_requested.emit(self.preset)
+
+    @Slot()
+    def _request_start(self):
+        custom_print(f"PresetRow: Start requested for '{self.preset.name}'")
+        self.start_button_clicked.emit(self.preset)
+
 
