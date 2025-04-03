@@ -22,15 +22,13 @@ int val6;
 const int idAddress = 0;
 uint32_t uniqueID;
 
-extern const byte num_chars;
-
 // const byte num_chars = 32;
 char received_chars[num_chars];
 char temp_chars[num_chars]; // temporary array for use when parsing
-char mode_from_pc[num_chars] = {0};
+char mode_from_pc[MAX_MODE_LEN] = {0};
 
 // Perturb and Observe Variables
-float vset[8] = {0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6};
+float vset[8] = {0.0,0.0,0.0,0.0,0.0,0.0};
 volatile bool mppt_done = true;
 float voltage_starting_mppt = 0.0;
 float voltage_step_size_mppt = 0.000;
@@ -59,7 +57,6 @@ volatile bool constant_voltage_done = true;
 float constant_voltage = 0.0;
 
 volatile bool measurement_running = !scan_done || !constant_voltage_done || !mppt_done;
-// TODO: implement settling time
 // TODO: implement blinking for ID
 void setup(void)
 {

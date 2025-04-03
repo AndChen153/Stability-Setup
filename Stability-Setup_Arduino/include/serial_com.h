@@ -4,7 +4,8 @@
 
 #include <Arduino.h>
 
-static const byte num_chars = 64;
+const unsigned int num_chars = 200;
+const unsigned int MAX_MODE_LEN = 32;       // Max length for "scan", "mppt", etc.
 
 enum serialCommResult {
     NONE,

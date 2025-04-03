@@ -59,7 +59,6 @@ void perturbAndObserveClassic()
     for (int ID = 0; ID < 8; ++ID)
     {
         // Vset ---------------------------------------------------
-        vset[ID] = voltage_starting_mppt;
         setVoltage_V(vset[ID], ID);
     }
 
@@ -129,13 +128,6 @@ void perturbAndObserveClassic()
 
             prev_power[ID] = smoothed_power;
         }
-        for (int ID = 0; ID < 8; ++ID)
-        {
-            Serial.print(vset[ID], 3);
-            Serial.print(", ");
-        }
-        Serial.print("1");
-        Serial.println();
 
         Serial.print((millis() - start_millis) / 1000.0, 4);
         Serial.print(", ");
@@ -147,14 +139,6 @@ void perturbAndObserveClassic()
             Serial.print(", ");
         }
 
-        for (int ID = 0; ID < 8; ++ID)
-        {
-            // Serial.print((prev_power[ID]/1000) / (0.1 * area_of_collector_mppt*100, 4), 5);
-            // Serial.print(prev_power[ID], 5);
-            Serial.print((prev_power[ID] / 1000) / (0.1 * 0.0625)*100, 4);
-
-            Serial.print(", ");
-        }
         Serial.print(uniqueID);
 
         Serial.println("");

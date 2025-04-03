@@ -56,7 +56,19 @@ class PlotterPanel(QWidget):
         layout.addWidget(self.plot_container)
 
     def open_folder_dialog(self):
-        folder_path = QFileDialog.getExistingDirectory(self, "Select CSV Folder", "")
+        current_path = self.data_location_line_edit.text()
+
+        start_path = current_path
+        if not os.path.isdir(start_path):
+            # Fallback to the default folder if the current text is not a valid directory
+            start_path = self.default_folder
+
+        folder_path = QFileDialog.getExistingDirectory(
+            self,
+            "Select Data Folder",
+            start_path
+        )
+
         if folder_path:
             self.data_location_line_edit.setText(folder_path)
 

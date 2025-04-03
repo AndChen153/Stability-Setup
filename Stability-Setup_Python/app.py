@@ -55,6 +55,16 @@ from controller import arduino_assignment
 #     overall_min_time = min(time)
 # ValueError: min() arg is an empty sequence
 
+#PAPER
+#TODO: box plot for PCE between litos and my setup, 3-4 minute test
+# collect PCE with litos, my setup, then litos again to show difference between litos and my setup might be due to device degrading
+# PCE DATA: plot pce, current density, voltage, compared to time
+
+
+# TOP of plots: JV comparison 2 pixels, PCE comparison 2 pixels, Box plot comparison PCE between litos and stability setup
+# 2nd row: long panel which has stability for 1000 hours
+
+
 class MainWindow(QMainWindow):
     next_trial_signal = Signal(Trial)
 
@@ -97,6 +107,7 @@ class MainWindow(QMainWindow):
         self.stop_measurement_thread = threading.Event()
 
         self.multi_controller = MultiController()
+        self.multi_controller.started.connect(self.load_plotter_dir)
         self.multi_controller.finished.connect(self.after_run)
         self.folder_path = None
         self.estimated_devices = max(1, len(arduino_assignment.get()))
@@ -112,8 +123,13 @@ class MainWindow(QMainWindow):
         self.preset_queue.run_start.connect(self.run_handler)
         #TODO: add stop handler
 
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(script_dir)
+        data_folder_path = os.path.join(parent_dir, "data")
+
         self.plotter_panel = PlotterPanel(
-            default_folder=Constants.defaults.get(Mode.PLOTTER, [""])[0]
+            default_folder=data_folder_path
         )
 
         tabs = QTabWidget()
@@ -221,6 +237,7 @@ class MainWindow(QMainWindow):
 
     @Slot(Trial)
     def start_next_trial(self, trial: Trial):
+        self.multi_controller.reset_arduinos()
         self.running_mode = trial.trial_type
         self.run_action(trial.trial_type, trial.params)
 
@@ -260,6 +277,7 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(0, lambda t=trial: self.next_trial_signal.emit(t))
         else:
             # Preset finished
+            #TODO: why this tiggers every time
             custom_print(f"No trials left, finished {self.running_preset} {self.running_mode}")
             self.running_mode = None
             QTimer.singleShot(0, self.stop_marquee_timer)
@@ -270,20 +288,19 @@ class MainWindow(QMainWindow):
             )
             self.running_preset = None
 
+    def load_plotter_dir(self):
+        self.plotter_panel.data_location_line_edit.setText(self.multi_controller.trial_dir)
 
     @Slot()
     def stop_marquee_timer(self):
         self.marquee_timer.stop()
         self.status_bar.clearMessage()
 
-    def stop_action(self, mode: Mode):
-        custom_print(
-            f"Stop button clicked on page: {Constants.run_modes.get(mode, 'Unknown')}"
-        )
+    def stop_action(self, mode: Mode = None):
+        custom_print("Stopping Actions")
         self.stop_measurement_thread.set()
         if self.multi_controller is not None:
             self.multi_controller.run(Mode.STOP)
-        self.running_left = False
 
     def on_csv_changed(self, path):
         custom_print(f"CSV file or folder changed: {path}")

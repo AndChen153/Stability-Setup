@@ -14,6 +14,7 @@ from helper.global_helpers import custom_print
 from PySide6.QtCore import QObject, Signal, Slot, Qt
 
 class MultiController(QObject):
+    started = Signal()
     finished = Signal()
     def __init__(self):
         super().__init__()
@@ -102,6 +103,11 @@ class MultiController(QObject):
         else:
             return True
 
+    def reset_arduinos(self):
+        for ID in self.controllers:
+            self.controllers[ID].disconnect()
+            self.controllers[ID].connect()
+
 
     def get_valid(self):
         return bool(self.assigned_connected_arduinos) or self.plotting_mode
@@ -151,7 +157,7 @@ class MultiController(QObject):
             if command == Mode.SCAN:
                 target = lambda: self.controllers[ID].scan(**kwargs)
             elif command == Mode.MPPT:
-                target = lambda: self.controllers[ID].mppt("", **kwargs)
+                target = lambda: self.controllers[ID].mppt(**kwargs)
             elif command == Mode.STOP:
                 custom_print(f"STOPPING SINGLE CONTROLLER {ID}")
             elif not (command == Mode.STOP):
@@ -167,6 +173,7 @@ class MultiController(QObject):
                 self.active_threads[ID] = thread
 
     def monitor_controllers(self):
+        self.started.emit()
         while True:
             with self.lock:
                 finished_ids = [

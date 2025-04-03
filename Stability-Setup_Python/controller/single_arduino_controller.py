@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 import threading
 import logging
 
-# TODO: stop measurement once PCE is below 50% of max
 class SingleController:
     def __init__(
         self,
@@ -45,7 +44,7 @@ class SingleController:
         self.arduino_ids = arduino_ids
 
         self.mode = ""
-        self.scan_filename = ""
+        self.scan_filepath = None
         self.file_path = ""
         self.mppt_compressed_file_path = ""
 
@@ -106,7 +105,7 @@ class SingleController:
         except Exception as e:
             custom_print(f"Failed to reset Arduino: {e}")
 
-    def send_command(self):
+    def _send_command(self):
         sent = False
         measurement_started = False
         line = ""
@@ -152,7 +151,9 @@ class SingleController:
             + "__"
             + "scan.csv"
         )
+
         self.file_path = os.path.join(self.trial_dir, file_name)
+        self.scan_filepath = self.file_path
         self.mode = Mode.SCAN
         self.command = "scan," + ",".join(params) + ","
         custom_print(f"Starting scan with parameters: {self.command}")
@@ -168,12 +169,12 @@ class SingleController:
         self.scan_arr_width = len(header_arr)
 
         # Run measurement
-        self.send_command()
+        self._send_command()
         self._create_array(params, header_arr)
         self._save_data()
         self._read_data()
 
-    def mppt(self, scan_file_name, params):
+    def mppt(self, params):
         file_name_base = (
             self.date
             + self.trial_name
@@ -185,35 +186,40 @@ class SingleController:
         self.file_path = os.path.join(self.trial_dir, file_name_base+ "mppt.csv")
         self.mppt_compressed_file_path = os.path.join(self.trial_dir, file_name_base+ "compressedmppt.csv")
 
-        self.scan_filename = scan_file_name
         self.mode = Mode.MPPT
 
-        # if self.scan_filename:
-        #     VMPP = self.find_vmpp(scan_file_name)
-        #     custom_print(f"PC: VMPP-> {VMPP}")
+        entered_V = params[0]
+        if self.scan_filepath:
+            starting_V = self.find_starting_voltage(self.scan_filepath)
+            starting_V = [str(val) for val in starting_V]
+            custom_print(f"Starting V -> {starting_V}")
+        else:
+            starting_V = [entered_V for i in range(8)]
 
-        # VMPP = "0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6"
-        # TODO: reimplement vmpp
+        temp_params = list(params)
+        cell_area_idx = Constants.params[Mode.MPPT].index("Cell Area (mm^2)")
+        temp_params.pop(cell_area_idx)
+        temp_params.pop(0)
 
-        self.command = "mppt," + ",".join(params) + ","
+        mppt_params = starting_V + temp_params
+
+        custom_print(mppt_params)
+
+        self.command = "mppt," + ",".join(mppt_params) + ","
 
         # Create header array
         voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
         amperage_lambda = lambda value: "Pixel_" + str(value + 1) + " mA"
-        power_lambda = lambda y: "Pixel_" + str(y) + " PCE"
         header_arr = ["Time"]
-        pce_header = []
         header_arr.extend(
             [f(value) for value in range(8) for f in (voltage_lambda, amperage_lambda)]
         )
-        pce_header.extend([power_lambda(value) for value in range(8)])
-        header_arr.extend(pce_header)
         header_arr.append("ARUDUINOID")
         self.mppt_arr_width = len(header_arr)
 
         # Run measurement
         custom_print(f"Starting MPPT with parameters:  {self.command}")
-        self.send_command()
+        self._send_command()
         self._create_array(params, header_arr)
         self._save_data()
         self._read_data()
@@ -343,6 +349,32 @@ class SingleController:
 
         return vmpp_encode_string
 
+    def find_starting_voltage(self, scan_filename):
+        arr = np.loadtxt(scan_filename, delimiter=",", dtype=str)
+        header_row = np.where(arr == "Time")[0][0]
+
+        meta_data = {}
+        for data in arr[:header_row, :2]:
+            meta_data[data[0]] = data[1]
+
+        arr = arr[header_row + 1 :, :]
+
+        data = arr[:, 2:-1]
+
+        pixel_V = data[:, ::2][:, ::-1].astype(float)
+        pixel_mA = data[:, 1::2][:, ::-1].astype(float)
+        voc = []
+        for pixel_idx in range(8):
+            voc_idx = min(
+                    range(len(pixel_mA[:, pixel_idx])),
+                    key=lambda x: abs(pixel_mA[:, pixel_idx][x]),
+                )
+            starting_V = Constants.starting_voltage_multipler*float(pixel_V[voc_idx, pixel_idx])
+            starting_V = round(starting_V, 2)
+            voc.append(starting_V)
+
+        return voc
+
     def printTime(self):
         end = time.time()
         total_time = end - self.start
@@ -389,53 +421,3 @@ class SingleController:
             SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status
         )
         self._read_data()
-
-
-def find_vmpp(scan_file_name):
-
-    arr = np.loadtxt(scan_file_name, delimiter=",", dtype=str)
-    scan_file_name = scan_file_name.split("\\")
-    # custom_print(arr)
-    headers = arr[6, :]
-    headerDict = {value: index for index, value in enumerate(headers)}
-    # custom_print(headerDict)
-    arr = arr[7:, :]
-    length = len(headers) - 1
-    # custom_print(length)
-
-    jv_list = []
-
-    for i in range(2, length):
-        jv_list.append(arr[:, i])
-
-    j_list = []  # current
-    v_list = []  # voltage
-    for i in range(0, len(jv_list), 2):
-        # custom_print(i)
-        j_list.append([float(j) for j in jv_list[i + 1]])
-        v_list.append([float(x) for x in jv_list[i]])
-        # jv_list[i+1] = [float(x) / 0.128 for x in jv_list[i+1]]
-
-    j_list = np.array(j_list).T
-    v_list = np.array(v_list).T
-    pceList = j_list * v_list
-    vmpp_encode_string = ""
-    max_V_idx = np.argmax(pceList, axis=0)  # find index of max pce value
-
-    for i in range(len(max_V_idx) - 1):
-        vmpp_encode_string += (
-            str(v_list[max_V_idx[i], i]) + ","
-        )  # v_list is 84x32, vmaxIDx contains the i in 84 that is the best voltage per pixel
-
-    vmpp_encode_string += str(v_list[max_V_idx[len(max_V_idx) - 1], len(max_V_idx) - 1])
-
-    return vmpp_encode_string
-
-
-if __name__ == "__main__":
-    # scan_calcs(".\data\March-15-2023 goodTests\scanlightMar-15-2023 13_28_50.csv")
-    custom_print(
-        find_vmpp(
-            r"C:\Users\achen\Dropbox\code\Stability-Setup\data\Oct-27-2023 17_18_16\Oct-27-2023 17_18_26lightID0scan.csv"
-        )
-    )

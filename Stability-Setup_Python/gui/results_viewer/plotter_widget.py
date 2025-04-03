@@ -116,20 +116,16 @@ class PlotterWidget(QWidget):
             if "Time" not in header_dict:
                 custom_print(f"'Time' header not found in {csv_file}")
                 continue
-            pce_indices = [header_dict[key] for key in header_dict if "PCE" in key]
 
+            pixel_V = arr[:, 1::2][:, 0:8].astype(float)
+            pixel_mA = arr[:, 2::2][:, 0:8].astype(float)
             time = np.array(arr[:, header_dict["Time"]]).astype("float")
+            if len(time) < 1:
+                return
 
-            # Convert any non-numeric values.
-            pce_list = np.array(arr)
-            for i in range(len(pce_list)):
-                pce_list[i] = [
-                    float(j) if j.strip() not in ["ovf", "nan"] else 0.0
-                    for j in pce_list[i]
-                ]
+            cell_area = float(meta_data["Cell Area (mm^2)"])
 
-            pce_list = pce_list.astype(float)
-            data = pce_list[:, pce_indices]
+            data = ((pixel_V*pixel_mA/1000) / (0.1*cell_area))*100
 
             # Sample data if necessary
             if len(time) > 5000:
@@ -151,6 +147,13 @@ class PlotterWidget(QWidget):
             else:
                 overall_max_pce = max(overall_max_pce, np.max(data))
 
+            if overall_max_time > 60:
+                time /= 60.0
+                overall_max_time /= 60
+                ax.set_xlabel("Time [hrs]")
+            else:
+                ax.set_xlabel("Time [min]")
+
             # Plot each pixel.
             NUM_PIXELS = data.shape[1]
             for i in range(NUM_PIXELS):
@@ -167,11 +170,6 @@ class PlotterWidget(QWidget):
         ax.set_xlim(overall_min_time * 0.99, overall_max_time * 1.01)
         ax.set_ylim(0, overall_max_pce*1.15)
         ax.set_title(plot_title)
-        if overall_max_time > 60:
-            time /= 60.0
-            ax.set_xlabel("Time [hrs]")
-        else:
-            ax.set_xlabel("Time [min]")
         ax.set_ylabel("PCE [%]")
         ax.grid(True)
 

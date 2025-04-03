@@ -10,8 +10,8 @@ class Mode(Enum):
 
 class Constants:
     time_param = "Measurement Time"
-    light_mode_text = "Light"
-    dark_mode_text = "Dark"
+    light_mode_text = "1"
+    dark_mode_text = "0"
     scan_mode_param = "Scan Mode"
     trial_manager = "Trial Manager"
     results_viewer = "Results Viewer"
@@ -81,6 +81,7 @@ class Constants:
         ],
     }
     plotModes = [Mode.PLOTTER]
+    starting_voltage_multipler = 0.8
     line_per_save = 20
     serial_baud_rate = 115200
     kbPerDataPoint = 0.15
