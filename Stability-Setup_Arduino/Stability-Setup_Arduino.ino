@@ -22,9 +22,11 @@ int val6;
 const int idAddress = 0;
 uint32_t uniqueID;
 
+const int relayPin = 7;
+
 // const byte num_chars = 32;
 char received_chars[num_chars];
-char temp_chars[num_chars]; // temporary array for use when parsing
+// char temp_chars[num_chars]; // temporary array for use when parsing
 char mode_from_pc[MAX_MODE_LEN] = {0};
 
 // Perturb and Observe Variables
@@ -83,6 +85,9 @@ void setup(void)
     Serial.print("HW_ID:");
     Serial.println(uniqueID, HEX);
 
+    pinMode(relayPin, OUTPUT);
+    digitalWrite(relayPin, LOW);
+
     // Initialize sensors
     for (uint8_t ID = 0; ID < 8; ID++)
     {
@@ -135,6 +140,7 @@ void loop(void)
         scan(SCAN_FORWARD);
         scan(SCAN_BACKWARD);
         scan_done = true;
+        light_control(0);
         Serial.println("Done!");
     }
     else if (!mppt_done)
@@ -145,9 +151,11 @@ void loop(void)
         measurements_per_step_mppt = val4;
         measurement_delay_mppt = val5;
         measurement_time_mins_mppt = val6;
+        light_control(1);
 
         perturbAndObserveClassic();
         mppt_done = true;
+        light_control(0);
         Serial.println("Done!");
     }
     else if (!constant_voltage_done)

@@ -90,7 +90,7 @@ class PlotterPanel(QWidget):
                 child.widget().deleteLater()
 
         plot_tab_widget = QTabWidget()
-        for title, filepaths in plot_groups.items():
+        for title, filepaths in reversed(plot_groups.items()):
             plotter_widget = PlotterWidget()
             plotter_widget.update_plot(title, filepaths)
             plot_tab_widget.addTab(plotter_widget, title)

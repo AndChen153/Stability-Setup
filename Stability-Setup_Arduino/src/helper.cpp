@@ -4,6 +4,8 @@
 #include "../include/serial_com.h"
 #include <Arduino.h>
 
+extern int relayPin;
+
 void light_control(int light_status)
 {
     if (light_status == 0)
@@ -12,6 +14,7 @@ void light_control(int light_status)
     }
     else if (light_status == 1)
     {
+        digitalWrite(relayPin, HIGH);
         Serial.println("Turn light on");
     }
 }

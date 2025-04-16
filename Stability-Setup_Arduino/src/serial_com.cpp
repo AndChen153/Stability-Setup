@@ -2,7 +2,7 @@
 #include "../include/serial_com.h"
 
 extern char received_chars[num_chars];
-extern char temp_chars[num_chars];
+// extern char temp_chars[num_chars];
 extern char mode_from_pc[MAX_MODE_LEN];
 
 extern float val1;
@@ -33,10 +33,8 @@ serialCommResult recvWithLineTermination()
         // Copy the string to received_chars buffer
         incomingString.toCharArray(received_chars, num_chars);
 
-        // Copy to temp_chars for parsing
-        strcpy(temp_chars, received_chars);
 
-        char *token = strtok(temp_chars, ",");
+        char *token = strtok(received_chars, ",");
         // Parse mode (a string)
         if (token != NULL)
         {
@@ -104,7 +102,8 @@ serialCommResult recvWithLineTermination()
         {
             Serial.print("Recieved Params: ");
             showParsedData();
-            Serial.println(temp_chars);
+            // showParsedData();
+            // Serial.println(received_chars);
             return serialCommResult::START;
         }
     }

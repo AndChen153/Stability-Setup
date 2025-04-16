@@ -32,28 +32,11 @@ from controller import arduino_assignment
 # TODO: fix light/dark button
 # TODO: Add metrics for JV scan
 # TODO: add box plots
-# TODO: queue up measurements
-# TODO: Create saved measurement combinations
 
-# TODO: fix arduino mppt cell area value
 # TODO: better control over which arduino is running what, i.e. 8 total devices, run 8, stop 4, start 4 again
 # TODO: dynamic visualization of data, live plotting
 # TODO: live control over arduino settings, i.e. change mppt step size mid trial
-# TODO: dynamic step size optimization, gradient descent, optimizer algorithm that tries to find the maximum pce
 # TODO: fix incosistencies between plotter widget and raw data
-
-# TODO: fix null time error when plotting empty plot:
-
-# Traceback (most recent call last):
-#   File "c:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Python\gui\plotter_panel.py", line 72, in create_plots
-#     self.update_plot_tabs(plot_groups)
-#   File "c:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Python\gui\plotter_panel.py", line 88, in update_plot_tabs
-#     plotter_widget.update_plot(title, filepaths)
-#   File "c:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Python\gui\plotter_widget.py", line 61, in update_plot
-#     self._plot_mppt(ax, csv_files, plot_title)
-#   File "c:\Users\MSE\Documents\GitHub\Stability-Setup\Stability-Setup_Python\gui\plotter_widget.py", line 144, in _plot_mppt
-#     overall_min_time = min(time)
-# ValueError: min() arg is an empty sequence
 
 #PAPER
 #TODO: box plot for PCE between litos and my setup, 3-4 minute test
@@ -64,6 +47,10 @@ from controller import arduino_assignment
 # TOP of plots: JV comparison 2 pixels, PCE comparison 2 pixels, Box plot comparison PCE between litos and stability setup
 # 2nd row: long panel which has stability for 1000 hours
 
+
+#box plots: fill factor, jsc, voc, pce (From scan), stabilized PCE
+
+# long term stability
 
 class MainWindow(QMainWindow):
     next_trial_signal = Signal(Trial)

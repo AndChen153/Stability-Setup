@@ -81,7 +81,7 @@ class Constants:
         ],
     }
     plotModes = [Mode.PLOTTER]
-    starting_voltage_multipler = 0.8
+    starting_voltage_multipler = 0.85
     line_per_save = 20
     serial_baud_rate = 115200
     kbPerDataPoint = 0.15
