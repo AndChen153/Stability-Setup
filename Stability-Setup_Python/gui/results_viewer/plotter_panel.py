@@ -73,6 +73,7 @@ class PlotterPanel(QWidget):
             self.data_location_line_edit.setText(folder_path)
 
     def create_plots(self):
+        custom_print("Create Plot Button Pushed")
         folder_path = self.data_location_line_edit.text().strip()
         if os.path.isdir(folder_path):
             plot_groups = self.get_plot_groups(folder_path)
@@ -108,6 +109,7 @@ class PlotterPanel(QWidget):
                 if f.lower().endswith(Constants.fileTypes)
             ]
         )
+        custom_print(csv_files)
 
         file_groups_dict = {}
 
@@ -117,7 +119,9 @@ class PlotterPanel(QWidget):
                 "Selected file location has no plottable files")
             return file_groups_dict
         for file in csv_files:
+            custom_print(file)
             head, tail = os.path.split(file)
+            custom_print(head, tail)
 
             # use compressed file if above certain file size threshold
             if tail.endswith("__mppt.csv"):
@@ -125,10 +129,13 @@ class PlotterPanel(QWidget):
                 if file_size_kb > Constants.plottingKBThreshold:
                     continue
             elif tail.endswith("__compressedmppt.csv"):
-                filename = file.replace("__compressedmppt", "__mppt")
-                file_size_kb = os.path.getsize(filename) / 1024
-                if file_size_kb < Constants.plottingKBThreshold:
-                    continue
+                try:
+                    filename = file.replace("__compressedmppt", "__mppt")
+                    file_size_kb = os.path.getsize(filename) / 1024
+                    if file_size_kb < Constants.plottingKBThreshold:
+                        continue
+                except:
+                    custom_print("no full mppt file found")
 
             params = tail.split("__")
             # Assume the last part before the extension indicates the file type
@@ -137,5 +144,7 @@ class PlotterPanel(QWidget):
             test_name = params[1] if "ID" not in params[1] else ""
             name_parts = [val for val in [test_name, params[0], filetype] if val]
             plot_name = " ".join(name_parts)
+            custom_print(plot_name)
             file_groups_dict.setdefault(plot_name, []).append(file)
+        custom_print(file_groups_dict)
         return file_groups_dict

@@ -37,6 +37,8 @@ from controller import arduino_assignment
 # TODO: dynamic visualization of data, live plotting
 # TODO: live control over arduino settings, i.e. change mppt step size mid trial
 # TODO: fix incosistencies between plotter widget and raw data
+# TODO: add notification whenever anything stops running
+# TODO: fix trial titles
 
 #PAPER
 #TODO: box plot for PCE between litos and my setup, 3-4 minute test

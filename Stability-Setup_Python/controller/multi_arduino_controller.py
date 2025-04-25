@@ -107,6 +107,7 @@ class MultiController(QObject):
         for ID in self.controllers:
             self.controllers[ID].disconnect()
             self.controllers[ID].connect()
+            #TODO: thread
 
 
     def get_valid(self):
@@ -154,6 +155,7 @@ class MultiController(QObject):
                 del self.active_threads[ID]
 
             # Define the target function based on the command
+            # TODO: put date here
             if command == Mode.SCAN:
                 target = lambda: self.controllers[ID].scan(**kwargs)
             elif command == Mode.MPPT:
