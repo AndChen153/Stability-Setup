@@ -52,8 +52,8 @@ uint16_t dac_val = 0;
 
 
 float voltage_Range_Scan = 0.0;
-float voltage_step_size_scan = 0.000;
-int measurements_per_step_scan = 0;
+float scan_step_size = 0.000;
+int scan_read_count = 0;
 int measurement_Delay_Scan = 0;
 
 
@@ -111,8 +111,8 @@ void loop() {
     if (!scanDone) {
         Serial.println("Scanning");
         voltage_Range_Scan = val1;
-        voltage_step_size_scan = val2;
-        measurements_per_step_scan = val3;
+        scan_step_size = val2;
+        scan_read_count = val3;
         measurement_Delay_Scan = val4;
         scan("backward");
         scan("forward");
@@ -279,11 +279,11 @@ void zero() {
 void scan(String dir) {
     float upperLimit;
     if (dir == "backward") {
-        voltage_val = voltage_Range_Scan + voltage_step_size_scan;
-        upperLimit = voltage_Range_Scan + voltage_step_size_scan;
+        voltage_val = voltage_Range_Scan + scan_step_size;
+        upperLimit = voltage_Range_Scan + scan_step_size;
     } else if (dir == "forward") {
         voltage_val = 0;
-        upperLimit = voltage_Range_Scan - voltage_step_size_scan;
+        upperLimit = voltage_Range_Scan - scan_step_size;
     }
 
     dac_A.setVoltage(convert_to_12bit(voltage_val), false);
@@ -291,11 +291,11 @@ void scan(String dir) {
 
 
     while (upperLimit >= voltage_val && voltage_val >= 0) {
-        if (volt_step_count > measurements_per_step_scan) {
+        if (volt_step_count > scan_read_count) {
             if (dir == "backward") {
-                voltage_val -= voltage_step_size_scan;
+                voltage_val -= scan_step_size;
             } else if (dir == "forward") {
-                voltage_val += voltage_step_size_scan;
+                voltage_val += scan_step_size;
             }
             dac_A.setVoltage(convert_to_12bit(voltage_val), false);
             delay(measurement_Delay_Scan);                    //settling time

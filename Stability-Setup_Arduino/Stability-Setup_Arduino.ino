@@ -1,6 +1,4 @@
 // main.ino
-// version 1.2
-
 #include <EEPROM.h>
 #include <Wire.h>
 #include <Adafruit_INA219.h>
@@ -11,32 +9,26 @@
 #include "include/helper.h"
 #include "include/measurement.h"
 
-// Global variables
-float val1;
-float val2;
-int val3;
-int val4;
-int val5;
-int val6;
-
 const int idAddress = 0;
 uint32_t uniqueID;
 
-const int relayPin = 7;
+bool init_success = true;
 
-// const byte num_chars = 32;
-char received_chars[num_chars];
-// char temp_chars[num_chars]; // temporary array for use when parsing
-char mode_from_pc[MAX_MODE_LEN] = {0};
+byte relayPin = 7;
+
+char received_chars[NUM_CHARS];
+char str_param[MAX_MODE_LEN];
+char mode[MAX_MODE_LEN];
 
 // Perturb and Observe Variables
-float vset[8] = {0.0,0.0,0.0,0.0,0.0,0.0};
 volatile bool mppt_done = true;
-float voltage_starting_mppt = 0.0;
-float voltage_step_size_mppt = 0.000;
-int measurement_delay_mppt = 0;
-int measurements_per_step_mppt = 0;
-unsigned long measurement_time_mins_mppt = 0;
+
+float vset[8] = {0.0,0.0,0.0,0.0,0.0,0.0};
+float mppt_step_size_V = 0.000;
+int mppt_measurements_per_step = 0;
+int mppt_delay = 0;
+int mppt_measurement_interval = 0;
+unsigned long mppt_time_mins = 0;
 
 // Scan Variables
 volatile bool scan_done = true;
@@ -44,15 +36,12 @@ float avg_volt[8];
 float avg_curr[8];
 int volt_step_count = 0;
 float voltage_val = 0;
-uint16_t dac_val = 0;
-float voltage_range_scan = 0.0;
-float voltage_step_size_scan = 0.000;
-int measurements_per_step_scan = 0;
-int measurement_rate_scan = 0;
+
+float scan_range = 0.0;
+float scan_step_size = 0.000;
+int scan_read_count = 0;
+int scan_rate = 0;
 int light_status = 0;
-
-extern float area_of_collector_mppt = 0.0;
-
 
 // Constant Voltage Variables
 volatile bool constant_voltage_done = true;
@@ -98,45 +87,41 @@ void setup(void)
     {
         setupSensor_DAC(ID);
     }
-
-    Serial.println("");
-    Serial.println("Arduino Ready");
+    if (init_success){
+        Serial.println("Arduino Ready");
+    }
+    else {
+        Serial.println("Sensor Initialization Failed. Please Check Connection.");
+    }
 }
 
 void loop(void)
 {
-    zero();
+    measurement_running = !scan_done || !constant_voltage_done || !mppt_done;
     if (recvWithLineTermination() == serialCommResult::START)
     {
         zero();
 
-        String mode = String(mode_from_pc);
         Serial.println("Measurement Started");
 
-        if (mode.equals("scan"))
+        if (strcmp(mode, "scan") == 0)
         {
             scan_done = false;
         }
-        else if (mode.equals("mppt"))
+        else if (strcmp(mode, "mppt") == 0)
         {
             mppt_done = false;
         }
-        else if (mode.equals("constantVoltage"))
+        else if (strcmp(mode, "scan") == 0)
         {
             constant_voltage_done = false;
         }
+        measurement_running = !scan_done || !constant_voltage_done || !mppt_done;
     }
 
     if (!scan_done)
     {
-        voltage_range_scan = val1;
-        voltage_step_size_scan = val2;
-        area_of_collector_mppt = val3;
-        measurements_per_step_scan = val4;
-        measurement_rate_scan = val5;
-        light_status = val6;
         light_control(light_status);
-
         scan(SCAN_FORWARD);
         scan(SCAN_BACKWARD);
         scan_done = true;
@@ -145,14 +130,7 @@ void loop(void)
     }
     else if (!mppt_done)
     {
-        voltage_starting_mppt = val1;
-        voltage_step_size_mppt = val2;
-        area_of_collector_mppt = val3;
-        measurements_per_step_mppt = val4;
-        measurement_delay_mppt = val5;
-        measurement_time_mins_mppt = val6;
         light_control(1);
-
         perturbAndObserveClassic();
         mppt_done = true;
         light_control(0);
@@ -160,10 +138,8 @@ void loop(void)
     }
     else if (!constant_voltage_done)
     {
-        constant_voltage = val1;
-        measurements_per_step_scan = val3;
         setConstantVoltage();
-        constant_voltage_done = true;
+    constant_voltage_done = true;
         Serial.println("Done!");
     }
 }

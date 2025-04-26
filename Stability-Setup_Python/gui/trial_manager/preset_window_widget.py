@@ -59,7 +59,7 @@ class PresetQueueWidget(QWidget):
         min_column_width_presets = 270
         self.preset_column.setMinimumWidth(min_column_width_presets)
 
-        self.param_tab = SetupTab(None, [])
+        self.param_tab = SetupTab(None, {})
 
         self.layout = QHBoxLayout(self)
         self.preset_column.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -86,7 +86,7 @@ class PresetQueueWidget(QWidget):
                 self.layout.removeWidget(self.param_tab)
             self.param_tab.deleteLater()
             if reset:
-                self.param_tab = SetupTab(None, [])
+                self.param_tab = SetupTab(None, {})
                 self.layout.addWidget(self.param_tab, 1)
             else:
                 self.param_tab = None
@@ -144,7 +144,7 @@ class PresetQueueWidget(QWidget):
 
             self.presets.remove(
                 preset_to_delete
-            )  # Assumes Preset has __eq__ or object identity works
+            )  # Preset has __eq__
 
             self.preset_column.on_preset_deletion_confirmed(preset_to_delete)
             custom_print(
@@ -291,7 +291,7 @@ class PresetQueueWidget(QWidget):
         self.layout.addWidget(self.param_tab, 1)
 
     @Slot(list)
-    def handle_trial_value_edit(self, params: list[str]):
+    def handle_trial_value_edit(self, params: dict[str, str]):
         custom_print(
             f"PresetQueueWidget: Set new params: {params}"
         )

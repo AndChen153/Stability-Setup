@@ -30,6 +30,7 @@ void setupSensor_DAC(uint8_t ID)
     {
         Serial.print("Failed to find MCP4725 at 0x");
         Serial.println(DAC_I2C + ID, HEX);
+        init_success = false;
     }
     // else
     // {
@@ -58,6 +59,7 @@ void setupSensor_ADC(uint8_t ID)
     {
         Serial.print("Failed to find INA219 at 0x");
         Serial.println(ADC_I2C + ID, HEX);
+        init_success = false;
     }
     // else
     // {

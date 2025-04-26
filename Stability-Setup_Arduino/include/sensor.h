@@ -7,9 +7,8 @@
 
 #define ADC_I2C 0x40
 #define DAC_I2C 0x60
-
-const float R = 10.f;
-const float VDD = 3.3f;
+#define VDD 3.3     // Supply voltage (V) for DAC conversion calculation
+#define R 10
 
 #include <Arduino.h>
 #include <Adafruit_INA219.h>
@@ -24,6 +23,7 @@ extern float current_mA;
 extern float load_voltage;
 extern float power_mW;
 extern float current_mA_Flipped;
+extern bool init_success;
 
 void setupSensor_ADC(uint8_t ID);
 void setupSensor_DAC(uint8_t ID);

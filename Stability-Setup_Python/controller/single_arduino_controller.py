@@ -13,13 +13,15 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import threading
+import copy
 import logging
+
+starting_voltage_multipler = 0.6
 
 class SingleController:
     def __init__(
         self,
         COM: str,
-        SERIAL_BAUD_RATE: int,
         trial_name: str,
         trial_dir: str,
         arduino_ids,
@@ -30,7 +32,6 @@ class SingleController:
         COM : str
             com port to communicate with arduino
             typically "COM5" or "COM3"
-        SERIAL_BAUD_RATE : str
             serial rate to communicate with arduino
             set to 115200 in arduino code
         """
@@ -39,7 +40,7 @@ class SingleController:
         self.reading_lock = threading.Lock()
         self.write_lock = threading.Lock()
         self.should_run = True
-        self.baud_rate = SERIAL_BAUD_RATE
+        self.baud_rate = 115200
         self.run_finished = False
         self.arduino_ids = arduino_ids
 
@@ -59,6 +60,7 @@ class SingleController:
         self.mppt_arr_width = 0
 
     def connect(self):
+        failed_connect = False
         try:
             self.ser = serial.Serial(self.port, self.baud_rate, timeout=1)
             self.reset_arduino()
@@ -76,14 +78,22 @@ class SingleController:
                         self.HW_ID = line.split(":")[-1]
                         if self.HW_ID in self.arduino_ids:
                             self.arduinoID = str(self.arduino_ids[self.HW_ID])
-                    if "Arduino Ready" in line:
+                    elif "Arduino Ready" in line:
                         done = True
+                    elif "Sensor Initialization Failed." in line:
+                        done = True
+                        failed_connect = True
             self.ser.reset_input_buffer()
 
         except serial.SerialException as e:
             custom_print(f"Failed to connect to {self.port}. Error: {e}")
             return ()
-        return (self.HW_ID, self.arduinoID)
+
+        if failed_connect:
+            self.disconnect()
+            return ()
+        else:
+            return (self.HW_ID, self.arduinoID)
 
     def disconnect(self):
         if self.ser is not None:
@@ -105,16 +115,33 @@ class SingleController:
         except Exception as e:
             custom_print(f"Failed to reset Arduino: {e}")
 
-    def _send_command(self):
-        sent = False
+    def _send_command(self, mode, params:dict[str, str]):
         measurement_started = False
+        # Create commands array to send to arduino one by one
+        # This is for easier management and less variables on arduino side
+        # add "\n" to indicate end of command
+        commands = [Constants.arduino_commands[mode] + ',null\n']
+        # translate param names to correct ID for arduino to understand
+        translation_dict = Constants.translation_dict[mode]
+        for key in params:
+            if key not in translation_dict:
+                continue
+            translated_key = str(translation_dict[key])
+            if key == Constants.mppt_voltage_range_param:
+                vset_arr = ",".join(params[key])
+                commands.append(translated_key + "," + vset_arr + '\n')
+            else:
+                commands.append(translated_key + "," + str(params[key]) + '\n')
+        commands.append("done \n")
         line = ""
-        while not sent:
+        custom_print("Sending Commands to Arduino: ", commands)
+        while commands:
             try:
                 with self.write_lock:
-                    self.ser.write(self.command.encode())  # send data to arduino
-                    custom_print(f"Sent Scan Start Command {self.command}")
-                    sent = True
+                    command = commands.pop(0)
+                    self.ser.write(command.encode())  # send data to arduino
+                    # custom_print(f"Sent to Arduino: {command}")
+                    time.sleep(0.1)
             except serial.SerialException as e:
                 custom_print(f"Communication error on {self.port}. Error: {e}")
                 break
@@ -131,11 +158,10 @@ class SingleController:
                 custom_print(f"Communication error on {self.port}. Error: {e}")
                 break
 
-    def scan(self, params):
-        light_idx = Constants.params[Mode.SCAN].index(Constants.scan_mode_param)
-        LIGHT_STATUS = int(params[light_idx])
+    def scan(self, params: dict[str, str]):
         custom_print("Scan Initiated")
 
+        LIGHT_STATUS = params[Constants.scan_mode_param]
         if LIGHT_STATUS == 0:
             LIGHT_STATUS = "dark"
         else:
@@ -155,8 +181,7 @@ class SingleController:
         self.file_path = os.path.join(self.trial_dir, file_name)
         self.scan_filepath = self.file_path
         self.mode = Mode.SCAN
-        self.command = "scan," + ",".join(params) + ","
-        custom_print(f"Starting scan with parameters: {self.command}")
+        custom_print(f"Starting scan with parameters: {params}")
 
         # Create header array
         voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
@@ -169,12 +194,12 @@ class SingleController:
         self.scan_arr_width = len(header_arr)
 
         # Run measurement
-        self._send_command()
+        self._send_command(Mode.SCAN, params)
         self._create_array(params, header_arr)
         self._save_data()
         self._read_data()
 
-    def mppt(self, params):
+    def mppt(self, params: dict[str, str]):
         file_name_base = (
             self.date
             + self.trial_name
@@ -187,25 +212,18 @@ class SingleController:
         self.mppt_compressed_file_path = os.path.join(self.trial_dir, file_name_base+ "compressedmppt.csv")
 
         self.mode = Mode.MPPT
-
-        entered_V = params[0]
+        copied_params = copy.deepcopy(params)
+        entered_V = copied_params[Constants.mppt_voltage_range_param]
         if self.scan_filepath:
-            starting_V = self.find_starting_voltage(self.scan_filepath)
-            starting_V = [str(val) for val in starting_V]
-            custom_print(f"Starting V -> {starting_V}")
+            try:
+                starting_V = self.find_starting_voltage(self.scan_filepath)
+                starting_V = [str(val) for val in starting_V]
+            except:
+                starting_V = [entered_V for i in range(8)]
         else:
             starting_V = [entered_V for i in range(8)]
 
-        temp_params = list(params)
-        cell_area_idx = Constants.params[Mode.MPPT].index("Cell Area (mm^2)")
-        temp_params.pop(cell_area_idx)
-        temp_params.pop(0)
-
-        mppt_params = starting_V + temp_params
-
-        custom_print(mppt_params)
-
-        self.command = "mppt," + ",".join(mppt_params) + ","
+        copied_params[Constants.mppt_voltage_range_param] = starting_V
 
         # Create header array
         voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
@@ -218,18 +236,24 @@ class SingleController:
         self.mppt_arr_width = len(header_arr)
 
         # Run measurement
-        custom_print(f"Starting MPPT with parameters:  {self.command}")
-        self._send_command()
-        self._create_array(params, header_arr)
+        custom_print(f"Starting MPPT with parameters:  {copied_params}")
+        self._send_command(Mode.MPPT, copied_params)
+        self._create_array(copied_params, header_arr)
         self._save_data()
         self._read_data()
 
     def _create_array(self, params, header_arr):
         num_params = len(params) + 2
         self.arr = np.empty([num_params, len(header_arr)], dtype="object")
-        for idx, param in enumerate(params):
-            self.arr[idx][0] = Constants.params[self.mode][idx]
-            self.arr[idx][1] = param
+        for idx, key in enumerate(params):
+            self.arr[idx][0] = key
+
+            if isinstance(params[key], (list, np.ndarray)):
+                value_to_store = " ".join(params[key])
+            else:
+                value_to_store = params[key]
+            self.arr[idx][1] = value_to_store
+
         self.arr[num_params - 2][0] = "Start Date"
         self.arr[num_params - 2][1] = self.date
         self.arr[num_params - 1] = header_arr
@@ -369,7 +393,7 @@ class SingleController:
                     range(len(pixel_mA[:, pixel_idx])),
                     key=lambda x: abs(pixel_mA[:, pixel_idx][x]),
                 )
-            starting_V = Constants.starting_voltage_multipler*float(pixel_V[voc_idx, pixel_idx])
+            starting_V = starting_voltage_multipler*float(pixel_V[voc_idx, pixel_idx])
             starting_V = round(starting_V, 2)
             voc.append(starting_V)
 

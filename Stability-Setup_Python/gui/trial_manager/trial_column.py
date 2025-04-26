@@ -70,7 +70,7 @@ class TrialColumnWidget(QWidget):
 
     def add_new_row(self, mode):
         """Callback for the add button to insert a new row."""
-        trial = Trial(mode, Constants.defaults[mode])
+        trial = Trial(mode, Constants.params[mode])
         self.add_row(trial)
         self._trial_created(trial)
 

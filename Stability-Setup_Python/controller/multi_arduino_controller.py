@@ -62,7 +62,6 @@ class MultiController(QObject):
             nonlocal unique_Arduino_ID
             controller = SingleController(
                 COM=COM,
-                SERIAL_BAUD_RATE=Constants.serial_baud_rate,
                 trial_name=self.trial_name,
                 trial_dir=self.trial_dir,
                 arduino_ids=self.arduino_ids,
@@ -113,7 +112,7 @@ class MultiController(QObject):
     def get_valid(self):
         return bool(self.assigned_connected_arduinos) or self.plotting_mode
 
-    def run(self, mode, params=[]):
+    def run(self, mode, params=dict[str, str]):
         """
         Runs a specified mode on all connected controllers.
         """

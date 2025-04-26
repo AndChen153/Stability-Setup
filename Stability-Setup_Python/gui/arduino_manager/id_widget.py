@@ -25,6 +25,7 @@ class IDWidget(QWidget):
 
     def __init__(self, json_file, parent=None):
         super().__init__(parent)
+        # set in other class
         self.connected_Arduino = []
         self.json_file = json_file
         self.data = {}  # This will hold only the "arduino_ids" section.
@@ -139,12 +140,12 @@ class IDWidget(QWidget):
 
         # Add header labels for clarity.
         connected_header = QLabel("Connected Arduinos ⓘ")
-        connected_header.setToolTip("Every connected Arduino must be assigned a unique ID number")
+        connected_header.setToolTip("Every Arduino must be assigned a unique ID number")
         connected_header.setStyleSheet("font-weight: bold;")
         connected_layout.addWidget(connected_header)
 
         disconnected_header = QLabel("Disconnected Arduinos ⓘ")
-        disconnected_header.setToolTip("Every connected Arduino must be assigned a unique ID number")
+        disconnected_header.setToolTip("Every Arduino must be assigned a unique ID number")
         disconnected_header.setStyleSheet("font-weight: bold;")
         disconnected_layout.addWidget(disconnected_header)
 

@@ -8,10 +8,12 @@ from PySide6.QtCore import Signal
 from constants import Mode, Constants
 from helper.global_helpers import custom_print
 
+kbPerDataPoint = 0.2
+
 class SetupTab(QWidget):
     # Signals to notify the parent (MainWindow) when a run or stop is requested.
-    valueChanged = Signal(list)
-    def __init__(self, mode:Mode, params: list[str], parent=None):
+    valueChanged = Signal(dict)
+    def __init__(self, mode:Mode, params: dict[str, str], parent=None):
         """
         :param mode: The mode (from Constants) for which this tab is built.
         """
@@ -19,7 +21,7 @@ class SetupTab(QWidget):
         if not Mode:
             return
         self.mode = mode
-        self.initial_params = list(params)
+        self.initial_params = params
         self.textboxes = []  # List of tuples: (parameter name, widget)
         self.run_button = None
         self.stop_button = None
@@ -42,9 +44,13 @@ class SetupTab(QWidget):
 
         # --- Build Parameter Fields ---
         if self.mode in Constants.params:
-            params = Constants.params[self.mode]
-            defaults = self.initial_params
-            for idx, (param, default) in enumerate(zip(params, defaults)):
+            if self.initial_params:
+                params = self.initial_params
+            else:
+                params = Constants.params[self.mode]
+
+            for idx, param in enumerate(Constants.params[self.mode]):
+                box_value = params[param]
                 if param == Constants.time_param:
                     # Build a container for time (with Mins/Hrs buttons)
                     container = QWidget()
@@ -53,19 +59,32 @@ class SetupTab(QWidget):
 
                     mins_button = QPushButton("Mins")
                     hrs_button = QPushButton("Hrs")
+
+                    button_width = 35
+                    mins_button.setFixedWidth(button_width)
+                    hrs_button.setFixedWidth(button_width)
                     time_line_edit = QLineEdit()
-                    time_line_edit.setText(default)
+
 
                     h_layout.addWidget(mins_button)
                     h_layout.addWidget(hrs_button)
                     h_layout.addWidget(time_line_edit)
 
-                    self.mppt_time_unit = "mins"
                     self.mppt_time_line_edit = time_line_edit
                     self.mppt_mins_button = mins_button
                     self.mppt_hrs_button = hrs_button
 
-                    mins_button.setEnabled(False)
+                    if params[Constants.time_unit] == "mins":
+                        self.mppt_time_unit = "mins"
+                        mins_button.setEnabled(False)
+                        time_line_edit.setText(box_value)
+                    elif params[Constants.time_unit] == "hrs":
+                        self.mppt_time_unit = "hrs"
+                        hrs_button.setEnabled(False)
+                        hours = float(box_value)/60
+                        time_line_edit.setText(str(hours))
+                    else:
+                        raise KeyError("Unknown time unit for MPPT")
                     mins_button.clicked.connect(self.switch_to_minutes)
                     hrs_button.clicked.connect(self.switch_to_hours)
                     time_line_edit.textChanged.connect(self.update_estimated_data_amount)
@@ -78,18 +97,20 @@ class SetupTab(QWidget):
                     # Build a toggle button for scan mode
                     self.toggle_button = QPushButton()
                     self.toggle_button.setCheckable(True)
-                    self.toggle_button.setText("Light")
-                    if default == "1":
+                    self.toggle_button.setText("Light On")
+                    if box_value == "1":
                         self.toggle_button.setChecked(True)
                     else:
                         self.toggle_button.setChecked(False)
                     self.toggle_button.clicked.connect(self.toggle_scan_mode)
                     form_layout.addRow(param, self.toggle_button)
                     self.textboxes.append((param, self.toggle_button))
+                elif param == Constants.time_unit:
+                    continue
                 else:
                     # Standard parameter field
                     line_edit = QLineEdit()
-                    line_edit.setText(default)
+                    line_edit.setText(box_value)
                     line_edit.textChanged.connect(self.handle_run)
                     form_layout.addRow(param, line_edit)
                     self.textboxes.append((param, line_edit))
@@ -103,7 +124,7 @@ class SetupTab(QWidget):
                 self.mppt_estimated_gb.setStyleSheet("QLineEdit { border: none; background-color: transparent; }")
                 self.update_estimated_data_amount()
                 form_layout.addRow("Estimated Data Amount", self.mppt_estimated_gb)
-                
+
         layout.addLayout(form_layout)
         # self.update_buttons()
 
@@ -125,7 +146,7 @@ class SetupTab(QWidget):
             if Delay_s == 0:
                 estimated = 0.0
             else:
-                estimated = Constants.kbPerDataPoint * Time_s / (Delay_s + 0.1)
+                estimated = kbPerDataPoint * Time_s / (Delay_s + 0.1)
             unit = "kb"
             if estimated > 1000000:
                 estimated = estimated / 1000000
@@ -145,30 +166,37 @@ class SetupTab(QWidget):
         if self.mppt_time_unit == "mins":
             return
         try:
-            current_value = float(self.mppt_time_line_edit.text())
-            new_value = int(current_value * 60)
-            self.mppt_time_line_edit.setText(str(new_value))
+            # current_value = float(self.mppt_time_line_edit.text())
+            # new_value = int(current_value * 60)
+            # self.mppt_time_line_edit.setText(str(new_value))
             self.mppt_time_unit = "mins"
             self.mppt_mins_button.setEnabled(False)
             self.mppt_hrs_button.setEnabled(True)
             self.update_estimated_data_amount()
+            self.handle_run()
         except ValueError:
             pass
+
+        custom_print("Switched to mins", self.mppt_time_unit, self.mppt_time_line_edit)
 
     def switch_to_hours(self):
         """Switch the time unit to hours."""
         if self.mppt_time_unit == "hrs":
             return
         try:
-            current_value = float(self.mppt_time_line_edit.text())
-            new_value = current_value / 60
-            self.mppt_time_line_edit.setText(str(new_value))
+            # current_value = float(self.mppt_time_line_edit.text())
+            # new_value = current_value / 60
+            # self.mppt_time_line_edit.setText(str(new_value))
             self.mppt_time_unit = "hrs"
             self.mppt_hrs_button.setEnabled(False)
             self.mppt_mins_button.setEnabled(True)
             self.update_estimated_data_amount()
+            self.handle_run()
         except ValueError:
             pass
+
+        custom_print("Switched to hrs", self.mppt_time_unit, self.mppt_time_line_edit)
+
 
     def update_buttons(self):
         """Update button enabled/disabled states (for now, run enabled and stop disabled)."""
@@ -191,22 +219,24 @@ class SetupTab(QWidget):
         Gather all parameters from the UI and emit the runRequested signal.
         The parent (MainWindow) should handle the actual measurement logic.
         """
-        params = []
+        params = {}
         for param, widget in self.textboxes:
             if param == Constants.time_param:
+                custom_print(param, widget.text(), self.mppt_time_unit)
                 time_text = widget.text()
                 if self.mppt_time_unit == "hrs":
                     Time_m = int(float(time_text)) * 60 if time_text else 0.0
                 else:
                     Time_m = int(float(time_text)) if time_text else 0.0
-                params.append(str(Time_m))
+                params[param] = str(Time_m)
+                params[Constants.time_unit] = self.mppt_time_unit
             elif self.mode == Mode.SCAN and param == "Scan Mode":
                 # Toggle state: checked means "0", unchecked means "1"
                 if self.toggle_button.isChecked():
-                    params.append("0")
+                    params[param] = "0"
                 else:
-                    params.append("1")
+                    params[param] = "1"
             else:
-                params.append(widget.text())
+                params[param] = widget.text()
 
         self.valueChanged.emit(params)

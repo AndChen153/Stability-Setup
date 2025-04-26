@@ -17,6 +17,9 @@ from gui.results_viewer.plotter_widget import PlotterWidget
 from helper.global_helpers import custom_print
 from constants import Constants
 
+fileTypes = ("scan.csv", "mppt.csv", "compressedmppt.csv")
+plottingKBThreshold = 4000
+
 class PlotterPanel(QWidget):
     def __init__(self, default_folder: str = "", parent=None):
         super().__init__(parent)
@@ -106,7 +109,7 @@ class PlotterPanel(QWidget):
             [
                 os.path.join(folder_path, f)
                 for f in os.listdir(folder_path)
-                if f.lower().endswith(Constants.fileTypes)
+                if f.lower().endswith(fileTypes)
             ]
         )
         custom_print(csv_files)
@@ -126,13 +129,13 @@ class PlotterPanel(QWidget):
             # use compressed file if above certain file size threshold
             if tail.endswith("__mppt.csv"):
                 file_size_kb = os.path.getsize(file) / 1024
-                if file_size_kb > Constants.plottingKBThreshold:
+                if file_size_kb > plottingKBThreshold:
                     continue
             elif tail.endswith("__compressedmppt.csv"):
                 try:
                     filename = file.replace("__compressedmppt", "__mppt")
                     file_size_kb = os.path.getsize(filename) / 1024
-                    if file_size_kb < Constants.plottingKBThreshold:
+                    if file_size_kb < plottingKBThreshold:
                         continue
                 except:
                     custom_print("no full mppt file found")

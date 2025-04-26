@@ -2,7 +2,7 @@ import uuid
 from constants import Mode, Constants
 
 class Trial:
-    def __init__(self, trial_type:Mode, params: list[str], id = None):
+    def __init__(self, trial_type:Mode, params: dict[str, str], id = None):
         """
         :param trial_type: A string, e.g. "Scan" or "mppt"
         :param params: A list of string parameters.

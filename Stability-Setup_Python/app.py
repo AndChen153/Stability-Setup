@@ -26,12 +26,13 @@ from gui.arduino_manager.id_widget import IDWidget
 from gui.results_viewer.plotter_panel import PlotterPanel
 from gui.trial_manager.preset_data_class import Preset, Trial
 from gui.trial_manager.preset_window_widget import PresetQueueWidget
-from gui.warning_popup import SelectionPopup
 from controller import arduino_assignment
 
 # TODO: fix light/dark button
 # TODO: Add metrics for JV scan
 # TODO: add box plots
+# TODO: limit measurements per mppt to account for measurement time
+# TODO: limit time to 1000 hours for millis wrap around
 
 # TODO: better control over which arduino is running what, i.e. 8 total devices, run 8, stop 4, start 4 again
 # TODO: dynamic visualization of data, live plotting
@@ -122,9 +123,9 @@ class MainWindow(QMainWindow):
         )
 
         tabs = QTabWidget()
-        tabs.addTab(self.preset_queue, Constants.trial_manager)
-        tabs.addTab(self.ID_widget, Constants.arduino_manager)
-        tabs.addTab(self.plotter_panel, Constants.results_viewer)
+        tabs.addTab(self.preset_queue, "Trial Manager")
+        tabs.addTab(self.ID_widget, "Arduino Manager")
+        tabs.addTab(self.plotter_panel, "Results Viewer")
 
         self.setCentralWidget(tabs)
 
@@ -155,9 +156,7 @@ class MainWindow(QMainWindow):
         )
 
         if not result:
-            for ID in self.multi_controller.unknownID:
-                self.ID_widget.data[ID] = -1
-            self.ID_widget.save_json()
+            custom_print("Failed Arduino Connection")
         self.ID_widget.connected_Arduino = self.multi_controller.connected_arduinos_HWID
         self.ID_widget.refresh_ui()
 
@@ -184,7 +183,7 @@ class MainWindow(QMainWindow):
             return
 
         if not result:
-            # Handle unknown IDs
+            # Init Failed, Handle unknown IDs
             custom_print(
                 "Initialization failed or found unknown Arduino IDs.",
                 self.multi_controller.arduino_ids,
