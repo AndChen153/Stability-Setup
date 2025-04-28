@@ -27,15 +27,15 @@ void setup(void)
     // For MCP4725A2 the address is 0x64 or 0x65
     if (!dac.begin())
     {
-        Serial.println("Failed to find dac_A chip");
+        Serial.println(F("Failed to find dac_A chip"));
         while (1)
         {
             delay(10);
         }
     }
     voltageOut = 5.0;
-    Serial.println("Voltage Out = ");
-    Serial.print(2);
+    Serial.println(F("Voltage Out = "));
+    Serial.print(F(2));
 }
 
 void loop(void)
@@ -45,13 +45,13 @@ void loop(void)
     // for (counter = 0; counter < 4095; counter++)
     // {
         // dac.setVoltage(counter, false);
-    //     Serial.println(5.0*(counter/4095.0));
+    //     Serial.println(F(5.0*(counter/4095.0));
     //       delay(50);
     // }
     // for (counter = 4095; counter > 0; counter--)
     // {
     //     dac.setVoltage(counter, false);
-    //     Serial.println(5.0*(counter/4095.0));
+    //     Serial.println(F(5.0*(counter/4095.0));
     //       delay(50);
     // }
 

@@ -26,7 +26,7 @@ void setup(void)
 
     if (!ina219_A.begin())
     {
-        Serial.println("Failed to find ina219_A chip");
+        Serial.println(F("Failed to find ina219_A chip"));
         while (1)
         {
             delay(10);
@@ -34,13 +34,13 @@ void setup(void)
     }
     if (!ds3502.begin())
     {
-        Serial.println("Couldn't find DS3502 chip");
+        Serial.println(F("Couldn't find DS3502 chip"));
         while (1)
             ;
     }
     ina219_A.setCalibration_16V_400mA();
 
-    Serial.println("Measuring voltage and current with ina219_A ...");
+    Serial.println(F("Measuring voltage and current with ina219_A ..."));
 }
 
 void loop()
@@ -66,26 +66,26 @@ void loop()
     power_mW_A = ina219_A.getPower_mW();
     loadvoltage_A = busvoltage_A + (shuntvoltage_A / 1000);
 
-    Serial.print("Bus Voltage:  ");
-    Serial.print(busvoltage_A);
-    Serial.println(" V");
+    Serial.print(F("Bus Voltage:  "));
+    Serial.print(F(busvoltage_A));
+    Serial.println(F(" V"));
 
-    Serial.print("Current:       ");
-    Serial.print(current_mA_A);
-    Serial.println(" mA");
+    Serial.print(F("Current:       "));
+    Serial.print(F(current_mA_A));
+    Serial.println(F(" mA"));
 
-    Serial.print("Resistance:    ");
-    Serial.print((wiper_value / current_mA_A) * 1000);
-    Serial.println("");
+    Serial.print(F("Resistance:    "));
+    Serial.print(F((wiper_value / current_mA_A) * 1000);
+    Serial.println(F(""));
 
-    Serial.print("Resistor Value: ");
-    Serial.print(resistorVal);
-    Serial.println(" ohms");
+    Serial.print(F("Resistor Value: "));
+    Serial.print(F(resistorVal));
+    Serial.println(F(" ohms"));
 
-    // Serial.print(wiper_value);
-    // Serial.println(" V");
+    // Serial.print(F(wiper_value));
+    // Serial.println(F(" V"));
     delay(500);
-    Serial.println("");
-    Serial.println("");
+    Serial.println(F(""));
+    Serial.println(F(""));
     // }
 }

@@ -1,6 +1,9 @@
 // helper.h
 #ifndef HELPER_H
 #define HELPER_H
+#include <Arduino.h>
+
+extern const byte relayPin;
 
 #include <Adafruit_INA219.h>
 #include <Arduino.h>

@@ -19,15 +19,15 @@ void setup()
         delay(1);
     }
 
-    Serial.println("Adafruit DS3502 Test");
+    Serial.println(F("Adafruit DS3502 Test"));
 
     if (!ds3502.begin())
     {
-        Serial.println("Couldn't find DS3502 chip");
+        Serial.println(F("Couldn't find DS3502 chip"));
         while (1)
             ;
     }
-    Serial.println("Found DS3502 chip");
+    Serial.println(F("Found DS3502 chip"));
 }
 
 void loop()
@@ -38,8 +38,8 @@ void loop()
         float wiper_value = analogRead(WIPER_VALUE_PIN);
         wiper_value *= 5.0;
         wiper_value /= 1024;
-        Serial.print(wiper_value);
-        Serial.println("");
+        Serial.print(F(wiper_value));
+        Serial.println(F(""));
         delay(500);
     }
 }
@@ -58,17 +58,17 @@ uint16_t convert_to_12bit(float val) {
 // {
 //     // uint8_t default_value = ds3502.getWiper();
 
-//     // Serial.print("Default wiper value: ");
-//     // Serial.println(default_value);
+//     // Serial.print(F("Default wiper value: "));
+//     // Serial.println(F(default_value));
 
 //     //   float wiper_value = analogRead(WIPER_VALUE_PIN);
 //     //   wiper_value *= 5.0;                                           // input voltage
 //     //   wiper_value /= 1024;
 //     float wiper_value = 100;
 //     ds3502.setWiper(wiper_value);
-//     Serial.print((float)ds3502.getWiper() * 10.0 / 127);
-//     Serial.println("K Ohms");
+//     Serial.print(F((float)ds3502.getWiper() * 10.0 / 127);
+//     Serial.println(F("K Ohms"));
 
-//     Serial.println();
+//     Serial.println(F());
 //     delay(1000);
 // }

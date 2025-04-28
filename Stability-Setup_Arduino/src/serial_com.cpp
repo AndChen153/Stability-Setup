@@ -20,7 +20,6 @@ extern int light_status;
 
 extern volatile bool scan_done;
 extern volatile bool mppt_done;
-extern volatile bool constant_voltage_done;
 
 extern volatile bool measurement_running;
 volatile bool done_recv = false;
@@ -34,30 +33,30 @@ serialCommResult recvWithLineTermination()
     {
         // Read the incoming string until newline
         String incomingString = Serial.readStringUntil('\n');
-        // Serial.print("Received line (before error check): ");
-        // Serial.println(incomingString);
+        // Serial.print(F("Received line (before error check): ");
+        // Serial.println(F(incomingString));
 
         incomingString.trim(); // Remove any leading/trailing whitespace
         // Check if the trimmed string will fit in the buffer
         if (incomingString.length() >= NUM_CHARS)
         {
-            Serial.print("Error: Received line too long (max ");
+            Serial.print(F("Error: Received line too long (max "));
             Serial.print(NUM_CHARS - 1); // num_chars includes space for null terminator
-            Serial.println(" characters). Skipping.");
+            Serial.println(F(" characters). Skipping."));
             continue; // Skip this line and check for the next one
         }
 
         // Copy the string to received_chars buffer
         incomingString.toCharArray(received_chars, NUM_CHARS);
 
-        Serial.print("Received line: ");
+        Serial.print(F("Received line: "));
         Serial.println(received_chars); // Print the buffer content
 
 
         char *param = strtok(received_chars, ",");
         if (param == NULL)
         {
-            Serial.println("Warning: Received empty or invalid line after trimming.");
+            Serial.println(F("Warning: Received empty or invalid line after trimming."));
             continue;
         }
 
@@ -69,29 +68,29 @@ serialCommResult recvWithLineTermination()
         {
             if (strcmp(str_param, "scan") == 0 || strcmp(str_param, "mppt") == 0)
             {
-                Serial.print("Mode Received: ");
+                Serial.print(F("Mode Received: "));
                 Serial.println(str_param);
                 mode_received = true;
                 strncpy(mode, str_param, MAX_MODE_LEN - 1);
             }
             else
             {
-                Serial.print("Warning: Expected 'scan' or 'mppt' mode, but received '");
+                Serial.print(F("Warning: Expected 'scan' or 'mppt' mode, but received '"));
                 Serial.print(str_param);
-                Serial.println("'. Ignoring line.");
+                Serial.println(F("'. Ignoring line."));
                 continue;
             }
         }
         else if (strcmp(str_param, "done") == 0)
         {
-            Serial.println("'done' command received.");
+            Serial.println(F("'done' command received."));
             done_recv = true;
         }
         else if (strcmp(mode, "scan") == 0)
         {
             param = strtok(NULL, ",");
             if (param == NULL) {
-                Serial.println("Warning: Missing value for scan parameter.");
+                Serial.println(F("Warning: Missing value for scan parameter."));
                 continue;
             }
             if (strcmp(str_param, "1") == 0)
@@ -115,9 +114,9 @@ serialCommResult recvWithLineTermination()
                 light_status = atoi(param);
             }
             else {
-                Serial.print("Warning: Unknown scan parameter identifier '");
+                Serial.print(F("Warning: Unknown scan parameter identifier "));
                 Serial.print(str_param);
-                Serial.println("'. Ignoring line.");
+                Serial.println(F("'. Ignoring line."));
            }
         }
         else if (strcmp(mode, "mppt") == 0)
@@ -131,7 +130,7 @@ serialCommResult recvWithLineTermination()
                         vset[ID] = atof(param);
                     } else {
                         // Handle case where not enough vset values are provided
-                        Serial.print("Warning: Missing vset value(s) from ID ");
+                        Serial.print(F("Warning: Missing vset value(s) from ID "));
                         Serial.println(ID);
                         // Fill rest of vset
                         for (uint8_t j = ID; j < 8; j++) vset[j] = 0;
@@ -144,7 +143,7 @@ serialCommResult recvWithLineTermination()
                 // Single value parameters
                 param = strtok(NULL, ",");
                 if (param == NULL) {
-                    Serial.println("Warning: Missing value for MPPT parameter.");
+                    Serial.println(F("Warning: Missing value for MPPT parameter."));
                     continue;
                 }
 
@@ -169,9 +168,9 @@ serialCommResult recvWithLineTermination()
                     mppt_measurement_interval = atoi(param);
                 }
                 else {
-                    Serial.print("Warning: Unknown MPPT parameter identifier '");
+                    Serial.print(F("Warning: Unknown MPPT parameter identifier '"));
                     Serial.print(str_param);
-                    Serial.println("'. Ignoring line.");
+                    Serial.println(F("'. Ignoring line."));
                 }
             }
         }
@@ -179,12 +178,12 @@ serialCommResult recvWithLineTermination()
         if (done_recv) {
             if (!measurement_running)
             {
-                Serial.println("Parameters successfully received and parsed.");
+                Serial.println(F("Parameters successfully received and parsed."));
                 showParsedData();
                 result = serialCommResult::START;
             } else {
                 // Measurement already running
-                Serial.println("Warning: Received 'done' command while measurement is already running.");
+                Serial.println(F("Warning: Received 'done' command while measurement is already running."));
                 result = serialCommResult::NONE;
             }
         }
@@ -200,43 +199,43 @@ void showParsedData()
 {
 
     if (strcmp(mode, "mppt") == 0) {
-        Serial.print("Mode: ");
+        Serial.print(F("Mode: "));
         Serial.print(mode);
-        Serial.print(", Vset: [");
+        Serial.print(F(", Vset: ["));
         for (int i = 0; i < 8; i++) // Use constant here
         {
             Serial.print(vset[i], 4); // Print with precision
             if (i < 8 - 1) {
-                Serial.print(", ");
+                Serial.print(F(", "));
             }
         }
-        Serial.println("] ");
-        Serial.print("mppt_step_size_V: ");
+        Serial.println(F("] "));
+        Serial.print(F("mppt_step_size_V: "));
         Serial.println(mppt_step_size_V, 4);
-        Serial.print("mppt_measurements_per_step: ");
+        Serial.print(F("mppt_measurements_per_step: "));
         Serial.println(mppt_measurements_per_step);
-        Serial.print("mppt_delay: ");
+        Serial.print(F("mppt_delay: "));
         Serial.println(mppt_delay);
-        Serial.print("mppt_measurement_interval: ");
+        Serial.print(F("mppt_measurement_interval: "));
         Serial.println(mppt_measurement_interval);
-        Serial.print("mppt_time_mins: ");
+        Serial.print(F("mppt_time_mins: "));
         Serial.println(mppt_time_mins);
 
     }
     else if (strcmp(mode, "scan") == 0) {
-        Serial.print("Mode: ");
+        Serial.print(F("Mode: "));
         Serial.println(mode);
         Serial.print("scan_range: ");
         Serial.println(scan_range, 4);
-        Serial.print("scan_step_size: ");
+        Serial.print(F("scan_step_size: "));
         Serial.println(scan_step_size, 4);
-        Serial.print("scan_read_count: ");
+        Serial.print(F("scan_read_count: "));
         Serial.println(scan_read_count);
-        Serial.print("scan_rate: ");
+        Serial.print(F("scan_rate: "));
         Serial.println(scan_rate);
-        Serial.print("light_status: ");
+        Serial.print(F("light_status: "));
         Serial.println(light_status);
 
     }
-    Serial.println("");
+    Serial.println(F(""));
 }

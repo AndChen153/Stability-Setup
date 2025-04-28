@@ -14,7 +14,7 @@ uint32_t uniqueID;
 
 bool init_success = true;
 
-byte relayPin = 7;
+const byte relayPin = 7;
 
 char received_chars[NUM_CHARS];
 char str_param[MAX_MODE_LEN];
@@ -43,11 +43,8 @@ int scan_read_count = 0;
 int scan_rate = 0;
 int light_status = 0;
 
-// Constant Voltage Variables
-volatile bool constant_voltage_done = true;
-float constant_voltage = 0.0;
 
-volatile bool measurement_running = !scan_done || !constant_voltage_done || !mppt_done;
+volatile bool measurement_running = !scan_done || !mppt_done;
 // TODO: implement blinking for ID
 void setup(void)
 {
@@ -68,10 +65,10 @@ void setup(void)
         uint32_t low  = random(0, 0x10000);  // another 16 bits
         uniqueID = (high << 16) | low;
         EEPROM.put(idAddress, uniqueID);
-        Serial.print("Generated and stored new ID: ");
+        Serial.print(F("Generated and stored new ID: "));
     }
 
-    Serial.print("HW_ID:");
+    Serial.print(F("HW_ID:"));
     Serial.println(uniqueID, HEX);
 
     pinMode(relayPin, OUTPUT);
@@ -88,21 +85,21 @@ void setup(void)
         setupSensor_DAC(ID);
     }
     if (init_success){
-        Serial.println("Arduino Ready");
+        Serial.println(F("Arduino Ready"));
     }
     else {
-        Serial.println("Sensor Initialization Failed. Please Check Connection.");
+        Serial.println(F("Sensor Initialization Failed. Please Check Connection."));
     }
 }
 
 void loop(void)
 {
-    measurement_running = !scan_done || !constant_voltage_done || !mppt_done;
+    measurement_running = !scan_done || !mppt_done;
     if (recvWithLineTermination() == serialCommResult::START)
     {
         zero();
 
-        Serial.println("Measurement Started");
+        Serial.println(F("Measurement Started"));
 
         if (strcmp(mode, "scan") == 0)
         {
@@ -112,11 +109,7 @@ void loop(void)
         {
             mppt_done = false;
         }
-        else if (strcmp(mode, "scan") == 0)
-        {
-            constant_voltage_done = false;
-        }
-        measurement_running = !scan_done || !constant_voltage_done || !mppt_done;
+        measurement_running = !scan_done || !mppt_done;
     }
 
     if (!scan_done)
@@ -126,7 +119,7 @@ void loop(void)
         scan(SCAN_BACKWARD);
         scan_done = true;
         light_control(0);
-        Serial.println("Done!");
+        Serial.println(F("Done!"));
     }
     else if (!mppt_done)
     {
@@ -134,12 +127,6 @@ void loop(void)
         perturbAndObserveClassic();
         mppt_done = true;
         light_control(0);
-        Serial.println("Done!");
-    }
-    else if (!constant_voltage_done)
-    {
-        setConstantVoltage();
-    constant_voltage_done = true;
-        Serial.println("Done!");
+        Serial.println(F("Done!"));
     }
 }

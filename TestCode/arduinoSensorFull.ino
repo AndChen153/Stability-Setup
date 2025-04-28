@@ -38,7 +38,7 @@ void setup()
     }
     if (!ina219_A.begin())
     {
-        Serial.println("Failed to find ina219_A chip");
+        Serial.println(F("Failed to find ina219_A chip"));
         while (1)
         {
             delay(10);
@@ -46,7 +46,7 @@ void setup()
     }
     if (!dac_A.begin())
     {
-        Serial.println("Failed to find dac_A chip");
+        Serial.println(F("Failed to find dac_A chip"));
         while (1)
         {
             delay(10);
@@ -99,11 +99,11 @@ void loop()
     loadvoltage_A = busvoltage_A + (shuntvoltage_A / 1000);
 
     if (count < 3 ) {
-        Serial.print(loadvoltage_A);
-        Serial.print(", ");
-        Serial.print(current_mA_A_Flipped);
+        Serial.print(F(loadvoltage_A));
+        Serial.print(F(", "));
+        Serial.print(F(current_mA_A_Flipped));
 
-        Serial.println("");
+        Serial.println(F(""));
         count++;
     }
     delay(10);
@@ -168,12 +168,12 @@ void loop()
 // //============
 
 // void showParsedData() {
-//     Serial.print(messageFromPC);
-//     Serial.print(",");
-//     Serial.print(voltage_Range);
-//     Serial.print(",");
-//     Serial.print(voltage_Step_Size);
-//     Serial.print(",");
-//     Serial.print(voltage_Read_Count);
-//     Serial.println(" ");
+//     Serial.print(F(messageFromPC));
+//     Serial.print(F(","));
+//     Serial.print(F(voltage_Range));
+//     Serial.print(F(","));
+//     Serial.print(F(voltage_Step_Size));
+//     Serial.print(F(","));
+//     Serial.print(F(voltage_Read_Count));
+//     Serial.println(F(" "));
 // }

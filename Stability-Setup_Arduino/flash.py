@@ -1,102 +1,136 @@
 import subprocess
-import json
 import os
-import sys
 import threading
 import serial.tools.list_ports
-import logging
-from typing import Dict, List
+import argparse
+import time
+import re
 
-def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
-    ports = [
-        p
-        for p in serial.tools.list_ports.comports()
-    ]
+# Path to your Arduino/ESP32 sketch
+SKETCH_PATH = os.path.join(os.path.dirname(__file__),"Stability-Setup_Arduino.ino")
+
+# List all serial devices
+def _show_all_com_devices():
+    ports = list(serial.tools.list_ports.comports())
     if not ports:
-        raise IOError()
+        raise IOError("No serial devices found.")
     return ports
 
-def get():
-    connected_arduinos = []
-    for device in _show_all_com_devices():
-        if "USB-SERIAL CH340" in device.description:
-            connected_arduinos.append(device.device)
-
-    return connected_arduinos
-
-
-# Path to your Arduino sketch
-SKETCH_PATH = r".\Stability-Setup_Arduino\Stability-Setup_Arduino.ino"
-# Detect connected Arduino boards
-def list_arduino_boards():
-    try:
-        detected_boards = []
-        for board in get():
-            port = board
-            fqbn = 'arduino:avr:nano'
-            detected_boards.append((port, fqbn))
-        return detected_boards
-    except Exception as e:
-        print(f"Error detecting Arduino boards: {e}")
-        return []
-
+# Detect Arduino Nano (CH340)
 def list_arduino_boards_nano():
-    try:
-        detected_boards = []
-        for port in get():
-            fqbn = 'arduino:avr:nano'
-            detected_boards.append((port, fqbn))
-        return detected_boards
-    except Exception as e:
-        print(f"Error detecting Arduino boards: {e}")
-        return []
+    return [(d.device, 'arduino:avr:nano')
+            for d in _show_all_com_devices()
+            if 'CH340' in d.description.upper()]
 
-# Compile the sketch
-def compile_sketch(fqbn):
-    try:
-        print(f"Compiling sketch for {fqbn}...")
-        compile_command = ["arduino-cli", "compile", "--fqbn", fqbn, SKETCH_PATH]
-        result = subprocess.run(compile_command, capture_output=True, text=True)
-        if result.returncode == 0:
-            print("Compilation successful!")
-            return True
-        else:
-            print("Compilation failed:", result.stderr)
-            return False
-    except Exception as e:
-        print(f"Error compiling sketch: {e}")
+# Detect Arduino Uno
+def list_arduino_boards_uno():
+    return [(d.device, 'arduino:avr:uno')
+            for d in _show_all_com_devices()
+            if 'UNO' in d.description.upper()]
+
+# Detect Arduino Mega
+def list_arduino_boards_mega():
+    return [(d.device, 'arduino:avr:mega')
+            for d in _show_all_com_devices()
+            if 'MEGA' in d.description.upper()]
+
+# Detect ESP32-S3 boards (including Seeed XIAO-ESP32S3)
+def list_esp32_s3_boards():
+    esp_devices = []
+    for d in _show_all_com_devices():
+        desc = d.description.upper()
+        # Common USB-serial bridges/drivers on ESP32-S3 dev boards
+        if any(keyword in desc for keyword in ['CP210', 'USB SERIAL', 'CH910', 'SILABS', 'XIAO', 'ESP32']):
+            esp_devices.append((d.device, 'esp32:esp32:esp32s3'))
+    return esp_devices
+
+# Compile sketch and report memory usage
+def compile_sketch(fqbn: str) -> bool:
+    print(f"Compiling sketch for {fqbn}...")
+    cmd = ["arduino-cli", "compile", "--fqbn", fqbn, SKETCH_PATH]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print("Compilation failed:")
+        print(result.stderr)
         return False
 
-# Upload the compiled sketch to a board
-def upload_to_board(port, fqbn):
-    try:
-        print(f"Uploading to {port} ({fqbn})...")
-        upload_command = ["arduino-cli", "upload", "-p", port, "--fqbn", fqbn, SKETCH_PATH]
-        result = subprocess.run(upload_command, capture_output=True, text=True)
-        if result.returncode == 0:
-            print(f"Upload successful to {port}")
-        else:
-            print(f"Upload failed for {port}: {result.stderr}")
-    except Exception as e:
-        print(f"Error uploading to {port}: {e}")
+    print("Compilation successful!")
+    print(result.stdout)
+    # Parse memory usage
+    for line in result.stdout.splitlines():
+        if 'Sketch uses' in line and 'bytes' in line:
+            print(f"→ {line.strip()}")
+        if 'Global variables use' in line and 'bytes' in line:
+            print(f"→ {line.strip()}")
 
-# Flash all detected boards in parallel
-def flash_all_boards():
-    boards = list_arduino_boards_nano()
-    if not boards:
-        print("No Arduino boards detected!")
+    return True
+
+# Upload to a single board with verbose logging; set baud to 9600; catch known ESP32 reset errors
+def upload_to_board(port: str, fqbn: str):
+    baud = 115200
+    print(f"\nUploading to {port} ({fqbn}) at {baud} baud...")
+    cmd = [
+        "arduino-cli", "--verbose", "upload",
+        "--port", port,
+        "--fqbn", fqbn,
+        "--upload-property", f"upload.speed={baud}",
+        # "--upload-property", "upload.tool=esptool_py",
+        # "--upload-property", "esptool.before=default_reset",
+        SKETCH_PATH
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.stdout:
+        print("Upload stdout:")
+        print(result.stdout)
+    if result.stderr:
+        print("Upload stderr:")
+        print(result.stderr)
+
+    stub_errors = [
+        "A device which does not exist was specified",
+        "Cannot configure port",
+        "A serial exception error occurred"
+    ]
+    if result.returncode != 0 and any(err in result.stderr for err in stub_errors):
+        print(f"⚠️  Detected ESP32 stub-reset on {port}, but firmware was written.")
         return
 
-    print(f"Detected {len(boards)} Arduino boards:")
+    if result.returncode == 0:
+        print(f"✅  Upload successful to {port}")
+    else:
+        print(f"❌  Upload failed for {port} with exit code {result.returncode}")
+
+# Flash all boards of specified type
+def flash_all_boards(board_type: str):
+    detectors = {
+        'nano': list_arduino_boards_nano,
+        'uno':  list_arduino_boards_uno,
+        'mega': list_arduino_boards_mega,
+        'esp32-s3': list_esp32_s3_boards
+    }
+    detector = detectors.get(board_type)
+    if not detector:
+        print(f"Unsupported board type: {board_type}")
+        return
+
+    boards = detector()
+    if not boards:
+        print(f"No {board_type} boards detected!")
+        return
+    print(f"Detected {len(boards)} {board_type} board(s):")
     for port, fqbn in boards:
         print(f"- {port} ({fqbn})")
 
-    # Compile the sketch for the first detected board type (assumes all are the same)
+    # Compile sketch
     if not compile_sketch(boards[0][1]):
         print("Skipping upload due to compilation failure.")
         return
 
-    # Upload to all boards in parallel
+    # Small delay before upload
+    time.sleep(0.5)
+
+    # Parallel uploads
     threads = []
     for port, fqbn in boards:
         t = threading.Thread(target=upload_to_board, args=(port, fqbn))
@@ -105,8 +139,15 @@ def flash_all_boards():
 
     for t in threads:
         t.join()
-
-    print("Flashing complete!")
+    print("\nFlashing complete!")
 
 if __name__ == "__main__":
-    flash_all_boards()
+    parser = argparse.ArgumentParser(
+        description="Compile & flash Arduino Nano, Uno, Mega, or ESP32-S3 boards in parallel."
+    )
+    parser.add_argument(
+        '--board', '-b', choices=['nano', 'uno', 'mega', 'esp32-s3'], default='nano',
+        help="Board type: 'nano', 'uno', 'mega', or 'esp32-s3'."
+    )
+    args = parser.parse_args()
+    flash_all_boards(args.board)

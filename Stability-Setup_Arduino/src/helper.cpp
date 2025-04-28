@@ -2,34 +2,33 @@
 #include "../include/helper.h"
 #include "../include/sensor.h"
 #include "../include/serial_com.h"
-#include <Arduino.h>
 
-extern int relayPin;
+extern const byte relayPin;
 
 void light_control(int light_status)
 {
     if (light_status == 0)
     {
-        Serial.println("Turn light off");
+        Serial.println(F("Turn light off"));
     }
     else if (light_status == 1)
     {
         digitalWrite(relayPin, HIGH);
-        Serial.println("Turn light on");
+        Serial.println(F("Turn light on"));
     }
 }
 
 void displaySensorVals(Adafruit_INA219 *ina219, int ID)
 {
-    Serial.println("------------------------------------");
-    Serial.print("Sensor:     ");
+    Serial.println(F("------------------------------------"));
+    Serial.print(F("Sensor:     "));
     Serial.println(ID);
-    Serial.print("Voltage:    ");
+    Serial.print(F("Voltage:    "));
     Serial.println(ina219->getBusVoltage_V());
-    Serial.print("Current:    ");
+    Serial.print(F("Current:    "));
     Serial.println(ina219->getCurrent_mA());
-    Serial.println("------------------------------------");
-    Serial.println("");
+    Serial.println(F("------------------------------------"));
+    Serial.println(F(""));
     delay(500);
 }
 

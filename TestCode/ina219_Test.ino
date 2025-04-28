@@ -23,7 +23,7 @@ void setup(void)
   // you can call a setCalibration function to change this range (see comments).
   if (!ina219_A.begin())
   {
-    Serial.println("Failed to find ina219_A chip");
+    Serial.println(F("Failed to find ina219_A chip"));
     while (1)
     {
       delay(10);
@@ -31,7 +31,7 @@ void setup(void)
   }
 
   // if (! ina219_B.begin()) {
-  //   Serial.println("Failed to find ina219_B chip");
+  //   Serial.println(F("Failed to find ina219_B chip"));
   //   while (1) { delay(10); }
   // }
 
@@ -42,7 +42,7 @@ void setup(void)
   // Or to use a lower 16V, 400mA range (higher precision on volts and amps):
   // ina219_A.setCalibration_16V_400mA();
 
-  Serial.println("Measuring voltage and current with ina219_A/B ...");
+  Serial.println(F("Measuring voltage and current with ina219_A/B ..."));
 }
 
 void loop(void)
@@ -71,21 +71,21 @@ void loop(void)
   // power_mW_B = ina219_B.getPower_mW();
   // loadvoltage_B = busvoltage_B + (shuntvoltage_B / 1000);
 
-  // Serial.print("Bus Voltage:   "); Serial.print(busvoltage_A); Serial.println(" V");
-  // Serial.print("Shunt Voltage: "); Serial.print(shuntvoltage_A); Serial.println(" mV");
-  Serial.print("Bus Voltage:  ");
-  Serial.print(busvoltage_A);
-  Serial.println(" V");
+  // Serial.print(F("Bus Voltage:   ")); Serial.print(F("Bus Voltage:   ")); Serial.print(F("Bus Voltage:   "));
+  // Serial.print(F("Shunt Voltage: ")); Serial.print(F("Shunt Voltage: ")); Serial.print(F("Shunt Voltage: "));
+  Serial.print(F("Bus Voltage:  "));
+  Serial.print(F(busvoltage_A));
+  Serial.println(F(" V"));
 
-  Serial.print("Current:       ");
-  Serial.print(current_mA_A);
-  Serial.println(" mA");
+  Serial.print(F("Current:       "));
+  Serial.print(F(current_mA_A));
+  Serial.println(F(" mA"));
 
-  Serial.print("Resistance:    ");
-  Serial.print((busvoltage_A / current_mA_A)*1000);
+  Serial.print(F("Resistance:    "));
+  Serial.print(F((busvoltage_A / current_mA_A)*1000);
 
-  Serial.println("");
-  Serial.println("");
+  Serial.println(F(""));
+  Serial.println(F(""));
 
   delay(500);
 }

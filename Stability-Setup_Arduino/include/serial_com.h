@@ -3,7 +3,7 @@
 #define SERIAL_COMM_H
 #include <string.h>
 #include <Arduino.h>
-#define NUM_CHARS 75
+#define NUM_CHARS 30
 #define MAX_MODE_LEN 5
 
 
@@ -29,7 +29,6 @@ extern int light_status;
 
 extern volatile bool scan_done;
 extern volatile bool mppt_done;
-extern volatile bool constant_voltage_done;
 
 extern volatile bool measurement_running;
 
@@ -38,8 +37,6 @@ enum serialCommResult {
     NONE,
     START,
 };
-
-static const String Modes[3] = {"scan", "PnO", "constantVoltage"};
 
 serialCommResult recvWithLineTermination();
 void showParsedData();
