@@ -16,7 +16,8 @@ import threading
 import copy
 import logging
 
-starting_voltage_multipler = 0.6
+# TODO: add parameter for this
+starting_voltage_multipler = 0.85
 
 class SingleController:
     def __init__(
@@ -88,8 +89,8 @@ class SingleController:
         except serial.SerialException as e:
             custom_print(f"Failed to connect to {self.port}. Error: {e}")
             return ()
-
         if failed_connect:
+            custom_print(f"Arduino Connection to {self.arduinoID} Failed. Disconnecting...")
             self.disconnect()
             return ()
         else:

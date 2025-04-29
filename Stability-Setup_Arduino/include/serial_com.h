@@ -3,7 +3,7 @@
 #define SERIAL_COMM_H
 #include <string.h>
 #include <Arduino.h>
-#define NUM_CHARS 30
+#define NUM_CHARS 55
 #define MAX_MODE_LEN 5
 
 

@@ -21,6 +21,7 @@ from PySide6.QtCore import Qt
 from helper.global_helpers import custom_print
 
 #TODO: add raw current/current density measurement
+#TODO: force tight layout
 class PlotterWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)

@@ -154,11 +154,10 @@ class MainWindow(QMainWindow):
             json_location=self.userSettingsJson,
             plotting_mode=False,
         )
-
-        if not result:
-            custom_print("Failed Arduino Connection")
         self.ID_widget.connected_Arduino = self.multi_controller.connected_arduinos_HWID
         self.ID_widget.refresh_ui()
+        self.ID_widget.save_json()
+
 
     @Slot(Preset)
     def run_handler(self, preset: Preset):

@@ -67,13 +67,13 @@ def compile_sketch(fqbn: str) -> bool:
 
 # Upload to a single board with verbose logging; set baud to 9600; catch known ESP32 reset errors
 def upload_to_board(port: str, fqbn: str):
-    baud = 115200
-    print(f"\nUploading to {port} ({fqbn}) at {baud} baud...")
+    # baud = 115200
+    # print(f"\nUploading to {port} ({fqbn}) at {baud} baud...")
     cmd = [
         "arduino-cli", "--verbose", "upload",
         "--port", port,
         "--fqbn", fqbn,
-        "--upload-property", f"upload.speed={baud}",
+        # "--upload-property", f"upload.speed={baud}",
         # "--upload-property", "upload.tool=esptool_py",
         # "--upload-property", "esptool.before=default_reset",
         SKETCH_PATH

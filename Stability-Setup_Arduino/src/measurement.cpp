@@ -102,9 +102,9 @@ void perturbAndObserveClassic()
 
         for (int ID = 0; ID < 8; ++ID)
         {
-            current_power[ID] /= mppt_measurements_per_step;
-            load_voltageArr[ID] /= mppt_measurements_per_step;
-            current_mA_flipped_arr[ID] /= mppt_measurements_per_step;
+            current_power[ID] /= measurements;
+            load_voltageArr[ID] /= measurements;
+            current_mA_flipped_arr[ID] /= measurements;
 
             current_power_calc = load_voltageArr[ID] * current_mA_flipped_arr[ID];
 
@@ -151,6 +151,7 @@ void perturbAndObserveClassic()
 // --------------------------------------------------------------------------------------
 
 // performs forward or backward JV scan of solar cell
+// TODO: recalculate scan timing every step
 void scan(ScanDirection dir)
 {
     led(true);

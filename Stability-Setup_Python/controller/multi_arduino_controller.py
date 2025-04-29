@@ -60,6 +60,8 @@ class MultiController(QObject):
         # Define a worker function for each thread.
         def init_controller(ID, COM):
             nonlocal unique_Arduino_ID
+
+            self.arduino_ids = self.load_arduino_ids(json_location)
             controller = SingleController(
                 COM=COM,
                 trial_name=self.trial_name,

@@ -129,6 +129,12 @@ class IDWidget(QWidget):
         self.clear_layout(main_layout)
         self.spinboxes = {}
 
+        # Add key if it doesn't exist
+        for ID in self.connected_Arduino:
+            if ID not in self.data:
+                self.data[ID] = -1
+        
+
         # Count occurrences of each value to detect duplicates.
         value_counts = {}
         for key, value in self.data.items():
@@ -172,6 +178,7 @@ class IDWidget(QWidget):
 
             # Place the row in the correct section.
             if key in self.connected_Arduino:
+                custom_print(f"Added {key} to ID_widget")
                 connected_layout.addLayout(row_layout)
             else:
                 disconnected_layout.addLayout(row_layout)
