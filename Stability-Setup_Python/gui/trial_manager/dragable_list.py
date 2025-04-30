@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (
     QListWidget,
 )
-from helper.global_helpers import custom_print
+from helper.global_helpers import logger
 from PySide6.QtCore import Signal, Slot
 
 # --- New subclass to capture drag/drop moves ---

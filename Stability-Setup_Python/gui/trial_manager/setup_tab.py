@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Signal
 from constants import Mode, Constants
-from helper.global_helpers import custom_print
+from helper.global_helpers import logger
 
 kbPerDataPoint = 0.2
 
@@ -177,7 +177,7 @@ class SetupTab(QWidget):
         except ValueError:
             pass
 
-        custom_print("Switched to mins", self.mppt_time_unit, self.mppt_time_line_edit)
+        logger.log("Switched to mins", self.mppt_time_unit, self.mppt_time_line_edit)
 
     def switch_to_hours(self):
         """Switch the time unit to hours."""
@@ -195,7 +195,7 @@ class SetupTab(QWidget):
         except ValueError:
             pass
 
-        custom_print("Switched to hrs", self.mppt_time_unit, self.mppt_time_line_edit)
+        logger.log("Switched to hrs", self.mppt_time_unit, self.mppt_time_line_edit)
 
 
     def update_buttons(self):
@@ -222,7 +222,7 @@ class SetupTab(QWidget):
         params = {}
         for param, widget in self.textboxes:
             if param == Constants.time_param:
-                custom_print(param, widget.text(), self.mppt_time_unit)
+                logger.log(param, widget.text(), self.mppt_time_unit)
                 time_text = widget.text()
                 if self.mppt_time_unit == "hrs":
                     Time_m = int(float(time_text)) * 60 if time_text else 0.0

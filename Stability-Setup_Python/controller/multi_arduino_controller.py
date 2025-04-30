@@ -10,7 +10,7 @@ from controller.single_arduino_controller import SingleController
 from controller import arduino_assignment
 from constants import Mode, Constants
 from data_visualization import data_plotter
-from helper.global_helpers import custom_print
+from helper.global_helpers import logger
 from PySide6.QtCore import QObject, Signal, Slot, Qt
 
 class MultiController(QObject):
@@ -80,17 +80,17 @@ class MultiController(QObject):
                     elif (Arduino_ID is not None) and Arduino_ID == -1:
                         self.unknownID.append(HW_ID)
                     elif (Arduino_ID is not None) and Arduino_ID > -1:
-                        custom_print(f"Connected to {controller.port}.")
+                        logger.log(f"Connected to {controller.port}.")
                         self.assigned_connected_arduinos.append((HW_ID, Arduino_ID))
                         self.controllers[Arduino_ID] = controller
                     else:
-                        custom_print(f"Connection to {controller.port} failed.")
+                        logger.log(f"Connection to {controller.port} failed.")
             else:
                 return False
 
         # Start a thread for each COM port in the assignment.
         for ID, COM in enumerate(arduino_assignment.get()):
-            custom_print(f"Trying to connect to {COM}")
+            logger.log(f"Trying to connect to {COM}")
             thread = threading.Thread(target=init_controller, args=(ID, COM))
             thread.start()
             threads.append(thread)
@@ -129,7 +129,7 @@ class MultiController(QObject):
             try:
                 self.run_command(controller_id, mode, **kwargs)
             except Exception as e:
-                custom_print(
+                logger.log(
                     f"Failed to run command '{mode}' on controller {controller_id}: {e}"
                 )
 
@@ -143,12 +143,12 @@ class MultiController(QObject):
         Runs a command on a specific controller. If another command is already running,
         it stops the current command before starting the new one.
         """
-        custom_print(f"Attempting to run {command} on controller {ID}")
-        # custom_print(self.active_threads)
+        logger.log(f"Attempting to run {command} on controller {ID}")
+        # logger.log(self.active_threads)
         with self.lock:
             # Stop existing commands if running
             if ID in self.active_threads:
-                custom_print(f"Stopping current command on controller {ID}.")
+                logger.log(f"Stopping current command on controller {ID}.")
                 self.controllers[ID].should_run = False
                 self.controllers[ID].reset_arduino()
                 thread = self.active_threads[ID]
@@ -162,14 +162,14 @@ class MultiController(QObject):
             elif command == Mode.MPPT:
                 target = lambda: self.controllers[ID].mppt(**kwargs)
             elif command == Mode.STOP:
-                custom_print(f"STOPPING SINGLE CONTROLLER {ID}")
+                logger.log(f"STOPPING SINGLE CONTROLLER {ID}")
             elif not (command == Mode.STOP):
-                custom_print(f"Unknown command: {command}")
+                logger.log(f"Unknown command: {command}")
                 return
 
             if not (command == Mode.STOP):
                 # Start the new command in a new thread
-                custom_print(f"Started command {command} on controller {ID}.")
+                logger.log(f"Started command {command} on controller {ID}.")
                 self.controllers[ID].date = datetime.now().strftime("%b-%d-%Y_%H-%M-%S")
                 thread = threading.Thread(target=target, daemon=True)
                 thread.start()
@@ -203,6 +203,6 @@ class MultiController(QObject):
                 full_data = json.load(f)
             return full_data.get("arduino_ids", {})
         except Exception as e:
-            custom_print(f"Error loading JSON: {e}")
+            logger.log(f"Error loading JSON: {e}")
             return {}
 

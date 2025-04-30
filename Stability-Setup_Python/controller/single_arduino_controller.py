@@ -4,7 +4,7 @@ from email import header
 from fileinput import filename
 from constants import Mode, Constants
 from data_visualization import data_plotter
-from helper.global_helpers import custom_print
+from helper.global_helpers import logger
 import serial
 import time
 from datetime import datetime
@@ -69,7 +69,7 @@ class SingleController:
                     line = self.ser.readline().decode().strip()
                     # line = self.ser.readline().decode('unicode_escape').rstrip()
                     if line:
-                        custom_print(
+                        logger.log(
                             f"Boot Stage Arduino {self.arduinoID} Output:", line
                         )
                     if "HW_ID" in line:
@@ -84,10 +84,10 @@ class SingleController:
             self.ser.reset_input_buffer()
 
         except serial.SerialException as e:
-            custom_print(f"Failed to connect to {self.port}. Error: {e}")
+            logger.log(f"Failed to connect to {self.port}. Error: {e}")
             return ()
         if failed_connect:
-            custom_print(f"Arduino Connection to {self.arduinoID} Failed. Disconnecting...")
+            logger.log(f"Arduino Connection to {self.arduinoID} Failed. Disconnecting...")
             self.disconnect()
             return ()
         else:
@@ -107,11 +107,11 @@ class SingleController:
                 self.ser.setDTR(False)
                 time.sleep(0.1)  # Wait for 100ms
                 self.ser.setDTR(True)
-                custom_print(f"Arduino has been reset.")
+                logger.log(f"Arduino has been reset.")
             else:
-                custom_print(f"Arduino is not connected.")
+                logger.log(f"Arduino is not connected.")
         except Exception as e:
-            custom_print(f"Failed to reset Arduino: {e}")
+            logger.log(f"Failed to reset Arduino: {e}")
 
     def _send_command(self, mode, params:dict[str, str]):
         measurement_started = False
@@ -132,16 +132,16 @@ class SingleController:
                 commands.append(translated_key + "," + str(params[key]) + '\n')
         commands.append("done \n")
         line = ""
-        custom_print("Sending Commands to Arduino: ", commands)
+        logger.log("Sending Commands to Arduino: ", commands)
         while commands:
             try:
                 with self.write_lock:
                     command = commands.pop(0)
                     self.ser.write(command.encode())  # send data to arduino
-                    # custom_print(f"Sent to Arduino: {command}")
+                    # logger.log(f"Sent to Arduino: {command}")
                     time.sleep(0.1)
             except serial.SerialException as e:
-                custom_print(f"Communication error on {self.port}. Error: {e}")
+                logger.log(f"Communication error on {self.port}. Error: {e}")
                 break
 
         while not measurement_started:
@@ -149,15 +149,15 @@ class SingleController:
                 with self.reading_lock:
                     line = self.ser.readline().decode().strip()
                     # line = self.ser.readline().decode('unicode_escape').rstrip()
-                    custom_print(f"INIT STAGE ARDUINO {self.arduinoID} OUTPUT:", line)
+                    logger.log(f"INIT STAGE ARDUINO {self.arduinoID} OUTPUT:", line)
                     if "Measurement Started" in line:
                         measurement_started = True
             except serial.SerialException as e:
-                custom_print(f"Communication error on {self.port}. Error: {e}")
+                logger.log(f"Communication error on {self.port}. Error: {e}")
                 break
 
     def scan(self, params: dict[str, str]):
-        custom_print("Scan Initiated")
+        logger.log("Scan Initiated")
 
         LIGHT_STATUS = params[Constants.scan_mode_param]
         if LIGHT_STATUS == 0:
@@ -179,7 +179,7 @@ class SingleController:
         self.file_path = os.path.join(self.trial_dir, file_name)
         self.scan_filepath = self.file_path
         self.mode = Mode.SCAN
-        custom_print(f"Starting scan with parameters: {params}")
+        logger.log(f"Starting scan with parameters: {params}")
 
         # Create header array
         voltage_lambda = lambda value: "Pixel_" + str(value + 1) + " V"
@@ -236,7 +236,7 @@ class SingleController:
         self.mppt_arr_width = len(header_arr)
 
         # Run measurement
-        custom_print(f"Starting MPPT with parameters:  {copied_params}")
+        logger.log(f"Starting MPPT with parameters:  {copied_params}")
         self._send_command(Mode.MPPT, copied_params)
         self._create_array(copied_params, header_arr)
         self._save_data()
@@ -273,9 +273,9 @@ class SingleController:
                     line = self.ser.readline().decode("unicode_escape").rstrip()
                     data_list = line.split(",")
                     if len(data_list) > 0:
-                        # custom_print(data_list)
+                        # logger.log(data_list)
 
-                        custom_print(f"ARDUINO{self.arduinoID}: {line}")
+                        logger.log(f"ARDUINO{self.arduinoID}: {line}")
 
                         if len(data_list) > 13:
                             self.arr = np.append(
@@ -294,7 +294,7 @@ class SingleController:
                             done = True
 
             except serial.SerialException as e:
-                custom_print(f"Communication error on {self.port}. Error: {e}")
+                logger.log(f"Communication error on {self.port}. Error: {e}")
                 self.run_finished = True
                 break
         self.run_finished = True
@@ -330,18 +330,18 @@ class SingleController:
 
                 self.arr = np.empty([1, self.mppt_arr_width], dtype="object")
 
-        custom_print(f"ARDUINO {self.arduinoID} SAVED DATA")
+        logger.log(f"ARDUINO {self.arduinoID} SAVED DATA")
 
     def find_vmpp(self, scan_file_name):
         arr = np.loadtxt(scan_file_name, delimiter=",", dtype=str)
         scan_file_name = scan_file_name.split("\\")
-        # custom_print(arr)
+        # logger.log(arr)
         headers = arr[6, :]
         headerDict = {value: index for index, value in enumerate(headers)}
-        # custom_print(headerDict)
+        # logger.log(headerDict)
         arr = arr[7:, :]
         length = len(headers) - 1
-        # custom_print(length)
+        # logger.log(length)
 
         jv_list = []
 
@@ -351,7 +351,7 @@ class SingleController:
         j_list = []  # current
         v_list = []  # voltage
         for i in range(0, len(jv_list), 2):
-            # custom_print(i)
+            # logger.log(i)
             j_list.append([float(j) for j in jv_list[i + 1]])
             v_list.append([float(x) for x in jv_list[i]])
             # jv_list[i+1] = [float(x) / 0.128 for x in jv_list[i+1]]
@@ -402,7 +402,7 @@ class SingleController:
     def printTime(self):
         end = time.time()
         total_time = end - self.start
-        custom_print("\n" + str(total_time))
+        logger.log("\n" + str(total_time))
 
     def constant_voltage(self, params):
         SCAN_RANGE = float(params[0])
@@ -424,7 +424,7 @@ class SingleController:
             + self.arduinoID
             + "constant_voltage.csv"
         )
-        custom_print("constant voltage started")
+        logger.log("constant voltage started")
 
         self.command = (
             "constantVoltage,"
@@ -440,7 +440,7 @@ class SingleController:
             + ""
         )
 
-        custom_print(f"Parameters: {self.command}")
+        logger.log(f"Parameters: {self.command}")
         self._start_scan(
             SCAN_RANGE, SCAN_STEP_SIZE, SCAN_READ_COUNT, SCAN_RATE, light_status
         )

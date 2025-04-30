@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from PySide6.QtCore import Qt
-from helper.global_helpers import custom_print
+from helper.global_helpers import logger
 
 #TODO: add raw current/current density measurement
 #TODO: force tight layout
@@ -47,7 +47,7 @@ class PlotterWidget(QWidget):
         and builds the canvas, toolbar, and custom legend widget."""
 
         if not csv_files:
-            custom_print("No CSV files found in folder.")
+            logger.log("No CSV files found in folder.")
             return
 
         # Clear any previous content.
@@ -115,7 +115,7 @@ class PlotterWidget(QWidget):
 
             header_dict = {value: index for index, value in enumerate(headers)}
             if "Time" not in header_dict:
-                custom_print(f"'Time' header not found in {csv_file}")
+                logger.log(f"'Time' header not found in {csv_file}")
                 continue
 
             pixel_V = arr[:, 1::2][:, 0:8].astype(float)
@@ -236,7 +236,7 @@ class PlotterWidget(QWidget):
                     )
 
             except Exception as e:
-                custom_print(f"Error processing file {csv_file}: {e}")
+                logger.log(f"Error processing file {csv_file}: {e}")
 
         ax.set_title(plot_title)
         ax.set_xlabel("Bias [V]")
@@ -319,8 +319,8 @@ class PlotterWidget(QWidget):
 
         dead_pixels = []
         for i in range(0, len(jvList), 2):
-            # custom_print(i)
-            # custom_print(jvList[i], jvList[i+1])
+            # logger.log(i)
+            # logger.log(jvList[i], jvList[i+1])
             jvList[i] = [float(j) for j in jvList[i]]
             jvList[i + 1] = [float(x) for x in jvList[i + 1]]
             if (

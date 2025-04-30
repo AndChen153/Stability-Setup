@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import QSize, Signal, Slot, Qt
 import sys
 from constants import Mode, Constants
-from helper.global_helpers import custom_print
+from helper.global_helpers import logger
 from gui.trial_manager.preset_data_class import Preset, Trial
 from gui.trial_manager.dragable_list import DraggableListWidget
 
@@ -90,13 +90,13 @@ class TrialColumnWidget(QWidget):
 
     @Slot(Trial, Preset, int)
     def handle_item_moved(self, trial, preset, new_index):
-        custom_print(f"Trial moved: {trial} from preset {preset} moved to index {new_index}")
+        logger.log(f"Trial moved: {trial} from preset {preset} moved to index {new_index}")
         self.trial_moved.emit(trial, preset, new_index)
 
     @Slot(Preset) # Decorate as a slot that accepts a Preset object
     def update_trials(self, selected_preset: Preset):
         """Clears existing trials and adds trials from the selected preset."""
-        custom_print(f"Slot update_trials called for: {selected_preset.name if selected_preset else 'None'}")
+        logger.log(f"Slot update_trials called for: {selected_preset.name if selected_preset else 'None'}")
         self.clear_trials() # Clear the list first
         self.selected_preset = selected_preset
 
@@ -112,21 +112,21 @@ class TrialColumnWidget(QWidget):
                 self.add_row(trial, idx)
         else:
             # Handle cases where the preset is None or has no trials
-            custom_print(f"No trials to display for '{selected_preset.name if selected_preset else 'N/A'}'.")
+            logger.log(f"No trials to display for '{selected_preset.name if selected_preset else 'N/A'}'.")
 
     @Slot(Trial)
     def _delete_requested(self, trial:Trial):
-        custom_print(f"Delete requeseted for trial {trial}")
+        logger.log(f"Delete requeseted for trial {trial}")
         self.delete_requested.emit(self.selected_preset, trial)
 
     @Slot(Trial)
     def _trial_created(self, trial:Trial):
-        custom_print(f"{trial} Trial Created")
+        logger.log(f"{trial} Trial Created")
         self.new_trial.emit(self.selected_preset, trial)
 
     @Slot(Trial)
     def _trial_edit(self, trial:Trial):
-        custom_print(f"{trial} Trial edited")
+        logger.log(f"{trial} Trial edited")
         self.edit_requested.emit(self.selected_preset, trial)
         for i in range(self.list_widget.count()):
             item = self.list_widget.item(i)

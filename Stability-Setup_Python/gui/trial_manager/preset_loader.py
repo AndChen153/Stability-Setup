@@ -1,7 +1,7 @@
 import json
 import os
 from constants import Constants, Mode
-from helper.global_helpers import custom_print
+from helper.global_helpers import logger
 from PySide6.QtWidgets import QComboBox
 from gui.trial_manager.preset_data_class import Preset, Trial
 
@@ -73,7 +73,7 @@ class PresetManager:
         """
         if not isinstance(all_presets, list):
             raise TypeError("Input 'all_presets' must be a list.")
-        
+
         # referesh data
         self.load_presets_from_json()
         presets_data = {str(p.id): self.preset_to_dict(p) for p in all_presets}
