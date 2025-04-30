@@ -57,6 +57,7 @@ class Constants:
         },
         Mode.MPPT: {
             "Starting Voltage (V)": "0.50",
+            "Starting Voltage Multiplier (%)": "0.6",
             "Step Size (V)": "0.001",
             time_param: "60",
             "Measurements Per Step": "100",

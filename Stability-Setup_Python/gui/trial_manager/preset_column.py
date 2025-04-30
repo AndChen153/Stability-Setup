@@ -81,7 +81,7 @@ class PresetColumnWidget(QWidget):
         # If no explicit index is provided, insert before the last item (the add button)
         if insert_index is None:
             count = self.list_widget.count()
-            insert_index = count
+            insert_index = count - 1 if count > 0 else 0
 
         self.list_widget.insertItem(insert_index, new_item)
         self.list_widget.setItemWidget(new_item, row_widget)

@@ -16,9 +16,6 @@ import threading
 import copy
 import logging
 
-# TODO: add parameter for this
-starting_voltage_multipler = 0.85
-
 class SingleController:
     def __init__(
         self,
@@ -209,6 +206,8 @@ class SingleController:
             + "__"
         )
 
+        multiplier = float(params["Starting Voltage Multiplier (%)"])
+
         self.file_path = os.path.join(self.trial_dir, file_name_base+ "mppt.csv")
         self.mppt_compressed_file_path = os.path.join(self.trial_dir, file_name_base+ "compressedmppt.csv")
 
@@ -217,7 +216,7 @@ class SingleController:
         entered_V = copied_params[Constants.mppt_voltage_range_param]
         if self.scan_filepath:
             try:
-                starting_V = self.find_starting_voltage(self.scan_filepath)
+                starting_V = self.find_starting_voltage(self.scan_filepath, multiplier)
                 starting_V = [str(val) for val in starting_V]
             except:
                 starting_V = [entered_V for i in range(8)]
@@ -374,7 +373,7 @@ class SingleController:
 
         return vmpp_encode_string
 
-    def find_starting_voltage(self, scan_filename):
+    def find_starting_voltage(self, scan_filename, multiplier):
         arr = np.loadtxt(scan_filename, delimiter=",", dtype=str)
         header_row = np.where(arr == "Time")[0][0]
 
@@ -394,7 +393,7 @@ class SingleController:
                     range(len(pixel_mA[:, pixel_idx])),
                     key=lambda x: abs(pixel_mA[:, pixel_idx][x]),
                 )
-            starting_V = starting_voltage_multipler*float(pixel_V[voc_idx, pixel_idx])
+            starting_V = multiplier*float(pixel_V[voc_idx, pixel_idx])
             starting_V = round(starting_V, 2)
             voc.append(starting_V)
 

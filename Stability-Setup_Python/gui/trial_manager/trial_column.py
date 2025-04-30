@@ -44,12 +44,7 @@ class TrialColumnWidget(QWidget):
 
         main_layout.addWidget(self.list_widget)
 
-        # Add the "Add Row" widget as the last item in the list widget
-        self.add_button_item = QListWidgetItem(self.list_widget)
-        self.add_row_widget = AddTrialRowWidget(self)
-        self.add_button_item.setSizeHint(self.add_row_widget.sizeHint())
-        self.list_widget.addItem(self.add_button_item)
-        self.list_widget.setItemWidget(self.add_button_item, self.add_row_widget)
+
 
     def add_row(self, trial: Trial, insert_index=None):
         """Insert a new row widget before the add button row."""
@@ -81,9 +76,7 @@ class TrialColumnWidget(QWidget):
         for i in range(self.list_widget.count() - 1, -1, -1):
             item = self.list_widget.item(i)
             widget = self.list_widget.itemWidget(item)
-            # Check if the widget associated with the item is NOT AddTrialRowWidget
-            if not isinstance(widget, AddTrialRowWidget):
-                self.list_widget.takeItem(i) # Remove the item
+            self.list_widget.takeItem(i) # Remove the item
 
     def on_trial_deletion_confirmed(self, trial: Trial):
         # Iterate through the list widget items to find the matching preset.
@@ -106,6 +99,13 @@ class TrialColumnWidget(QWidget):
         custom_print(f"Slot update_trials called for: {selected_preset.name if selected_preset else 'None'}")
         self.clear_trials() # Clear the list first
         self.selected_preset = selected_preset
+
+        # Add the "Add Row" widget as the last item in the list widget
+        self.add_button_item = QListWidgetItem(self.list_widget)
+        self.add_row_widget = AddTrialRowWidget(self)
+        self.add_button_item.setSizeHint(self.add_row_widget.sizeHint())
+        self.list_widget.addItem(self.add_button_item)
+        self.list_widget.setItemWidget(self.add_button_item, self.add_row_widget)
 
         if selected_preset and selected_preset.trials:
             for idx, trial in enumerate(selected_preset.trials):
