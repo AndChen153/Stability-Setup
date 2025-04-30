@@ -33,6 +33,8 @@ from controller import arduino_assignment
 # TODO: add box plots
 # TODO: limit measurements per mppt to account for measurement time
 # TODO: limit time to 1000 hours for millis wrap around
+# TODO: add collected printouts for setup phase of measurements
+
 
 # TODO: better control over which arduino is running what, i.e. 8 total devices, run 8, stop 4, start 4 again
 # TODO: dynamic visualization of data, live plotting
@@ -110,8 +112,7 @@ class MainWindow(QMainWindow):
         # self.setup_tabs.connect_signals(self.run_action, self.stop_action)
 
         self.preset_queue = PresetQueueWidget(self.userSettingsJson)
-        self.preset_queue.run_start.connect(self.run_handler)
-        #TODO: add stop handler
+        self.preset_queue.run_start.connect(self.run_handler)  
 
 
         script_dir = os.path.dirname(os.path.abspath(__file__))

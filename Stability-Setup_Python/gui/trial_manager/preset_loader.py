@@ -73,7 +73,9 @@ class PresetManager:
         """
         if not isinstance(all_presets, list):
             raise TypeError("Input 'all_presets' must be a list.")
-
+        
+        # referesh data
+        self.load_presets_from_json()
         presets_data = {str(p.id): self.preset_to_dict(p) for p in all_presets}
         self.data["presets"] = presets_data
         with open(self.preset_file_path, "w") as f:
