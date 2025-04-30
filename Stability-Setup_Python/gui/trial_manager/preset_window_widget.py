@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 )
 import sys
 from constants import Mode, Constants
-from helper.global_helpers import logger
+from helper.global_helpers import get_logger
 from gui.trial_manager.preset_column import PresetColumnWidget
 from gui.trial_manager.trial_column import TrialColumnWidget
 from gui.trial_manager.preset_data_class import Preset, Trial
@@ -103,12 +103,12 @@ class PresetQueueWidget(QWidget):
     @Slot(Preset)
     def handle_preset_added(self, new_preset: Preset):
         """Slot to add the new Preset object to our main list."""
-        logger.log(
+        get_logger().log(
             f"PresetQueueWidget: Adding preset '{new_preset.name}' to internal list."
         )
 
         self.presets.append(new_preset)
-        logger.log(
+        get_logger().log(
             f"PresetQueueWidget: Preset list updated. Count: {len(self.presets)}"
         )
         self.currently_selected_preset = new_preset
@@ -119,7 +119,7 @@ class PresetQueueWidget(QWidget):
     @Slot(Preset)
     def handle_preset_deleted(self, preset_to_delete: Preset):
         """Slot to remove the Preset object from our main list."""
-        logger.log(
+        get_logger().log(
             f"PresetQueueWidget: Deleting preset '{preset_to_delete.name}' from internal list."
         )
 
@@ -133,7 +133,7 @@ class PresetQueueWidget(QWidget):
         )
         #
         if reply == QMessageBox.StandardButton.No:
-            logger.log("PresetQueueWidget: Deletion cancelled by user.")
+            get_logger().log("PresetQueueWidget: Deletion cancelled by user.")
             return
 
         self.clear_params_tab()
@@ -147,7 +147,7 @@ class PresetQueueWidget(QWidget):
             )  # Preset has __eq__
 
             self.preset_column.on_preset_deletion_confirmed(preset_to_delete)
-            logger.log(
+            get_logger().log(
                 f"PresetQueueWidget: Preset list updated. Count: {len(self.presets)}"
             )
 
@@ -160,7 +160,7 @@ class PresetQueueWidget(QWidget):
             self.preset_manager.save_presets_to_json(self.presets)
 
         except ValueError:
-            logger.log(
+            get_logger().log(
                 f"PresetQueueWidget: Error! Preset '{preset_to_delete.name}' not found in internal list for deletion."
             )
 
@@ -171,7 +171,7 @@ class PresetQueueWidget(QWidget):
         if preset in self.presets:
             old_name = preset.name
             preset.name = new_name  # Update the actual Preset object's name
-            logger.log(f"Renamed preset '{old_name}' to '{preset.name}'.")
+            get_logger().log(f"Renamed preset '{old_name}' to '{preset.name}'.")
 
             # If the renamed preset is the currently selected one,
             # we might want to update related UI elements (e.g., TrialColumn title if it shows preset name)
@@ -181,7 +181,7 @@ class PresetQueueWidget(QWidget):
 
             self.preset_manager.save_presets_to_json(self.presets)
         else:
-            logger.log(
+            get_logger().log(
                 f"PresetQueueWidget: Error! Preset object not found in internal list for rename."
             )
 
@@ -204,7 +204,7 @@ class PresetQueueWidget(QWidget):
 
     @Slot(Preset)
     def handle_preset_start(self, preset:Preset):
-        logger.log(f"Start requested for '{preset.name}'")
+        get_logger().log(f"Start requested for '{preset.name}'")
         self.handle_preset_selection(preset)
         self.run_start.emit(preset)
 
@@ -212,7 +212,7 @@ class PresetQueueWidget(QWidget):
     @Slot(Preset, Trial)
     def handle_trial_deleted(self, preset: Preset, trial: Trial):
         """Slot to remove the Preset object from our main list."""
-        logger.log(
+        get_logger().log(
             f"PresetQueueWidget: Deleting trial '{Constants.run_modes[trial.trial_type]}' from internal list."
         )
 
@@ -226,7 +226,7 @@ class PresetQueueWidget(QWidget):
         )
         #
         if reply == QMessageBox.StandardButton.No:
-            logger.log("PresetQueueWidget: Deletion cancelled by user.")
+            get_logger().log("PresetQueueWidget: Deletion cancelled by user.")
             return
 
         self.clear_params_tab()
@@ -239,7 +239,7 @@ class PresetQueueWidget(QWidget):
             )  # Assumes Preset has __eq__ or object identity works
 
             self.trials_column.on_trial_deletion_confirmed(trial)
-            logger.log(
+            get_logger().log(
                 f"PresetQueueWidget: Trial list updated. Count: {len(preset.trials)}"
             )
 
@@ -255,26 +255,26 @@ class PresetQueueWidget(QWidget):
             self.preset_manager.save_presets_to_json(self.presets)
 
         except ValueError:
-            logger.log(
+            get_logger().log(
                 f"PresetQueueWidget: Error! {Constants.run_modes[trial.trial_type]} Trial not found in internal list for deletion."
             )
 
     @Slot(Preset, Trial)
     def handle_trial_created(self, preset: Preset, trial: Trial):
-        logger.log(
+        get_logger().log(
             f"PresetQueueWidget: Creating '{trial}'"
         )
 
         preset.trials.append(trial)
         self.handle_trial_edit_button(preset, trial)
-        logger.log(
+        get_logger().log(
             f"PresetQueueWidget: Preset trial list updated. Count: {len(preset.trials)}"
         )
         self.preset_manager.save_presets_to_json(self.presets)
 
     @Slot(Preset, Trial)
     def handle_trial_edit_button(self, preset:Preset, trial:Trial):
-        logger.log(
+        get_logger().log(
             f"PresetQueueWidget: Editing '{trial}'"
         )
 
@@ -292,7 +292,7 @@ class PresetQueueWidget(QWidget):
 
     @Slot(list)
     def handle_trial_value_edit(self, params: dict[str, str]):
-        logger.log(
+        get_logger().log(
             f"PresetQueueWidget: Set new params: {params}"
         )
 

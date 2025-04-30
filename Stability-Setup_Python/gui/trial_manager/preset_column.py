@@ -15,7 +15,7 @@ import assets_rc
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import QSize, Signal, Slot, Qt
 from constants import Mode, Constants
-from helper.global_helpers import logger
+from helper.global_helpers import get_logger
 from gui.trial_manager.preset_data_class import Preset, Trial
 from gui.trial_manager.dragable_list import DraggableListWidget
 
@@ -94,7 +94,7 @@ class PresetColumnWidget(QWidget):
 
         if isinstance(widget, PresetRow):
             preset = widget.preset # Get current name from QLineEdit
-            logger.log(f"Preset row clicked/selected: '{preset.name}' at index {self.list_widget.row(item)}")
+            get_logger().log(f"Preset row clicked/selected: '{preset.name}' at index {self.list_widget.row(item)}")
 
             self.preset_selected.emit(preset)
             self.list_widget.setCurrentItem(item) # Ensure visual selection
@@ -111,12 +111,12 @@ class PresetColumnWidget(QWidget):
 
     @Slot(Preset, int)
     def handle_item_moved(self, preset, new_index):
-        logger.log(f"Preset moved: preset {preset} moved to index {new_index}")
+        get_logger().log(f"Preset moved: preset {preset} moved to index {new_index}")
         self.preset_moved.emit(preset, new_index)
 
     @Slot()
     def _handle_add_request(self):
-        logger.log("Sending new preset signal")
+        get_logger().log("Sending new preset signal")
         new_preset = Preset(name="New Preset") # Create with default vals
         # Emit the signal to notify the parent *before* adding visually
         self.preset_added.emit(new_preset)
@@ -133,7 +133,7 @@ class PresetColumnWidget(QWidget):
 
     @Slot(Preset)
     def _handle_preset_start(self, preset:Preset):
-        logger.log(f"PresetRow: Start requested for '{preset.name}'")
+        get_logger().log(f"PresetRow: Start requested for '{preset.name}'")
         self.preset_start.emit(preset)
 
 class PresetRow(QWidget):
@@ -226,7 +226,7 @@ class PresetRow(QWidget):
     def _handle_name_editing_finished(self):
         new_name = self.name_edit.text().strip()
         if new_name and new_name != self.preset.name:
-            logger.log(f"PresetRow: Name edit finished for '{self.preset.name}'. New potential name: '{new_name}'")
+            get_logger().log(f"PresetRow: Name edit finished for '{self.preset.name}'. New potential name: '{new_name}'")
             # Emit signal with the Preset object and the new desired name
             self.name_changed.emit(self.preset, new_name)
         else:
@@ -239,12 +239,12 @@ class PresetRow(QWidget):
 
     @Slot()
     def _request_delete(self):
-        logger.log(f"PresetRow: Delete requested for '{self.preset.name}'")
+        get_logger().log(f"PresetRow: Delete requested for '{self.preset.name}'")
         self.delete_requested.emit(self.preset)
 
     @Slot()
     def _request_start(self):
-        logger.log(f"PresetRow: Start requested for '{self.preset.name}'")
+        get_logger().log(f"PresetRow: Start requested for '{self.preset.name}'")
         self.start_button_clicked.emit(self.preset)
 
 

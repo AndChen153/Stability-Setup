@@ -24,7 +24,7 @@ from PySide6.QtCore import QSize, Signal, Slot, Qt
 import assets_rc
 
 from constants import Mode, Constants
-from helper.global_helpers import logger
+from helper.global_helpers import get_logger
 from controller.multi_arduino_controller import MultiController
 from gui.arduino_manager.id_widget import IDWidget
 from gui.results_viewer.plotter_panel import PlotterPanel
@@ -129,9 +129,10 @@ class MainWindow(QMainWindow):
 
         # Logger
 
+        self.logger = get_logger()
+
         self.text_edit = QTextEdit()
         self.text_edit.setReadOnly(True)
-
         self.clear_button = QPushButton("Clear Logs")
         self.save_button = QPushButton("Save Logs")
 
@@ -143,12 +144,8 @@ class MainWindow(QMainWindow):
         logger_widget = QWidget()
         logger_widget.setLayout(logger_layout)
 
-        logger.set_output_widget(self.text_edit)  # register the widget
-
-        # Connect buttons
-        self.clear_button.clicked.connect(logger.clear)
-        self.save_button.clicked.connect(self.save_logs)
-
+        self.logger.set_output_widget(self.text_edit)
+        
         tabs = QTabWidget()
         tabs.addTab(self.preset_queue, "Trial Manager")
         tabs.addTab(self.ID_widget, "Arduino Manager")
@@ -171,7 +168,7 @@ class MainWindow(QMainWindow):
         self.initializeArduinoConnections()
 
     def initializeArduinoConnections(self):
-        logger.log("Called Init Arduino Connection")
+        get_logger().log("Called Init Arduino Connection")
         result = self.multi_controller.initializeMeasurement(
             trial_name=self.trial_name,
             data_dir=self.data_dir,
@@ -196,8 +193,8 @@ class MainWindow(QMainWindow):
 
         # Save to file
         full_path = os.path.join(root_dir, filename)
-        logger.save(full_path)
-        logger.log(f"Log saved to {full_path}")
+        get_logger().save(full_path)
+        get_logger().log(f"Log saved to {full_path}")
 
 
     @Slot(Preset)
@@ -224,7 +221,7 @@ class MainWindow(QMainWindow):
 
         if not result:
             # Init Failed, Handle unknown IDs
-            logger.log(
+            get_logger().log(
                 "Initialization failed or found unknown Arduino IDs.",
                 self.multi_controller.arduino_ids,
                 self.multi_controller.unknownID,
@@ -246,7 +243,7 @@ class MainWindow(QMainWindow):
             return
         else:
             # Initialization successful, proceed with first trial
-            logger.log(f"Starting {preset.name} with {len(preset.trials)} trials.")
+            get_logger().log(f"Starting {preset.name} with {len(preset.trials)} trials.")
             self.ID_widget.connected_Arduino = (
                 self.multi_controller.connected_arduinos_HWID
             )
@@ -254,7 +251,7 @@ class MainWindow(QMainWindow):
             if self.trial_queue:
                 trial = self.trial_queue.pop(0)
                 self.running_mode = trial.trial_type
-                logger.log(f"Starting trial: {trial}")
+                get_logger().log(f"Starting trial: {trial}")
                 # Use QTimer to ensure init finishes before run_action starts fully
                 QTimer.singleShot(
                     0, lambda t=trial: self.run_action(t.trial_type, t.params)
@@ -270,7 +267,7 @@ class MainWindow(QMainWindow):
         self.run_action(trial.trial_type, trial.params)
 
     def run_action(self, mode: Mode, params: list[str]):
-        logger.log(
+        get_logger().log(
             f"Run started for Mode:{Constants.run_modes.get(mode, 'Unknown')}"
         )
 
@@ -295,18 +292,18 @@ class MainWindow(QMainWindow):
         if mode in Constants.run_modes:
             self.running_left = False
 
-        logger.log(
+        get_logger().log(
             f"Run finished for mode: {Constants.run_modes.get(mode, 'Unknown')}"
         )
 
         if self.trial_queue:
             trial = self.trial_queue.pop(0)
-            logger.log(f"Starting next trial: {trial}")
+            get_logger().log(f"Starting next trial: {trial}")
             QTimer.singleShot(0, lambda t=trial: self.next_trial_signal.emit(t))
         else:
             # Preset finished
             #TODO: why this tiggers every time
-            logger.log(f"No trials left, finished {self.running_preset} {self.running_mode}")
+            get_logger().log(f"No trials left, finished {self.running_preset} {self.running_mode}")
             self.running_mode = None
             QTimer.singleShot(0, self.stop_marquee_timer)
             QMessageBox.information(
@@ -325,13 +322,13 @@ class MainWindow(QMainWindow):
         self.status_bar.clearMessage()
 
     def stop_action(self, mode: Mode = None):
-        logger.log("Stopping Actions")
+        get_logger().log("Stopping Actions")
         self.stop_measurement_thread.set()
         if self.multi_controller is not None:
             self.multi_controller.run(Mode.STOP)
 
     def on_csv_changed(self, path):
-        logger.log(f"CSV file or folder changed: {path}")
+        get_logger().log(f"CSV file or folder changed: {path}")
         if hasattr(self, "plotter_widget"):
             folder_path = self.data_location_line_edit.text().strip()
             self.plotter_widget.update_plot(folder_path)
@@ -356,7 +353,7 @@ class MainWindow(QMainWindow):
                 full_data = json.load(f)
             return full_data.get(to_load, {})
         except Exception as e:
-            logger.log(f"Error loading JSON: {e}")
+            get_logger().log(f"Error loading JSON: {e}")
             return {}
 
 

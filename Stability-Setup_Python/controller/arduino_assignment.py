@@ -22,7 +22,7 @@ def get():
     return connected_arduinos
 
 if __name__ == '__main__':
-    # logger.log(_show_all_com_devices())
+    # get_logger().log(_show_all_com_devices())
 
     for i in _show_all_com_devices():
         # if "USB-SERIAL CH340" in i.description:

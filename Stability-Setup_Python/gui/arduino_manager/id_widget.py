@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal
 from constants import Mode, Constants
-from helper.global_helpers import logger
+from helper.global_helpers import get_logger
 
 class NoScrollSpinBox(QSpinBox):
     def wheelEvent(self, event):
@@ -68,7 +68,7 @@ class IDWidget(QWidget):
                 spinbox.setStyleSheet("background-color: red;")
             else:
                 spinbox.setStyleSheet("")
-        logger.log(f"Updated {key} to {new_value}")
+        get_logger().log(f"Updated {key} to {new_value}")
         self.save_json()
 
     def load_json(self):
@@ -78,7 +78,7 @@ class IDWidget(QWidget):
                 full_data = json.load(f)
             self.data = full_data.get("arduino_ids", {})
         except Exception as e:
-            logger.log(f"Error loading JSON: {e}")
+            get_logger().log(f"Error loading JSON: {e}")
             self.data = {}
 
     def save_json(self):
@@ -98,10 +98,10 @@ class IDWidget(QWidget):
             full_data["arduino_ids"] = self.data
             with open(self.json_file, "w") as f:
                 json.dump(full_data, f, indent=4)
-            logger.log("JSON saved.")
+            get_logger().log("JSON saved.")
             self.refresh_ui()
         except Exception as e:
-            logger.log(f"Error saving JSON: {e}")
+            get_logger().log(f"Error saving JSON: {e}")
 
     def clear_layout(self, layout):
         """Recursively clear all items from a layout."""
@@ -178,7 +178,7 @@ class IDWidget(QWidget):
 
             # Place the row in the correct section.
             if key in self.connected_Arduino:
-                logger.log(f"Added {key} to ID_widget")
+                get_logger().log(f"Added {key} to ID_widget")
                 connected_layout.addLayout(row_layout)
             else:
                 disconnected_layout.addLayout(row_layout)
@@ -195,5 +195,5 @@ class IDWidget(QWidget):
         Slot called when the refresh button is clicked.
         It emits the refreshRequested signal.
         """
-        logger.log("Refresh button clicked in IDWidget.")
+        get_logger().log("Refresh button clicked in IDWidget.")
         self.refreshRequested.emit()

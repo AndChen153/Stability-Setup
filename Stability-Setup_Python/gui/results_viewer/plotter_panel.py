@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from gui.results_viewer.plotter_widget import PlotterWidget
-from helper.global_helpers import logger
+from helper.global_helpers import get_logger
 from constants import Constants
 
 fileTypes = ("scan.csv", "mppt.csv", "compressedmppt.csv")
@@ -76,7 +76,7 @@ class PlotterPanel(QWidget):
             self.data_location_line_edit.setText(folder_path)
 
     def create_plots(self):
-        logger.log("Create Plot Button Pushed")
+        get_logger().log("Create Plot Button Pushed")
         folder_path = self.data_location_line_edit.text().strip()
         if os.path.isdir(folder_path):
             plot_groups = self.get_plot_groups(folder_path)
@@ -112,7 +112,7 @@ class PlotterPanel(QWidget):
                 if f.lower().endswith(fileTypes)
             ]
         )
-        logger.log(csv_files)
+        get_logger().log(csv_files)
 
         file_groups_dict = {}
 
@@ -122,9 +122,9 @@ class PlotterPanel(QWidget):
                 "Selected file location has no plottable files")
             return file_groups_dict
         for file in csv_files:
-            logger.log(file)
+            get_logger().log(file)
             head, tail = os.path.split(file)
-            logger.log(head, tail)
+            get_logger().log(head, tail)
 
             # use compressed file if above certain file size threshold
             if tail.endswith("__mppt.csv"):
@@ -138,7 +138,7 @@ class PlotterPanel(QWidget):
                     if file_size_kb < plottingKBThreshold:
                         continue
                 except:
-                    logger.log("no full mppt file found")
+                    get_logger().log("no full mppt file found")
 
             params = tail.split("__")
             # Assume the last part before the extension indicates the file type
@@ -147,7 +147,7 @@ class PlotterPanel(QWidget):
             test_name = params[1] if "ID" not in params[1] else ""
             name_parts = [val for val in [test_name, params[0], filetype] if val]
             plot_name = " ".join(name_parts)
-            logger.log(plot_name)
+            get_logger().log(plot_name)
             file_groups_dict.setdefault(plot_name, []).append(file)
-        logger.log(file_groups_dict)
+        get_logger().log(file_groups_dict)
         return file_groups_dict

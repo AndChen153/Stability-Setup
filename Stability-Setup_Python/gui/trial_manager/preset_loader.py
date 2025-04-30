@@ -1,7 +1,7 @@
 import json
 import os
 from constants import Constants, Mode
-from helper.global_helpers import logger
+from helper.global_helpers import get_logger
 from PySide6.QtWidgets import QComboBox
 from gui.trial_manager.preset_data_class import Preset, Trial
 

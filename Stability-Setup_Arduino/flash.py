@@ -56,12 +56,6 @@ def compile_sketch(fqbn: str) -> bool:
 
     print("Compilation successful!")
     print(result.stdout)
-    # Parse memory usage
-    for line in result.stdout.splitlines():
-        if 'Sketch uses' in line and 'bytes' in line:
-            print(f"→ {line.strip()}")
-        if 'Global variables use' in line and 'bytes' in line:
-            print(f"→ {line.strip()}")
 
     return True
 
@@ -80,9 +74,6 @@ def upload_to_board(port: str, fqbn: str):
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
 
-    if result.stdout:
-        print("Upload stdout:")
-        print(result.stdout)
     if result.stderr:
         print("Upload stderr:")
         print(result.stderr)

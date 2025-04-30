@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from PySide6.QtCore import Qt
-from helper.global_helpers import logger
+from helper.global_helpers import get_logger
 
 #TODO: add raw current/current density measurement
 #TODO: force tight layout
@@ -47,7 +47,7 @@ class PlotterWidget(QWidget):
         and builds the canvas, toolbar, and custom legend widget."""
 
         if not csv_files:
-            logger.log("No CSV files found in folder.")
+            get_logger().log("No CSV files found in folder.")
             return
 
         # Clear any previous content.
@@ -115,7 +115,7 @@ class PlotterWidget(QWidget):
 
             header_dict = {value: index for index, value in enumerate(headers)}
             if "Time" not in header_dict:
-                logger.log(f"'Time' header not found in {csv_file}")
+                get_logger().log(f"'Time' header not found in {csv_file}")
                 continue
 
             pixel_V = arr[:, 1::2][:, 0:8].astype(float)
@@ -208,10 +208,10 @@ class PlotterWidget(QWidget):
                 data = arr[:, 2:-1]
                 pixel_V = data[:, ::2].astype(float)
                 pixel_mA = data[:, 1::2].astype(float)
-                if ("Cell Area (mm^2)" in meta_data):
-                    pixel_mA /= float(meta_data["Cell Area (mm^2)"])
-                else:
-                    pixel_mA /= 0.128
+                # if ("Cell Area (mm^2)" in meta_data):
+                #     pixel_mA /= float(meta_data["Cell Area (mm^2)"])
+                # else:
+                #     pixel_mA /= 0.128
                 jvLen = pixel_V.shape[0] // 2
 
                 for i in range(pixel_V.shape[1]):
@@ -225,6 +225,8 @@ class PlotterWidget(QWidget):
                         pixel_mA[0:jvLen, i],
                         label=f"Pixel {i+1} Reverse{label_suffix}",
                     )
+                    slope, intercept = np.polyfit(pixel_V[0:jvLen, i], pixel_mA[0:jvLen, i]/1000, 1)
+                    get_logger().log(i, 1/slope)
                     color = lines[0].get_color()
 
                     ax.plot(
@@ -236,7 +238,7 @@ class PlotterWidget(QWidget):
                     )
 
             except Exception as e:
-                logger.log(f"Error processing file {csv_file}: {e}")
+                get_logger().log(f"Error processing file {csv_file}: {e}")
 
         ax.set_title(plot_title)
         ax.set_xlabel("Bias [V]")
@@ -319,8 +321,8 @@ class PlotterWidget(QWidget):
 
         dead_pixels = []
         for i in range(0, len(jvList), 2):
-            # logger.log(i)
-            # logger.log(jvList[i], jvList[i+1])
+            # get_logger().log(i)
+            # get_logger().log(jvList[i], jvList[i+1])
             jvList[i] = [float(j) for j in jvList[i]]
             jvList[i + 1] = [float(x) for x in jvList[i + 1]]
             if (
