@@ -1,3 +1,4 @@
+
 # app.py
 import json
 import os
@@ -145,7 +146,7 @@ class MainWindow(QMainWindow):
         logger_widget.setLayout(logger_layout)
 
         self.logger.set_output_widget(self.text_edit)
-        
+
         tabs = QTabWidget()
         tabs.addTab(self.preset_queue, "Trial Manager")
         tabs.addTab(self.ID_widget, "Arduino Manager")

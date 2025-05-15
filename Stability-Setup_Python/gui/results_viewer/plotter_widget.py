@@ -225,8 +225,8 @@ class PlotterWidget(QWidget):
                         pixel_mA[0:jvLen, i],
                         label=f"Pixel {i+1} Reverse{label_suffix}",
                     )
-                    slope, intercept = np.polyfit(pixel_V[0:jvLen, i], pixel_mA[0:jvLen, i]/1000, 1)
-                    get_logger().log(i, 1/slope)
+                    # slope, intercept = np.polyfit(pixel_V[0:jvLen, i], pixel_mA[0:jvLen, i]/1000, 1)
+                    # get_logger().log(i, 1/slope)
                     color = lines[0].get_color()
 
                     ax.plot(
