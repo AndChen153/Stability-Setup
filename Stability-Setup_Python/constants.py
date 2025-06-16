@@ -35,7 +35,7 @@ class Constants:
         "Step Size (V)":2,
         time_param:3,
         "Measurements Per Step":4,
-        "Measurement Delay (ms)":5,
+        "Settling Time (ms)":5,
         "Measurement Interval (ms)":6,
     }
     translation_dict = {
@@ -61,7 +61,7 @@ class Constants:
             "Step Size (V)": "0.001",
             time_param: "60",
             "Measurements Per Step": "100",
-            "Measurement Delay (ms)": "300",
+            "Settling Time (ms)": "300",
             "Measurement Interval (ms)": "200",
             "Cell Area (mm^2)": "0.128",
             time_unit: "mins"

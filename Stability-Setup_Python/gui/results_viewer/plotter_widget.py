@@ -54,7 +54,7 @@ class PlotterWidget(QWidget):
         self._clear_layout(self.plot_container_layout)
 
         # Create the plot.
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(tight_layout=True)
 
         # Decide which plotting logic to use.
         if "mppt" in os.path.basename(csv_files[0]).lower():

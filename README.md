@@ -1,62 +1,144 @@
-# Stability-Setup
-Stability Tester for Perovskite Devices Summer 2022 JP lab
+# Stability Measurement System
 
-Capable of performing backwards and forwards JV scan at differing step sizes. Can measure PCE.
+A Python GUI application for managing long-term device stability trials, real-time data collection, Arduino control, and visualization results.
 
-https://www.ti.com/lit/ds/symlink/ina219.pdf
+**Installation and Arduino Firmware Flashing steps are required for completely functionality.**
 
-https://cdn-shop.adafruit.com/datasheets/mcp4725.pdf
+---
 
-https://docs.arduino.cc/resources/datasheets/A000066-datasheet.pdf
+## Installation
 
-https://forum.arduino.cc/t/serial-input-basics-updated/382007
+### 1. Using the Precompiled `.exe` (Recommended for End Users)
 
-https://www.electroschematics.com/simple-microampere-meter-circuit/
+- Download the latest `StabilitySetup.exe` from the release folder.
+- Double-click to run. No Python or additional installation is required.
+- If Windows Defender blocks it, click **"More Info" → "Run anyway"**.
 
-https://www.eevblog.com/forum/beginners/reading-micro-amp-current-output-of-a-sensor/
+### 2. From Source (for Developers)
 
-https://training.ti.com/ti-precision-labs-current-sense-amplifiers-current-sensing-different-types-amplifiers?context=1139747-1139745-1138708-1139729-1138709
+#### Requirements:
+- Python 3.9–3.11 (miniconda recommended)
+- Windows OS (tested on Windows 10/11)
+- Arduino devices connected via USB
 
-https://learn.adafruit.com/adafruit-tca9548a-1-to-8-i2c-multiplexer-breakout/wiring-and-test
+#### Setup Steps:
 
-Mppt measurement
+```bash
+# Clone the repo
+git clone https://github.com/your-org/stability-setup.git
+cd stability-setup
 
-https://www.youtube.com/watch?v=u8HJZGJQz8I&ab_channel=AHSANMEHMOOD
+# Create and activate a Conda environment
+conda create -n stabilitySetup python=3.10
+conda activate stabilitySetup
 
-https://onlinelibrary.wiley.com/doi/full/10.1002/solr.201800287?saml_referrer
+# Install dependencies
+pip install -r requirements.txt
 
-https://pubs.rsc.org/en/content/articlelanding/2017/tc/c7tc03482b
-
-# to buy
-
-# TODO
-
-
-# Conda
-
-To activate this environment, use:
-
-'''
-conda activate 'C:\Users\Andrew Chen\Dropbox\code\Stability-Setup\env'
-'''
-
-to create environment.yml file, navigate to Stability-Setup directory and then run:
+# Run the app
+python app.py
 
 ```
-conda env export > environment.yml
+
+## Arduino Firmware Flashing
+
+### Installing Arduino CLI
+
+The flash script requires Arduino CLI to be installed:
+
+1. Download Arduino CLI from [arduino.cc/cli](https://arduino.cc/cli)
+2. Add it to your system PATH
+3. Initialize the CLI and install required board packages:
+
+```bash
+# Initialize Arduino CLI
+arduino-cli config init
+
+# Install required board packages
+arduino-cli core install arduino:avr        # For Nano/Uno/Mega
+arduino-cli core install esp32:esp32        # For ESP32 boards
+
+# Install required libraries
+arduino-cli lib install "Adafruit INA219"
+arduino-cli lib install "Adafruit MCP4725"
 ```
 
-to create new environment from yml file:
+### Using flash.py
 
+The `flash.py` script allows you to easily compile and upload the Arduino firmware to multiple boards simultaneously. It now includes enhanced device detection capabilities to help identify and add support for new board types.
+
+```bash
+# Navigate to the Arduino firmware directory
+cd Stability-Setup_Arduino
+
+# Flash Arduino Nano boards (default)
+python flash.py
+
+# Flash other supported board types
+python flash.py --board uno
+python flash.py --board mega
+python flash.py --board esp32-s3
+
+# Show detailed information about all connected devices
+# (useful for identifying new board types)
+python flash.py --list-devices
 ```
-conda env create -f environment.yml
+
+### Adding Support for New Board Types
+
+The `flash.py` script includes a helper function to easily identify and add support for new board types.
+
+#### Step 1: Identify Your Board
+
+First, connect your new board and run the device detection command:
+
+```bash
+python flash.py --list-devices
 ```
 
-to update environment from yml file:
+This will show detailed information about all connected serial devices, including:
+- Device path (e.g., COM3, /dev/ttyUSB0)
+- Description (most important for identification)
+- Manufacturer, Product, Vendor/Product IDs
+- Hardware ID and other technical details
 
+If you are unsure about what to look for, try connecting and disconnecting your board to see what changes in the output.
+
+#### Step 2: Add Board Support
+
+Look at the **Description** field to identify unique keywords for your board type, then add support using the helper function inside of `flash.py`:
+
+```python
+# Example: Adding support for a new board type
+list_my_new_board = create_board_detector(['KEYWORD1', 'KEYWORD2'], 'vendor:arch:board')
 ```
-conda env update -f environment.yml
+
+#### Step 3: Complete the Integration
+
+1. Add your new detector to the `detectors` dictionary in the `flash_all_boards()` function
+2. Install the required Arduino core package:
+   ```bash
+   arduino-cli core install vendor:architecture
+   ```
+3. Add your board type to the command-line choices in the argument parser
+
+#### Example: Adding ESP32-C3 Support
+
+```python
+# 1. Run python flash.py --list-devices and identify keywords like 'ESP32-C3'
+# 2. Create detector
+list_esp32_c3_boards = create_board_detector(['ESP32-C3', 'CP210'], 'esp32:esp32:esp32c3')
+
+# 3. Add to detectors dictionary
+detectors = {
+    'nano': list_arduino_boards_nano,
+    'uno': list_arduino_boards_uno,
+    'mega': list_arduino_boards_mega,
+    'esp32-s3': list_esp32_s3_boards,
+    'esp32-c3': list_esp32_c3_boards  # Add this line
+}
+
+# 4. Install core
+# arduino-cli core install esp32:esp32
 ```
 
-
-*** make sure to run conda promp as admin

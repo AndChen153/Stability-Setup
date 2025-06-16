@@ -2,10 +2,13 @@
 # app.py
 import json
 import os
+import sys
 import threading
 from datetime import datetime
 from pathlib import Path
 
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import assets_rc
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -22,7 +25,6 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QFileSystemWatcher, QTimer
 from PySide6.QtGui import QIcon, QPalette, QColor
 from PySide6.QtCore import QSize, Signal, Slot, Qt
-import assets_rc
 
 from constants import Mode, Constants
 from helper.global_helpers import get_logger

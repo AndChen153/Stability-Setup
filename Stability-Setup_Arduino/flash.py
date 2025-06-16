@@ -4,7 +4,6 @@ import threading
 import serial.tools.list_ports
 import argparse
 import time
-import re
 
 # Path to your Arduino/ESP32 sketch
 SKETCH_PATH = os.path.join(os.path.dirname(__file__),"Stability-Setup_Arduino.ino")
@@ -16,33 +15,89 @@ def _show_all_com_devices():
         raise IOError("No serial devices found.")
     return ports
 
-# Detect Arduino Nano (CH340)
-def list_arduino_boards_nano():
-    return [(d.device, 'arduino:avr:nano')
-            for d in _show_all_com_devices()
-            if 'CH340' in d.description.upper()]
+# Show detailed information about all COM devices for identifying new board types
+def show_device_details():
+    """
+    Display detailed information about all connected serial devices.
+    This is useful for identifying new board types and their characteristics.
+    """
+    try:
+        devices = _show_all_com_devices()
+        print(f"\nFound {len(devices)} serial device(s):")
+        print("=" * 80)
 
-# Detect Arduino Uno
-def list_arduino_boards_uno():
-    return [(d.device, 'arduino:avr:uno')
-            for d in _show_all_com_devices()
-            if 'UNO' in d.description.upper()]
+        for i, device in enumerate(devices, 1):
+            print(f"\nDevice {i}:")
+            print(f"  Device: {device.device}")
+            print(f"  Name: {device.name}")
+            print(f"  Description: {device.description}")
+            print(f"  Serial Number: {device.serial_number}")
+            print(f"  Manufacturer: {device.manufacturer}")
+            print(f"  Product: {device.product}")
+            print(f"  Vendor ID: {device.vid}")
+            print(f"  Product ID: {device.pid}")
+            print(f"  Location: {device.location}")
+            print(f"  Hardware ID: {device.hwid}")
+            print(f"  Interface: {device.interface}")
+            print("-" * 40)
 
-# Detect Arduino Mega
-def list_arduino_boards_mega():
-    return [(d.device, 'arduino:avr:mega')
-            for d in _show_all_com_devices()
-            if 'MEGA' in d.description.upper()]
+        print("\nTo add support for a new board type:")
+        print("1. Look at the 'Description' field to identify unique keywords")
+        print("2. Create a new detection function using those keywords")
+        print("3. Add the function to the detectors dictionary in flash_all_boards()")
+        print("4. Install the required Arduino core with 'arduino-cli core install vendor:architecture'")
 
-# Detect ESP32-S3 boards (including Seeed XIAO-ESP32S3)
-def list_esp32_s3_boards():
-    esp_devices = []
-    for d in _show_all_com_devices():
-        desc = d.description.upper()
-        # Common USB-serial bridges/drivers on ESP32-S3 dev boards
-        if any(keyword in desc for keyword in ['CP210', 'USB SERIAL', 'CH910', 'SILABS', 'XIAO', 'ESP32']):
-            esp_devices.append((d.device, 'esp32:esp32:esp32s3'))
-    return esp_devices
+    except IOError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+# Helper function to create board detection functions
+def create_board_detector(keywords, fqbn):
+    """
+    Create a board detection function based on description keywords.
+
+    Args:
+        keywords: List of keywords to search for in device descriptions (case-insensitive)
+        fqbn: Fully Qualified Board Name for arduino-cli (e.g., 'arduino:avr:nano')
+
+    Returns:
+        Function that returns list of (device, fqbn) tuples for matching boards
+
+    Example:
+        detect_my_board = create_board_detector(['MY_BOARD', 'CUSTOM'], 'arduino:avr:nano')
+        boards = detect_my_board()
+    """
+    def detector():
+        return [(d.device, fqbn)
+                for d in _show_all_com_devices()
+                if any(keyword.upper() in d.description.upper() for keyword in keywords)]
+    return detector
+
+# Detect Arduino Nano (CH340) - using helper function
+list_arduino_boards_nano = create_board_detector(['CH340'], 'arduino:avr:nano')
+
+# Detect Arduino Uno - using helper function
+list_arduino_boards_uno = create_board_detector(['UNO'], 'arduino:avr:uno')
+
+# Detect Arduino Mega - using helper function
+list_arduino_boards_mega = create_board_detector(['MEGA'], 'arduino:avr:mega')
+
+# Detect ESP32-S3 boards (including Seeed XIAO-ESP32S3) - using helper function
+list_esp32_s3_boards = create_board_detector(
+    ['CP210', 'USB SERIAL', 'CH910', 'SILABS', 'XIAO', 'ESP32'],
+    'esp32:esp32:esp32s3'
+)
+
+# ============================================================================
+# TO ADD SUPPORT FOR NEW BOARD TYPES:
+# 1. Run: python flash.py --list-devices
+# 2. Connect your new board and identify unique keywords in the Description field
+# 3. Create a new detector using the helper function:
+#    list_my_new_board = create_board_detector(['KEYWORD1', 'KEYWORD2'], 'vendor:arch:board')
+# 4. Add your detector to the 'detectors' dictionary in flash_all_boards()
+# 5. Install the required core: arduino-cli core install vendor:arch
+# ============================================================================
 
 # Compile sketch and report memory usage
 def compile_sketch(fqbn: str) -> bool:
@@ -134,11 +189,19 @@ def flash_all_boards(board_type: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Compile & flash Arduino Nano, Uno, Mega, or ESP32-S3 boards in parallel."
+        description="Compile & flash Arduino Nano, Uno, Mega, or ESP32-S3 boards in parallel. Use --list-devices to identify new board types."
     )
     parser.add_argument(
         '--board', '-b', choices=['nano', 'uno', 'mega', 'esp32-s3'], default='nano',
         help="Board type: 'nano', 'uno', 'mega', or 'esp32-s3'."
     )
+    parser.add_argument(
+        '--list-devices', '-l', action='store_true',
+        help="Show detailed information about all connected serial devices to help identify new board types."
+    )
     args = parser.parse_args()
-    flash_all_boards(args.board)
+
+    if args.list_devices:
+        show_device_details()
+    else:
+        flash_all_boards(args.board)

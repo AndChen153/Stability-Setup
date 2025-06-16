@@ -4,52 +4,27 @@
         "DDA7FF77": 4,
         "B6E16E54": 3,
         "F05123D": 1,
-        "121662DF": 5
+        "121662DF": 5,
+        "CAB531A2": 10
     },
     "presets": {
-        "8557870c-24d7-493b-bf72-00f4acca3173": {
-            "trial_name": "Test",
-            "trial": [
-                {
-                    "trial_type": "Scan",
-                    "trial_id": "179fabde-3777-422a-825e-11504fd93066",
-                    "trial_params": [
-                        "1.2",
-                        "0.02",
-                        "0.0625",
-                        "5",
-                        "50",
-                        "1"
-                    ]
-                },
-                {
-                    "trial_type": "Mppt",
-                    "trial_id": "41467ee4-ec0b-4b93-9e06-6cf1c09f3d63",
-                    "trial_params": [
-                        "0.50",
-                        "0.001",
-                        "0.0625",
-                        "150",
-                        "500",
-                        "2"
-                    ]
-                }
-            ]
-        },
-        "f7488000-ed9e-4332-a7fd-376edb5ddb73": {
+        "d2e49fd4-85b8-4308-8b49-2a7e4d39fdfe": {
             "trial_name": "New Preset",
             "trial": [
                 {
                     "trial_type": "Mppt",
-                    "trial_id": "a64dbfdc-e48a-46a8-85de-f29c3ccf3227",
-                    "trial_params": [
-                        "0.50",
-                        "0.005",
-                        "0.128",
-                        "10",
-                        "1000",
-                        "1"
-                    ]
+                    "trial_id": "fd980205-7aca-4b8b-b4e0-1896f79e7cfe",
+                    "trial_params": {
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.6",
+                        "Step Size (V)": "0.001",
+                        "Total Time": "60",
+                        "Measurements Per Step": "100",
+                        "Measurement Delay (ms)": "300",
+                        "Measurement Interval (ms)": "200",
+                        "Cell Area (mm^2)": "0.128",
+                        "Time Param": "mins"
+                    }
                 }
             ]
         }
