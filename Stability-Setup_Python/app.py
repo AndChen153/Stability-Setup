@@ -1,39 +1,37 @@
 
 # app.py
-import json
-import os
+"""
+Main application entry point for the Stability Measurement System.
+Refactored for better separation of concerns and maintainability.
+"""
 import sys
-import threading
 from datetime import datetime
 from pathlib import Path
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import assets_rc
+sys.path.append(str(Path(__file__).parent))
+
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
     QTabWidget,
     QMessageBox,
     QStatusBar,
-    QSplitter,
     QStyleFactory,
     QTextEdit,
     QPushButton,
     QVBoxLayout,
     QWidget
 )
-from PySide6.QtCore import Qt, QFileSystemWatcher, QTimer
+from PySide6.QtCore import QTimer, Signal, Slot
 from PySide6.QtGui import QIcon, QPalette, QColor
-from PySide6.QtCore import QSize, Signal, Slot, Qt
 
-from constants import Mode, Constants
 from helper.global_helpers import get_logger
-from controller.multi_arduino_controller import MultiController
 from gui.arduino_manager.id_widget import IDWidget
 from gui.results_viewer.plotter_panel import PlotterPanel
 from gui.trial_manager.preset_data_class import Preset, Trial
 from gui.trial_manager.preset_window_widget import PresetQueueWidget
-from controller import arduino_assignment
+from core.config_manager import ConfigManager
+from core.application_state import ApplicationState
 
 # TODO: fix light/dark button
 # TODO: Add metrics for JV scan
@@ -65,73 +63,74 @@ from controller import arduino_assignment
 # long term stability
 
 class MainWindow(QMainWindow):
-    next_trial_signal = Signal(Trial)
+    """
+    Main application window with improved architecture.
+
+    Focuses on UI coordination and delegates business logic to service layer.
+    """
 
     def __init__(self):
         super().__init__()
-        self.base_dir = Path(__file__).parent.parent
-        self.data_dir = os.path.join(self.base_dir, "data")
-        self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
-        self.setWindowTitle("Stability Setup")
-        # self.setGeometry(100, 100, 1200, 600)
+        self.setWindowTitle("Stability Measurement System")
 
-        self.userSettingsJson = os.path.join(
-            os.path.dirname(__file__), "userSettings.json"
-        )
+        # Initialize core components
+        self._init_core_components()
 
-        # Running flags, button dictionaries, textboxes, etc.
-        self.running_left = False
-        self.running_plotter = False
-        self.run_buttons = {}
-        self.stop_buttons = {}
-        self.textboxes = {}
-        self.trial_name = ""  # Initialize shared Trial Name value
-        self.trial_name_lineedits = []  # List to hold all Trial Name QLineEdits
-        self.trial_queue = []
-        self.running_preset: Preset = None
-        self.running_mode = None
-        self.next_trial_signal.connect(self.start_next_trial)
+        # Initialize UI
+        self._init_ui()
 
-        # Email
-        self.notification_email = None
-        email_settings = self.load_json(self.userSettingsJson, "email_settings")
-        self.email_user = email_settings["user"]
-        self.email_pass = email_settings["pass"]
+        # Connect signals
+        self._connect_signals()
 
-        # CSV watcher, thread control, etc.
-        self.csv_watcher = QFileSystemWatcher()
-        self.csv_watcher.fileChanged.connect(self.on_csv_changed)
-        self.csv_watcher.directoryChanged.connect(self.on_csv_changed)
-        self.running_thread = None
-        self.stop_measurement_thread = threading.Event()
+        # Initialize Arduino connections
+        self._initialize_system()
 
-        self.multi_controller = MultiController()
-        self.multi_controller.started.connect(self.load_plotter_dir)
-        self.multi_controller.finished.connect(self.after_run)
-        self.folder_path = None
-        self.estimated_devices = max(1, len(arduino_assignment.get()))
-        self.toggle_button = None
+    def _init_core_components(self) -> None:
+        """Initialize core application components."""
+        # Configuration
+        config_file = Path(__file__).parent / "userSettings.json"
+        self.config = ConfigManager(config_file)
 
-        self.ID_widget = IDWidget(self.userSettingsJson)
-        self.ID_widget.refreshRequested.connect(self.initializeArduinoConnections)
+        # Application state
+        self.app_state = ApplicationState()
 
-        # Connect each SetupTab's signals to the MainWindow's action handlers.
-        # self.setup_tabs.connect_signals(self.run_action, self.stop_action)
+        # Error handling
+        from core.error_handler import ErrorHandler, set_error_handler
+        self.error_handler = ErrorHandler(self)
+        set_error_handler(self.error_handler)
 
-        self.preset_queue = PresetQueueWidget(self.userSettingsJson)
-        self.preset_queue.run_start.connect(self.run_handler)
+        # Services
+        from services.measurement_service import MeasurementService
+        self.measurement_service = MeasurementService(self.config, self.app_state)
 
+    def _init_ui(self) -> None:
+        """Initialize user interface components."""
+        # Status tracking for UI updates
+        self.marquee_timer = QTimer(self)
+        self.marquee_timer.timeout.connect(self._update_marquee)
+        self.marquee_text = "  Running...  "
+        self.marquee_index = 0
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        parent_dir = os.path.dirname(script_dir)
-        data_folder_path = os.path.join(parent_dir, "data")
+        # Create main widgets
+        self.ID_widget = IDWidget(str(self.config.config_file))
+        self.preset_queue = PresetQueueWidget(str(self.config.config_file))
 
-        self.plotter_panel = PlotterPanel(
-            default_folder=data_folder_path
-        )
+        # Data folder for plotter
+        data_folder = self.config.data.base_dir
+        self.plotter_panel = PlotterPanel(default_folder=data_folder)
 
-        # Logger
+        # Logger setup
+        self._setup_logger()
 
+        # Create tab widget
+        self._create_tabs()
+
+        # Status bar
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+
+    def _setup_logger(self) -> None:
+        """Set up logging interface."""
         self.logger = get_logger()
 
         self.text_edit = QTextEdit()
@@ -139,225 +138,191 @@ class MainWindow(QMainWindow):
         self.clear_button = QPushButton("Clear Logs")
         self.save_button = QPushButton("Save Logs")
 
+        # Connect logger buttons
+        self.clear_button.clicked.connect(self.logger.clear)
+        self.save_button.clicked.connect(self._save_logs)
+
         logger_layout = QVBoxLayout()
         logger_layout.addWidget(self.text_edit)
         logger_layout.addWidget(self.clear_button)
         logger_layout.addWidget(self.save_button)
 
-        logger_widget = QWidget()
-        logger_widget.setLayout(logger_layout)
-
+        self.logger_widget = QWidget()
+        self.logger_widget.setLayout(logger_layout)
         self.logger.set_output_widget(self.text_edit)
 
+    def _create_tabs(self) -> None:
+        """Create main tab widget."""
         tabs = QTabWidget()
         tabs.addTab(self.preset_queue, "Trial Manager")
         tabs.addTab(self.ID_widget, "Arduino Manager")
         tabs.addTab(self.plotter_panel, "Results Viewer")
-        tabs.addTab(logger_widget, "Log Viewer")
+        tabs.addTab(self.logger_widget, "Log Viewer")
 
         self.setCentralWidget(tabs)
 
-        self.status_bar = QStatusBar()
-        self.setStatusBar(self.status_bar)
+    def _connect_signals(self) -> None:
+        """Connect signals between components."""
+        # Arduino manager signals
+        self.ID_widget.refreshRequested.connect(self._refresh_arduino_connections)
 
-        # Prepare marquee animation
-        self.marquee_timer = QTimer(self)
-        self.marquee_timer.timeout.connect(self.update_marquee)
+        # Preset queue signals
+        self.preset_queue.run_start.connect(self._start_measurement)
 
-        # The text to animate (leading/trailing spaces can help the effect)
-        self.marquee_text = "  Running...  "
-        self.marquee_index = 0
+        # Measurement service signals
+        self.measurement_service.measurement_started.connect(self._on_measurement_started)
+        self.measurement_service.measurement_finished.connect(self._on_measurement_finished)
+        self.measurement_service.measurement_progress.connect(self._update_status)
+        self.measurement_service.trial_completed.connect(self._on_trial_completed)
+        self.measurement_service.preset_completed.connect(self._on_preset_completed)
 
-        self.initializeArduinoConnections()
+        # Application state signals
+        self.app_state.status_changed.connect(self._on_status_changed)
+        self.app_state.arduino_state_changed.connect(self._on_arduino_state_changed)
 
-    def initializeArduinoConnections(self):
-        get_logger().log("Called Init Arduino Connection")
-        result = self.multi_controller.initializeMeasurement(
-            trial_name=self.trial_name,
-            data_dir=self.data_dir,
-            email=self.notification_email,
-            email_user=self.email_user,
-            email_pass=self.email_pass,
-            date=self.today,
-            json_location=self.userSettingsJson,
-            plotting_mode=False,
-        )
-        self.ID_widget.connected_Arduino = self.multi_controller.connected_arduinos_HWID
-        self.ID_widget.refresh_ui()
-        self.ID_widget.save_json()
+    def _initialize_system(self) -> None:
+        """Initialize system components."""
+        self._refresh_arduino_connections()
 
-    def save_logs(self):
-        # Generate timestamped filename
+    def _refresh_arduino_connections(self) -> None:
+        """Refresh Arduino connections."""
+        get_logger().log("Refreshing Arduino connections...")
+        success = self.measurement_service.initialize_arduinos()
+
+        if success:
+            # Update UI with connection info
+            self.ID_widget.connected_Arduino = self.measurement_service.get_connected_devices()
+            self.ID_widget.refresh_ui()
+            self.ID_widget.save_json()
+        else:
+            # Handle unknown devices
+            unknown_devices = self.measurement_service.get_unknown_devices()
+            if unknown_devices:
+                for device_id in unknown_devices:
+                    self.ID_widget.data[device_id] = -1
+                self.ID_widget.save_json()
+                self.ID_widget.refresh_ui()
+
+    def _save_logs(self) -> None:
+        """Save current logs to file."""
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         filename = f"log_{timestamp}.txt"
+        root_dir = Path(__file__).parent
+        full_path = root_dir / filename
 
-        # Find root directory of the package
-        root_dir = os.path.dirname(os.path.abspath(__file__))  # location of main_window.py
-
-        # Save to file
-        full_path = os.path.join(root_dir, filename)
-        get_logger().save(full_path)
+        get_logger().save(str(full_path))
         get_logger().log(f"Log saved to {full_path}")
 
-
     @Slot(Preset)
-    def run_handler(self, preset: Preset):
-        self.running_preset = preset
-        self.trial_queue = preset.trials.copy()
+    def _start_measurement(self, preset: Preset) -> None:
+        """Start measurement with given preset."""
+        get_logger().log(f"Starting measurement: {preset.name}")
+        self._refresh_arduino_connections()
+        self.measurement_service.start_measurement(preset)
+        # if not success:
+        #     QMessageBox.warning(
+        #         self,
+        #         "Measurement Error",
+        #         "Failed to start measurement. Check Arduino connections and try again."
+        #     )
 
-        result = self.multi_controller.initializeMeasurement(
-            trial_name=self.trial_name,
-            data_dir=self.data_dir,
-            email=self.notification_email,
-            email_user=self.email_user,
-            email_pass=self.email_pass,
-            date=self.today,
-            json_location=self.userSettingsJson,
-            plotting_mode=False,
+    # Signal handlers for measurement service
+    def _on_measurement_started(self, trial: Trial) -> None:
+        """Handle measurement started."""
+        get_logger().log(f"Measurement started: {trial.trial_type.name}")
+        self._start_marquee()
+
+        # Update plotter directory
+        status = self.measurement_service.get_measurement_status()
+        if "trial_directory" in status:
+            self.plotter_panel.data_location_line_edit.setText(status["trial_directory"])
+
+    def _on_measurement_finished(self) -> None:
+        """Handle measurement finished."""
+        get_logger().log("Measurement finished")
+        self._stop_marquee()
+
+    def _on_trial_completed(self, trial: Trial) -> None:
+        """Handle trial completion."""
+        get_logger().log(f"Trial completed: {trial.trial_type.name}")
+
+    def _on_preset_completed(self, preset: Preset) -> None:
+        """Handle preset completion."""
+        QMessageBox.information(
+            self,
+            "Measurement Complete",
+            f"Preset '{preset.name}' has finished successfully."
         )
 
-        if not self.multi_controller.get_valid():
-            QMessageBox.warning(self, "Error", "No Arduinos Connected or Initialized.")
-            self.running_preset = None  # Abort
-            self.trial_queue = []
-            return
+    def _on_status_changed(self, status) -> None:
+        """Handle application status changes."""
+        # Update UI based on status
+        pass
 
-        if not result:
-            # Init Failed, Handle unknown IDs
-            get_logger().log(
-                "Initialization failed or found unknown Arduino IDs.",
-                self.multi_controller.arduino_ids,
-                self.multi_controller.unknownID,
-            )
-            for ID in self.multi_controller.unknownID:
-                self.ID_widget.data[ID] = -1
-            self.ID_widget.connected_Arduino = (
-                self.multi_controller.connected_arduinos_HWID
-            )
-            self.ID_widget.save_json()
-            self.ID_widget.refresh_ui()
-            QMessageBox.warning(
-                self,
-                "Initialization Warning",
-                "Check Arduino assignments. Some IDs are unknown.",
-            )
-            self.running_preset = None
-            self.trial_queue = []
-            return
-        else:
-            # Initialization successful, proceed with first trial
-            get_logger().log(f"Starting {preset.name} with {len(preset.trials)} trials.")
-            self.ID_widget.connected_Arduino = (
-                self.multi_controller.connected_arduinos_HWID
-            )
-            self.ID_widget.refresh_ui()
-            if self.trial_queue:
-                trial = self.trial_queue.pop(0)
-                self.running_mode = trial.trial_type
-                get_logger().log(f"Starting trial: {trial}")
-                # Use QTimer to ensure init finishes before run_action starts fully
-                QTimer.singleShot(
-                    0, lambda t=trial: self.run_action(t.trial_type, t.params)
-                )
-            else:
-                QMessageBox.information(self, "Info", "Preset has no trials.")
-                self.running_preset = None  # Reset
+    def _on_arduino_state_changed(self) -> None:
+        """Handle Arduino state changes."""
+        # Update Arduino manager UI
+        self.ID_widget.connected_Arduino = self.measurement_service.get_connected_devices()
+        self.ID_widget.refresh_ui()
 
-    @Slot(Trial)
-    def start_next_trial(self, trial: Trial):
-        self.multi_controller.reset_arduinos()
-        self.running_mode = trial.trial_type
-        self.run_action(trial.trial_type, trial.params)
+    def _update_status(self, message: str) -> None:
+        """Update status bar with message."""
+        if not self.app_state.measurement.is_running():
+            self.status_bar.showMessage(message)
 
-    def run_action(self, mode: Mode, params: list[str]):
-        get_logger().log(
-            f"Run started for Mode:{Constants.run_modes.get(mode, 'Unknown')}"
-        )
-
-        if not self.multi_controller.get_valid():
-            QMessageBox.critical(self, "Error", "Lost connection to Arduinos.")
-            self.stop_action(Mode.STOP)  # Example: Stop everything
-            self.trial_queue = []  # Clear queue
-            self.running_preset = None
-            self.stop_marquee_timer()
-            return
-
+    # Marquee animation methods
+    def _start_marquee(self) -> None:
+        """Start marquee animation in status bar."""
         self.marquee_index = 0
         self.status_bar.showMessage(self.marquee_text)
         self.marquee_timer.start(200)
 
-        self.multi_controller.run(mode, params)
-
-        self.stop_measurement_thread.clear()
-
-    def after_run(self):
-        mode = self.running_mode
-        if mode in Constants.run_modes:
-            self.running_left = False
-
-        get_logger().log(
-            f"Run finished for mode: {Constants.run_modes.get(mode, 'Unknown')}"
-        )
-
-        if self.trial_queue:
-            trial = self.trial_queue.pop(0)
-            get_logger().log(f"Starting next trial: {trial}")
-            QTimer.singleShot(0, lambda t=trial: self.next_trial_signal.emit(t))
-        else:
-            # Preset finished
-            #TODO: why this tiggers every time
-            get_logger().log(f"No trials left, finished {self.running_preset} {self.running_mode}")
-            self.running_mode = None
-            QTimer.singleShot(0, self.stop_marquee_timer)
-            QMessageBox.information(
-                self,
-                "Notification",
-                f"Preset '{self.running_preset.name}' Finished",
-            )
-            self.running_preset = None
-
-    def load_plotter_dir(self):
-        self.plotter_panel.data_location_line_edit.setText(self.multi_controller.trial_dir)
-
-    @Slot()
-    def stop_marquee_timer(self):
+    def _stop_marquee(self) -> None:
+        """Stop marquee animation."""
         self.marquee_timer.stop()
         self.status_bar.clearMessage()
 
-    def stop_action(self, mode: Mode = None):
-        get_logger().log("Stopping Actions")
-        self.stop_measurement_thread.set()
-        if self.multi_controller is not None:
-            self.multi_controller.run(Mode.STOP)
-
-    def on_csv_changed(self, path):
-        get_logger().log(f"CSV file or folder changed: {path}")
-        if hasattr(self, "plotter_widget"):
-            folder_path = self.data_location_line_edit.text().strip()
-            self.plotter_widget.update_plot(folder_path)
-
-    def update_marquee(self):
-        """Shifts the text in a circular (marquee) fashion."""
+    def _update_marquee(self) -> None:
+        """Update marquee animation."""
         text_length = len(self.marquee_text)
-        # Rotate the text: [index:] + [:index]
         display_text = (
-            self.marquee_text[self.marquee_index :]
-            + self.marquee_text[: self.marquee_index]
+            self.marquee_text[self.marquee_index:] +
+            self.marquee_text[:self.marquee_index]
         )
         self.status_bar.showMessage(display_text)
-
-        # Move the index and wrap around
         self.marquee_index = (self.marquee_index - 1) % text_length
 
-    def load_json(self, json_file, to_load):
-        """Load JSON data from the specified file and extract the 'arduino_ids' section."""
-        try:
-            with open(json_file, "r") as f:
-                full_data = json.load(f)
-            return full_data.get(to_load, {})
-        except Exception as e:
-            get_logger().log(f"Error loading JSON: {e}")
-            return {}
+    # Legacy methods for compatibility (to be removed)
+    def stop_action(self) -> None:
+        """Stop current measurement (legacy method)."""
+        self.measurement_service.stop_measurement()
+
+    def closeEvent(self, event) -> None:
+        """Handle application close event."""
+        # Stop any running measurements
+        if self.app_state.measurement.is_running():
+            reply = QMessageBox.question(
+                self,
+                "Confirm Exit",
+                "A measurement is currently running. Do you want to stop it and exit?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+
+            if reply == QMessageBox.Yes:
+                self.measurement_service.stop_measurement()
+            else:
+                event.ignore()
+                return
+
+        # Shutdown thread manager
+        from core.thread_manager import shutdown_thread_manager
+        shutdown_thread_manager()
+
+        # Save configuration
+        self.config.save_config()
+
+        event.accept()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 import uuid
 from constants import Mode, Constants
+from dataclasses import dataclass, field
 
+@dataclass
 class Trial:
     def __init__(self, trial_type:Mode, params: dict[str, str], id = None):
         """
@@ -20,6 +22,7 @@ class Trial:
     def __repr__(self):
         return f"Trial({self.trial_type}, {self.params})"
 
+@dataclass
 class Preset:
     def __init__(self, name: str, id = None, trials: list[Trial] = None):
         self.name = name
