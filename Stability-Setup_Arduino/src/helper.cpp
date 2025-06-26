@@ -36,3 +36,13 @@ void led(bool status)
 {
     digitalWrite(LED_BUILTIN, status ? HIGH : LOW);
 }
+
+inline bool every(uint32_t &next, const uint32_t period_ms)
+{
+    uint32_t now = millis();
+    if ( (int32_t)(now - next) >= 0 ) {        // time reached (signed compare)
+        next += period_ms;                     // schedule next tick
+        return true;
+    }
+    return false;
+}

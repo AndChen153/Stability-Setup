@@ -36,6 +36,11 @@ extern uint32_t uniqueID;
 const float measurement_time = 21;
 volatile uint32_t measurement_millis;
 
+bool plausible(float V, float I) {
+    return  (V >= -0.05 && V <=  2.5) &&       // perovskite Voc window
+            (I >= -0.2  && I <= 25.0);         // –0.2 mA..25 mA for your shunt
+}
+
 void perturbAndObserveClassic()
 {
     led(true);
@@ -47,6 +52,7 @@ void perturbAndObserveClassic()
     float temp_voltage = 0.0;
     float temp_flipped_A = 0.0;
     float load_voltageArr[8];
+    int measurements[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     float current_mA_flipped_arr[8];
     float current_power[8];
     float current_power_calc = 0;
@@ -61,11 +67,7 @@ void perturbAndObserveClassic()
     Serial.print(F("Delay: "));
     Serial.println(delay_per_measurement);
 
-    for (int ID = 0; ID < 8; ++ID)
-    {
-        // Vset ---------------------------------------------------
-        setVoltage_V(vset[ID], ID);
-    }
+    for (int ID = 0; ID < 8; ++ID) setVoltage_V(vset[ID], ID);
 
     delay(delay_per_measurement);
     int start_millis = millis();
@@ -84,14 +86,17 @@ void perturbAndObserveClassic()
         delay(mppt_delay);
         measurement_millis = millis();
 
-        int measurements = 0;
-        while (measurements < mppt_measurements_per_step && (millis() - measurement_millis) < mppt_measurement_interval) {
-            measurements++;
+        int total_measurements = 0;
+        memset(measurements, 0, sizeof(measurements));
+        while (total_measurements < mppt_measurements_per_step && (millis() - measurement_millis) < mppt_measurement_interval) {
+            total_measurements++;
             for (int ID = 0; ID < 8; ++ID)
             {
                 load_voltage = get_voltage_V(ID);
                 current_mA_Flipped = get_current_flipped_mA(ID);
+                if (!plausible(load_voltage, current_mA_Flipped)) continue;
 
+                measurements[ID]++;
                 current_power[ID] += load_voltage * current_mA_Flipped;
                 load_voltageArr[ID] += load_voltage;
                 current_mA_flipped_arr[ID] += current_mA_Flipped;
@@ -99,14 +104,16 @@ void perturbAndObserveClassic()
             delay(delay_per_measurement);
         }
 
-
         for (int ID = 0; ID < 8; ++ID)
         {
-            current_power[ID] /= measurements;
-            load_voltageArr[ID] /= measurements;
-            current_mA_flipped_arr[ID] /= measurements;
+            if (measurements[ID] > 0) {
+                current_power[ID] /= measurements[ID];
+                load_voltageArr[ID] /= measurements[ID];
+                current_mA_flipped_arr[ID] /= measurements[ID];
 
-            current_power_calc = load_voltageArr[ID] * current_mA_flipped_arr[ID];
+                current_power_calc = load_voltageArr[ID] * current_mA_flipped_arr[ID];
+            }
+
 
             // moving average calculation
             float smoothed_power = current_power_calc;

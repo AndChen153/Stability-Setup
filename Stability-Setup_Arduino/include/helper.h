@@ -11,5 +11,6 @@ extern const byte relayPin;
 void light_control(int light_status);
 void displaySensorVals(Adafruit_INA219 *ina219, int ID);
 void led(bool status);
+inline bool every(uint32_t &next, const uint32_t period_ms);
 
 #endif
