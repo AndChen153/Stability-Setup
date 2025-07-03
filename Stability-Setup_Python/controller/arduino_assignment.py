@@ -1,25 +1,31 @@
 import serial.tools.list_ports
-import logging
 from typing import Dict, List
-log_name = 'arduino_assignment'
 
-def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
-    ports = [
-        p
-        for p in serial.tools.list_ports.comports()
-    ]
+from helper.global_helpers import get_logger
+
+
+def _show_all_com_devices() -> List[serial.Tools.ListPorts.comports]:
+    ports = [p for p in serial.tools.list_ports.comports()]
     if not ports:
-        logging.error('%s No Arduino found', log_name)
-        raise IOError()
+        get_logger().error("No Arduino found")
+        raise IOError("No Arduino found")
     return ports
 
-def get():
-    connected_arduinos = []
-    for device in _show_all_com_devices():
-        if any(substr in device.description for substr in ["USB Serial Device", "USB-SERIAL CH340", "Arduino Mega 2560"]):
-            connected_arduinos.append(device.device)
 
-    return connected_arduinos
+def get() -> List[str]:
+    """Get a list of connected Arduino devices."""
+    try:
+        return [
+            device.device
+            for device in _show_all_com_devices()
+            if any(
+                substr in device.description
+                for substr in ["USB Serial Device", "USB-SERIAL CH340", "Arduino Mega 2560"]
+            )
+        ]
+    except IOError:
+        return []
+
 
 if __name__ == '__main__':
     # get_logger().log(_show_all_com_devices())

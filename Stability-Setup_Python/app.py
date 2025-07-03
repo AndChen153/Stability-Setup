@@ -48,6 +48,9 @@ from core.application_state import ApplicationState
 # TODO: add notification whenever anything stops running
 # TODO: fix trial titles
 
+
+# TODO: display metrics on logger page
+
 #PAPER
 #TODO: box plot for PCE between litos and my setup, 3-4 minute test
 # collect PCE with litos, my setup, then litos again to show difference between litos and my setup might be due to device degrading
@@ -218,13 +221,13 @@ class MainWindow(QMainWindow):
         """Start measurement with given preset."""
         get_logger().log(f"Starting measurement: {preset.name}")
         self._refresh_arduino_connections()
-        self.measurement_service.start_measurement(preset)
-        # if not success:
-        #     QMessageBox.warning(
-        #         self,
-        #         "Measurement Error",
-        #         "Failed to start measurement. Check Arduino connections and try again."
-        #     )
+        success = self.measurement_service.start_measurement(preset)
+        if not success:
+            QMessageBox.warning(
+                self,
+                "Measurement Error",
+                "Failed to start measurement. Check Arduino connections and try again."
+            )
 
     # Signal handlers for measurement service
     def _on_measurement_started(self, trial: Trial) -> None:

@@ -258,25 +258,30 @@ class SingleController:
         self.arr[num_params - 2][1] = self.date
         self.arr[num_params - 1] = header_arr
 
-    def _read_data(self):
+    def _read_data(self, timeout=600):
         """
-        - Reads data outputed on serial bus by arduino
-        - Saves data after certain interval of time
-        - Does not need to manage mode because that is taken care of on the arduino
+        Reads data from the serial bus with a timeout.
         """
-        done = False
-        line = ""
+        self.run_finished = False
+        start_time = time.time()
 
-        while self.should_run and not done:
+        while self.should_run and (time.time() - start_time) < timeout:
             try:
                 with self.reading_lock:
-                    line = self.ser.readline().decode("unicode_escape").rstrip()
-                    data_list = line.split(",")
-                    if len(data_list) > 0:
-                        # get_logger().log(data_list)
+                    if self.ser.in_waiting > 0:
+                        line = self.ser.readline().decode("utf-8").strip()
+                        if not line:
+                            continue
 
                         get_logger().log(f"ARDUINO{self.arduinoID}: {line}")
 
+                        if "Done!" in line:
+                            self._save_data()
+                            self.ser.flush()
+                            self.run_finished = True
+                            return
+
+                        data_list = line.split(",")
                         if len(data_list) > 13:
                             self.arr = np.append(
                                 self.arr, np.array([data_list], dtype="object"), axis=0
@@ -285,18 +290,19 @@ class SingleController:
                         if self.arr.shape[0] > Constants.line_per_save:
                             self._save_data()
 
-                        # if self.mode == "PNO" and abs(time.time() - pno_time_org) > pno_time_save * 60:
-                        #     self._gen_pno_graphs(str(os.path.abspath(self.file_name)), self.scan_filename)
-                        #     pno_time_org = time.time()
-                        if line == "Done!":
-                            self._save_data()
-                            self.ser.flush()
-                            done = True
-
             except serial.SerialException as e:
                 get_logger().log(f"Communication error on {self.port}. Error: {e}")
                 self.run_finished = True
-                break
+                return
+            except UnicodeDecodeError as e:
+                get_logger().log(f"Unicode decode error: {e}. Line: {line}")
+                continue  # Skip corrupted line
+
+            time.sleep(0.01)  # Prevent busy-waiting
+
+        if not self.run_finished:
+            get_logger().log(f"Timeout reached while waiting for 'Done!' from Arduino {self.arduinoID}")
+            self._save_data()  # Save any partial data
         self.run_finished = True
 
     def _save_data(self) -> str:
