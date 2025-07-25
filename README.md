@@ -142,3 +142,14 @@ detectors = {
 # arduino-cli core install esp32:esp32
 ```
 
+
+## Hardware
+
+The system is composed of custom-designed hardware to ensure reliable and repeatable measurements. All design files are open-source and available at the links below.
+
+- **SMS Main PCB**: The main controller board that interfaces with the computer and manages the measurement channels. It houses the Arduino, multiplexers, and other core electronic components.
+  - [View Main PCB Design Files](httpss://oshwlab.com/achen1192/stability_setup_1_1)
+- **Holder PCB**: A small, interchangeable board designed to hold the perovskite solar cell (PSC) devices under test. It connects to the main PCB and ensures a consistent connection to the device.
+  - [View Holder PCB Design Files](https://oshwlab.com/achen1192/stability_setup_1_1)
+- **3D-Printed Enclosure**: A custom enclosure to house the main PCB and provide mounting points for the holder PCB and other components.
+  - [View 3D-Enclosure CAD Model](https://cad.onshape.com/documents/2ae80eb71ffa9f4089d254fa/w/bd8477a473605951929b0fd2/e/aee47ea40cd595c8c4f856f5?renderMode=0&uiState=67abd8afd3a4a8741c8eb95c)
