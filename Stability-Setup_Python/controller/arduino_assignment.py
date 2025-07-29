@@ -4,7 +4,7 @@ from typing import Dict, List
 from helper.global_helpers import get_logger
 
 
-def _show_all_com_devices() -> List[serial.Tools.ListPorts.comports]:
+def _show_all_com_devices() -> List[serial.tools.list_ports.comports]:
     ports = [p for p in serial.tools.list_ports.comports()]
     if not ports:
         get_logger().error("No Arduino found")

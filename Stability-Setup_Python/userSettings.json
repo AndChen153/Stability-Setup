@@ -29,7 +29,7 @@
                     "trial_id": "a234fa6e-098f-408c-9eec-a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -56,7 +56,7 @@
                     "trial_id": "a234fa6e-098f-408c-9eec-a1f973fe17dfasdf3",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -83,7 +83,7 @@
                     "trial_id": "a234fa6e-098f-408c-9eec-asdf3a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -110,7 +110,7 @@
                     "trial_id": "a234fa6e-098f-4083fsadfc-9eec-a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -137,7 +137,7 @@
                     "trial_id": "a234fa6e-098f-408c-9eec-a1f97sadf63fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -164,7 +164,7 @@
                     "trial_id": "a234fa6e-098f-408c-9eec-a1f973fjf76gfhje17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -191,7 +191,7 @@
                     "trial_id": "a234fa6e-098f-408c-9eec-a1f97jft6jgfh3fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -218,7 +218,7 @@
                     "trial_id": "a234fa6efjt6-098f-408c-9eec-a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -245,7 +245,7 @@
                     "trial_id": "a234fa6efjt6-098f-408c-9eec-a1f973feasf317df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -272,7 +272,7 @@
                     "trial_id": "a234fa6efjt6-098f-408c-9eec1324fd-a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -299,7 +299,7 @@
                     "trial_id": "a234fa6efjt6-098f-4asf308c-9eec-a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -326,7 +326,7 @@
                     "trial_id": "a234fa6efjt6-09asadfdsafc-a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -353,7 +353,7 @@
                     "trial_id": "a234fa6efjt6-098f-408casf33fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -380,7 +380,7 @@
                     "trial_id": "a234fa6efjt6-03eddd1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -407,7 +407,7 @@
                     "trial_id": "a234fa6efjt6-011dcc7df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -434,7 +434,7 @@
                     "trial_id": "a234fa6efjt6-098f-403asdfsadfa1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -461,7 +461,7 @@
                     "trial_id": "a234fa6efjt6-cvbnf973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -488,7 +488,7 @@
                     "trial_id": "a234fa6efjt6-cvbnyta1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -515,7 +515,7 @@
                     "trial_id": "a234fa6efjt6-098f-408c-9eec-a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -542,7 +542,7 @@
                     "trial_id": "a234fa6efjt6-3ddd9eec-a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -569,7 +569,7 @@
                     "trial_id": "a234fa6e-098f367jf973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -596,7 +596,7 @@
                     "trial_id": "a234fa6e6hhfe17dfasdf3",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -623,7 +623,7 @@
                     "trial_id": "a234fa6e-098f6jfgja1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -650,7 +650,7 @@
                     "trial_id": "a234fa6e-096jfgha1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -677,7 +677,7 @@
                     "trial_id": "a234fa6e-nvbmvnbme17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -704,7 +704,7 @@
                     "trial_id": "a234fa6e-098fku8kvh17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -731,7 +731,7 @@
                     "trial_id": "a234fa6e-0Wzvsw4eg5tt6jgfh3fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -758,7 +758,7 @@
                     "trial_id": "a234fa6efjt6-0dcfghj73fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -785,7 +785,7 @@
                     "trial_id": "a234fa6efjt6-098thfxchf5nchgvasf317df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -812,7 +812,7 @@
                     "trial_id": "a234faju78kyfugj9eec1324fd-a1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -839,7 +839,7 @@
                     "trial_id": "a234fa6efjt6-098f-4afjt7ghj973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -866,7 +866,7 @@
                     "trial_id": "a234fa6ejgf78fghf973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -893,7 +893,7 @@
                     "trial_id": "a234fj6dghjcasf33fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -920,7 +920,7 @@
                     "trial_id": "a234fa6efjt6-03j76dghjnm7df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -947,7 +947,7 @@
                     "trial_id": "a234fjft6fbjcc7df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -974,7 +974,7 @@
                     "trial_id": "a234fa6ejy6fghjfhgja1f973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1001,7 +1001,7 @@
                     "trial_id": "a234fa6efjt6-cvj7yfnbmnbmbnm17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1028,7 +1028,7 @@
                     "trial_id": "a234fa6efjt6-cvbnyta1f97fghjgfh3fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1055,7 +1055,7 @@
                     "trial_id": "a234fa6f3asd408c-9eec-a1hdfbhf973fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1082,7 +1082,7 @@
                     "trial_id": "a233afsdfddd9eec-a1f9h6ghdgh73fe17df",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "150",
+                        "Settling Time (ms)": "150",
                         "Measurement Interval (ms)": "1500",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1114,7 +1114,7 @@
                     "trial_id": "056ce155-04ec-4891-935c-a3a8fea96f1f",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "100",
+                        "Settling Time (ms)": "100",
                         "Measurement Interval (ms)": "1000",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1223,7 +1223,7 @@
                     "trial_id": "93c613f0-d39a-457a-bf62-c1e0965f76bf",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "100",
+                        "Settling Time (ms)": "100",
                         "Measurement Interval (ms)": "1000",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1250,7 +1250,7 @@
                     "trial_id": "20a11338-b22c-4f06-b7cb-0a7c99c6f474",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "100",
+                        "Settling Time (ms)": "100",
                         "Measurement Interval (ms)": "1000",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1277,7 +1277,7 @@
                     "trial_id": "c50841a2-49e9-429c-a43e-fa7e798b0c4a",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "100",
+                        "Settling Time (ms)": "100",
                         "Measurement Interval (ms)": "1000",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1304,7 +1304,7 @@
                     "trial_id": "e06453ff-5f5e-4bce-b357-b15fa81ce7aa",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "100",
+                        "Settling Time (ms)": "100",
                         "Measurement Interval (ms)": "1000",
                         "Measurements Per Step": "1000",
                         "Starting Voltage (V)": "0.50",
@@ -1336,7 +1336,7 @@
                     "trial_id": "ece359ac-074b-4471-a054-3e23e181dd56",
                     "trial_params": {
                         "Cell Area (mm^2)": "0.128",
-                        "Measurement Delay (ms)": "100",
+                        "Settling Time (ms)": "100",
                         "Measurement Interval (ms)": "1000",
                         "Measurements Per Step": "500",
                         "Starting Voltage (V)": "0.50",
