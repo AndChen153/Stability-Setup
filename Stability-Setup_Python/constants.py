@@ -50,15 +50,15 @@ class Constants:
         Mode.SCAN: {
             "Scan Range (V)":"1.2",
             "Scan Step Size (V)":"0.03",
-            "Scan Read Count":"5",
+            "Scan Read Count":"10",
             "Scan Rate (mV/s)":"50",
             scan_mode_param:light_mode_text,
             "Cell Area (mm^2)":"0.128",
         },
         Mode.MPPT: {
             "Starting Voltage (V)": "0.50",
-            "Starting Voltage Multiplier (%)": "0.6",
-            "Step Size (V)": "0.001",
+            "Starting Voltage Multiplier (%)": "0.85",
+            "Step Size (V)": "0.005",
             time_param: "60",
             "Measurements Per Step": "100",
             "Settling Time (ms)": "300",
