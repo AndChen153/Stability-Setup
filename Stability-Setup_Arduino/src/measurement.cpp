@@ -70,7 +70,7 @@ void perturbAndObserveClassic()
     for (int ID = 0; ID < 8; ++ID) setVoltage_V(vset[ID], ID);
 
     delay(delay_per_measurement);
-    unsiged long start_millis = millis();
+    unsigned long start_millis = millis();
     Serial.print(F("measurement_time (min): "));
     Serial.println(mppt_time_mins);
     while ((millis() - start_millis) / (1000.0*60.0) < mppt_time_mins)

@@ -258,14 +258,14 @@ class SingleController:
         self.arr[num_params - 2][1] = self.date
         self.arr[num_params - 1] = header_arr
 
-    def _read_data(self, timeout=600):
+    def _read_data(self):
         """
         Reads data from the serial bus with a timeout.
         """
         self.run_finished = False
         start_time = time.time()
 
-        while self.should_run and (time.time() - start_time) < timeout:
+        while self.should_run:
             try:
                 with self.reading_lock:
                     if self.ser.in_waiting > 0:
@@ -300,9 +300,7 @@ class SingleController:
 
             time.sleep(0.01)  # Prevent busy-waiting
 
-        if not self.run_finished:
-            get_logger().log(f"Timeout reached while waiting for 'Done!' from Arduino {self.arduinoID}")
-            self._save_data()  # Save any partial data
+        self._save_data()  # Save any partial data
         self.run_finished = True
 
     def _save_data(self) -> str:
