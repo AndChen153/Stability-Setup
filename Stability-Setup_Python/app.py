@@ -39,13 +39,13 @@ from controller import arduino_assignment
 # TODO: limit time to 1000 hours for millis wrap around
 # TODO: add collected printouts for setup phase of measurements
 
-
 # TODO: better control over which arduino is running what, i.e. 8 total devices, run 8, stop 4, start 4 again
 # TODO: dynamic visualization of data, live plotting
 # TODO: live control over arduino settings, i.e. change mppt step size mid trial
-# TODO: fix incosistencies between plotter widget and raw data
-# TODO: add notification whenever anything stops running
+# TODO: reenable email notifications
 # TODO: fix trial titles
+
+# TODO: Fix arduino millis() time drift with control from computer to tell arduino when its done
 
 #PAPER
 #TODO: box plot for PCE between litos and my setup, 3-4 minute test
