@@ -514,4 +514,38 @@ class PlotterWidget(QWidget):
         if canvas:
             canvas.draw_idle()
 
+    def get_stats(self, voltage, current):
+        V = np.asarray(voltage)
+        I = np.asarray(current)
+        if V.shape != I.shape:
+            raise ValueError("voltages and currents must have the same shape")
 
+        sort_I = np.argsort(I)
+        I_sorted = I[sort_I]
+        V_sorted_by_I = V[sort_I]
+        Voc = float(np.interp(0.0, I_sorted, V_sorted_by_I))
+
+        # 2) Isc: interpolate I at V=0
+        sort_V = np.argsort(V)
+        V_sorted = V[sort_V]
+        I_sorted_by_V = I[sort_V]
+        Isc = float(np.interp(0.0, V_sorted, I_sorted_by_V))
+
+        # 3) Maximum power point
+        P = V * I
+        idx_mp = np.argmax(P)
+        Vmp = float(V[idx_mp])
+        Imp = float(I[idx_mp])
+
+        # 4) Fill Factor
+        FF = (Vmp * Imp) / (Voc * Isc) if (Voc * Isc) != 0 else np.nan
+
+        PCE = (Vmp * Imp) / 100 * 100
+
+
+        return {
+            "FF":  FF,
+            "PCE": PCE,
+            "Jsc": Isc,
+            "Voc": Voc
+        }
