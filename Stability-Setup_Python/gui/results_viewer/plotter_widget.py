@@ -80,11 +80,11 @@ class PlotterWidget(QWidget):
         stats_widget = None
         if "mppt" in os.path.basename(csv_files[0]).lower():
             stats_widget = self.create_mppt_stats_table(csv_files)
-            stats_widget.setMinimumWidth(300)  # Set minimum width instead of fixed
+            stats_widget.setMinimumWidth(450)  # MPPT table: 4 columns, ~450px optimal
             stats_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         else:
             stats_widget = self.create_scan_stats_table(csv_files)
-            stats_widget.setMinimumWidth(300)  # Set minimum width instead of fixed
+            stats_widget.setMinimumWidth(500)  # Scan table: 6 columns, ~500px optimal
             stats_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # Layout the canvas, toolbar, legend, and stats.
@@ -101,8 +101,6 @@ class PlotterWidget(QWidget):
         # Right side: statistics table (resizable)
         if stats_widget:
             main_splitter.addWidget(stats_widget)
-            # Set initial sizes: plot=500, legend=250 (fixed), stats=400
-            # main_splitter.setSizes([250, 500, 400])
         else:
             # Set initial sizes: plot=700, legend=250 (fixed)
             main_splitter.setSizes([700, 250])
@@ -547,7 +545,7 @@ class PlotterWidget(QWidget):
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         table.setAlternatingRowColors(True)
         table.setSelectionBehavior(QTableWidget.SelectRows)
-        table.setSortingEnabled(True)
+        table.setSortingEnabled(False)
 
         stats_layout.addWidget(table)
         return stats_widget
@@ -739,7 +737,7 @@ class PlotterWidget(QWidget):
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         table.setAlternatingRowColors(True)
         table.setSelectionBehavior(QTableWidget.SelectRows)
-        table.setSortingEnabled(True)
+        table.setSortingEnabled(False)
 
         stats_layout.addWidget(table)
         return stats_widget
