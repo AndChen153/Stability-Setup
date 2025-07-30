@@ -136,6 +136,10 @@ class MainWindow(QMainWindow):
         self.clear_button = QPushButton("Clear Logs")
         self.save_button = QPushButton("Save Logs")
 
+        # Connect button signals
+        self.clear_button.clicked.connect(self.text_edit.clear)
+        self.save_button.clicked.connect(self.save_logs)
+
         logger_layout = QVBoxLayout()
         logger_layout.addWidget(self.text_edit)
         logger_layout.addWidget(self.clear_button)
@@ -145,7 +149,7 @@ class MainWindow(QMainWindow):
         logger_widget.setLayout(logger_layout)
 
         self.logger.set_output_widget(self.text_edit)
-        
+
         tabs = QTabWidget()
         tabs.addTab(self.preset_queue, "Trial Manager")
         tabs.addTab(self.ID_widget, "Arduino Manager")
@@ -186,13 +190,17 @@ class MainWindow(QMainWindow):
     def save_logs(self):
         # Generate timestamped filename
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"log_{timestamp}.txt"
+        filename = f"log_{timestamp}.log"
 
-        # Find root directory of the package
+        # Find root directory of the package and create Logs folder
         root_dir = os.path.dirname(os.path.abspath(__file__))  # location of main_window.py
+        logs_dir = os.path.join(root_dir, "Logs")
+
+        # Create Logs directory if it doesn't exist
+        os.makedirs(logs_dir, exist_ok=True)
 
         # Save to file
-        full_path = os.path.join(root_dir, filename)
+        full_path = os.path.join(logs_dir, filename)
         get_logger().save(full_path)
         get_logger().log(f"Log saved to {full_path}")
 
