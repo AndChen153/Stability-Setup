@@ -129,7 +129,18 @@ class PlotterWidget(QWidget):
 
     def _plot_mppt(self, ax, csv_files, plot_title):
         overall_min_time, overall_max_time, overall_max_pce = None, None, None
-        for csv_file in csv_files:
+
+        # Get a color cycle for different CSV files
+        # Use tab10 for up to 10 files, then cycle through or use other colormaps
+        if len(csv_files) <= 10:
+            # For small numbers, use specific indices to get maximally distinct colors
+            color_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9][:len(csv_files)]
+            colors = [plt.cm.tab10(i/9.0) for i in color_indices]
+        else:
+            # For more than 10 files, use a continuous colormap that can generate many distinct colors
+            colors = plt.cm.hsv(np.linspace(0, 1, len(csv_files), endpoint=False))
+
+        for file_idx, csv_file in enumerate(csv_files):
             arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
             header_row = np.where(arr == "Time")[0][0]
 
@@ -180,13 +191,14 @@ class PlotterWidget(QWidget):
 
             # Plot each pixel.
             NUM_PIXELS = data.shape[1]
+            file_color = colors[file_idx]
             for i in range(NUM_PIXELS):
                 basename = os.path.basename(csv_file)
                 match = re.search(r"ID(\d+)", basename, re.IGNORECASE)
                 id_str = match.group(1) if match else ""
                 label_suffix = f" (ID {id_str})" if id_str else ""
                 lineName = f"Pixel {i+1}{label_suffix}"
-                ax.plot(time, data[:, i], label=lineName)
+                ax.plot(time, data[:, i], label=lineName, color=file_color)
 
         if overall_min_time is None or overall_max_time is None:
             overall_min_time, overall_max_time = 0, 1
@@ -217,7 +229,17 @@ class PlotterWidget(QWidget):
             self.line_label_texts = dict(zip(lines, label_texts))
 
     def _plot_scan(self, ax, csv_files, plot_title):
-        for csv_file in csv_files:
+        # Get a color cycle for different CSV files
+        # Use tab10 for up to 10 files, then cycle through or use other colormaps
+        if len(csv_files) <= 10:
+            # For small numbers, use specific indices to get maximally distinct colors
+            color_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9][:len(csv_files)]
+            colors = [plt.cm.tab10(i/9.0) for i in color_indices]
+        else:
+            # For more than 10 files, use a continuous colormap that can generate many distinct colors
+            colors = plt.cm.hsv(np.linspace(0, 1, len(csv_files), endpoint=False))
+
+        for file_idx, csv_file in enumerate(csv_files):
             try:
                 arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
                 header_row = np.where(arr == "Time")[0][0]
@@ -235,6 +257,7 @@ class PlotterWidget(QWidget):
                 # else:
                 #     pixel_mA /= 0.128
                 jvLen = pixel_V.shape[0] // 2
+                file_color = colors[file_idx]
 
                 for i in range(pixel_V.shape[1]):
                     basename = os.path.basename(csv_file)
@@ -264,19 +287,19 @@ class PlotterWidget(QWidget):
                         V_reverse, I_reverse = V_first_half, I_first_half
 
                     # Plot reverse sweep (solid line)
-                    lines = ax.plot(
+                    ax.plot(
                         V_reverse,
                         I_reverse,
+                        color=file_color,
                         label=f"Pixel {i+1} Reverse{label_suffix}",
                     )
-                    color = lines[0].get_color()
 
                     # Plot forward sweep (dashed line)
                     ax.plot(
                         V_forward,
                         I_forward,
                         "--",
-                        color=color,
+                        color=file_color,
                         label=f"Pixel {i+1} Forward{label_suffix}",
                     )
 
