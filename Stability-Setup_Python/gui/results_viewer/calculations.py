@@ -4,7 +4,6 @@ import re
 import numpy as np
 from helper.global_helpers import get_logger
 
-
 class ScanCalculations:
     """Handles all calculations related to scan data analysis."""
 
@@ -166,89 +165,89 @@ class MPPTCalculations:
         """Calculate MPPT statistics for all pixels in a single CSV file."""
         try:
             arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
-            header_row = np.where(arr == "Time")[0][0]
-
-            meta_data = {}
-            for data in arr[:header_row, :2]:
-                meta_data[data[0]] = data[1]
-
-            headers = arr[header_row, :]
-            arr = arr[header_row + 1 :, :]
-
-            header_dict = {value: index for index, value in enumerate(headers)}
-            if "Time" not in header_dict:
-                get_logger().log(f"'Time' header not found in {csv_file}")
-                return []
-
-            pixel_V = arr[:, 1::2][:, 0:8].astype(float)
-            pixel_mA = arr[:, 2::2][:, 0:8].astype(float)
-            time = np.array(arr[:, header_dict["Time"]]).astype("float")
-
-            if len(time) < 1:
-                return []
-
-            # Get cell area for PCE calculation
-            cell_area = float(meta_data.get("Cell Area (mm^2)", 0.128))
-
-            # Calculate PCE for each pixel: (V * I / 1000) / (0.1 * cell_area) * 100
-            data = ((pixel_V * pixel_mA / 1000) / (0.1 * cell_area)) * 100
-            t_idx, t_sec = MPPTCalculations.detect_mppt_stable_irregular(
-                data, time, W_sec=10.0, hold_sec=4.0, eps_roc=2e-3, eps_cv=5e-3
-            )
-            get_logger().log(f"t_idx: {t_idx}, t_sec: {t_sec}")
-
-            # Convert time to minutes
-            time_minutes = time / 60.0
-
-            # Extract file ID from filename
-            basename = os.path.basename(csv_file)
-            match = re.search(r"ID(\d+)", basename, re.IGNORECASE)
-            file_id = match.group(1) if match else "Unknown"
-
-            stats_list = []
-
-            # Process each pixel
-            NUM_PIXELS = data.shape[1]
-            for pixel_idx in range(NUM_PIXELS):
-                pixel_pce = data[:, pixel_idx]
-
-                # Calculate statistics for this pixel
-                pce_last_30s_avg = MPPTCalculations.calculate_pce_last_30s(
-                    time_minutes, pixel_pce
-                )
-                pce_highest_30s_avg, max_pce_idx = (
-                    MPPTCalculations.calculate_pce_highest_30s_avg(
-                        time_minutes, pixel_pce
-                    )
-                )
-                t90_hours = MPPTCalculations.calculate_t90_hours(
-                    time_minutes, pixel_pce, pce_highest_30s_avg, max_pce_idx
-                )
-
-                # Calculate degradation percentage
-                if pce_highest_30s_avg > 0:
-                    degradation_percent = (
-                        (pce_highest_30s_avg - pce_last_30s_avg) / pce_highest_30s_avg
-                    ) * 100
-                else:
-                    degradation_percent = 0.0
-
-                stats_list.append(
-                    {
-                        "file_id": file_id,
-                        "pixel": pixel_idx + 1,
-                        "pce_last_30s_avg": pce_last_30s_avg,
-                        "pce_highest_30s_avg": pce_highest_30s_avg,
-                        "degradation_percent": degradation_percent,
-                        "t90_hours": t90_hours,
-                    }
-                )
-
-            return stats_list
-
         except Exception as e:
             get_logger().log(f"Error processing MPPT file {csv_file}: {e}")
             return []
+
+
+        header_row = np.where(arr == "Time")[0][0]
+
+        meta_data = {}
+        for data in arr[:header_row, :2]:
+            meta_data[data[0]] = data[1]
+
+        headers = arr[header_row, :]
+        arr = arr[header_row + 1 :, :]
+
+        header_dict = {value: index for index, value in enumerate(headers)}
+        if "Time" not in header_dict:
+            get_logger().log(f"'Time' header not found in {csv_file}")
+            return []
+
+        pixel_V = arr[:, 1::2][:, 0:8].astype(float)
+        pixel_mA = arr[:, 2::2][:, 0:8].astype(float)
+        time = np.array(arr[:, header_dict["Time"]]).astype("float")
+
+        if len(time) < 1:
+            return []
+
+        # Get cell area for PCE calculation
+        cell_area = float(meta_data.get("Cell Area (mm^2)", 0.128))
+
+        # Calculate PCE for each pixel: (V * I / 1000) / (0.1 * cell_area) * 100
+        data = ((pixel_V * pixel_mA / 1000) / (0.1 * cell_area)) * 100
+        # Convert time to minutes
+        time_minutes = time / 60.0
+
+        # Extract file ID from filename
+        basename = os.path.basename(csv_file)
+        match = re.search(r"ID(\d+)", basename, re.IGNORECASE)
+        file_id = match.group(1) if match else "Unknown"
+
+        stats_list = []
+
+        # Process each pixel
+        NUM_PIXELS = data.shape[1]
+        for pixel_idx in range(NUM_PIXELS):
+            pixel_pce = data[:, pixel_idx]
+
+            idx_stable = MPPTCalculations.detect_mppt_stable(pixel_pce, time_minutes)
+
+            pixel_pce_stable = pixel_pce[idx_stable:]
+            time_minutes_stable = time_minutes[idx_stable:]
+
+            # Calculate statistics for this pixel
+            pce_last_30s_avg = MPPTCalculations.calculate_pce_last_30s(
+                time_minutes_stable, pixel_pce_stable
+            )
+            pce_first_30s_avg =MPPTCalculations.calculate_pce_first_30s(
+                    time_minutes_stable, pixel_pce_stable
+                )
+            t90_hours = MPPTCalculations.calculate_t90_hours(
+                time_minutes_stable, pixel_pce_stable, pce_first_30s_avg
+            )
+
+            # Calculate degradation percentage
+            if pce_first_30s_avg > 0:
+                degradation_percent = (
+                    (pce_first_30s_avg - pce_last_30s_avg) / pce_first_30s_avg
+                ) * 100
+            else:
+                degradation_percent = 0.0
+
+            stats_list.append(
+                {
+                    "file_id": file_id,
+                    "pixel": pixel_idx + 1,
+                    "pce_last_30s_avg": pce_last_30s_avg,
+                    "pce_first_30s_avg": pce_first_30s_avg,
+                    "degradation_percent": degradation_percent,
+                    "t90_hours": t90_hours,
+                }
+            )
+
+        return stats_list
+
 
     @staticmethod
     def calculate_pce_last_30s(time_minutes, pce_data):
@@ -289,132 +288,66 @@ class MPPTCalculations:
         return float(np.mean(first_30s_pce))
 
     @staticmethod
-    def calculate_pce_highest_30s_avg(time_minutes, pce_data):
-        """Calculate the average of 30 seconds of PCE values around the highest PCE point.
-
-        Returns:
-            tuple: (average_pce, max_pce_idx) where max_pce_idx is the index of the highest PCE value
-        """
-        if len(time_minutes) == 0 or len(pce_data) == 0:
-            return 0.0, 0
-
-        # Convert 30 seconds to minutes
-        window_minutes = 0.5
-
-        # Find the index of the highest PCE value
-        max_pce_idx = np.argmax(pce_data)
-
-        # If total time is less than 30 seconds, use all data
-        total_time = np.max(time_minutes) - np.min(time_minutes)
-        if total_time <= window_minutes:
-            return float(np.mean(pce_data)), max_pce_idx
-
-        peak_time = time_minutes[max_pce_idx]
-
-        # Define the 30-second window around the peak (±15 seconds)
-        half_window = window_minutes / 2
-        start_time = peak_time - half_window
-        end_time = peak_time + half_window
-
-        # Find data points within the 30-second window around the peak
-        mask = (time_minutes >= start_time) & (time_minutes <= end_time)
-
-        if np.sum(mask) > 0:
-            window_pce = pce_data[mask]
-            return float(np.mean(window_pce)), max_pce_idx
-        else:
-            # Fallback: if no data in window, return the peak value itself
-            return float(pce_data[max_pce_idx]), max_pce_idx
-
-    @staticmethod
-    def calculate_t90_hours(time_minutes, pce_data, pce_highest_30s_avg, max_pce_idx):
+    def calculate_t90_hours(time_minutes, pce_data, pce_first_30s_avg):
         """Calculate T90: time to reach 90% of highest 30s average PCE (10% degradation).
         Only looks for degradation after the peak PCE point.
         """
         if len(time_minutes) == 0 or len(pce_data) == 0:
             return float("inf")  # Return infinity if no data
 
-        if pce_highest_30s_avg <= 0:
+        if pce_first_30s_avg <= 0:
             return float("inf")
 
         # Calculate 90% of initial PCE (10% degradation threshold)
-        target_pce = pce_highest_30s_avg * 0.9
-
-        # Only look for degradation after the peak PCE point
-        post_peak_pce = pce_data[max_pce_idx:]
-        post_peak_time = time_minutes[max_pce_idx:]
+        target_pce = pce_first_30s_avg * 0.9
 
         # Find the first time when PCE drops to or below 90% of initial (after peak)
-        degraded_indices = np.where(post_peak_pce <= target_pce)[0]
+        degraded_indices = np.where(pce_data <= target_pce)[0]
 
         if len(degraded_indices) == 0:
             # PCE never dropped to 90% after peak, return infinity
             return float("inf")
 
         first_degraded_idx = degraded_indices[0]
-        return float(post_peak_time[first_degraded_idx] / 60)
+        return float(time_minutes[first_degraded_idx] / 60)
 
     @staticmethod
-    def detect_mppt_stable_irregular(Y, t, W_sec, hold_sec, eps_roc, eps_cv):
-        # Y: (n, T), t: (T,), increasing
-        Y = Y.T
-        Y = np.asarray(Y)
-        n, T = Y.shape
-        t = np.asarray(t, dtype=np.float64)
+    def detect_mppt_stable(pce, time_min):
+        win_pts_smooth = 11                           # must be odd; tweak as needed
+        kernel = np.ones(win_pts_smooth, dtype=float) / win_pts_smooth
+        pce_smooth = np.convolve(pce, kernel, mode='same')
 
-        # 1) window start per k for a W_sec time window
-        k0 = np.searchsorted(t, t - W_sec, side="left")
+        # ------------------------------------------------------------------
+        # 2)  Instantaneous slope  (% per minute) --------------------------
+        # ------------------------------------------------------------------
+        dpdt = np.gradient(pce_smooth, time_min)      # d(pce)/d(time)
 
-        # 2) prefix sums (rowwise for Y-derived arrays)
-        def ps(a):
-            return np.pad(np.cumsum(a, axis=1, dtype=np.float64), ((0, 0), (1, 0)))
+        # ------------------------------------------------------------------
+        # 3)  Threshold that means “steady” -------------------------------
+        # ------------------------------------------------------------------
+        # ------------------------------------------------------------------
+        # 4)  Require a full N-minute window below the threshold ----------
+        # ------------------------------------------------------------------
+        window_minutes = 0.5                          # how long it must stay flat
+        noise = np.std(pce_smooth[-50:])          # last 50 points on the plateau
+        slope_thresh = noise / window_minutes     # ≈ 0.5 × 10⁻³ to 2 × 10⁻³ %/min
+        mask = np.abs(dpdt) < slope_thresh            # Boolean array
 
-        S_y = ps(Y)
-        S_y2 = ps(Y * Y)
-        S_ty = ps(Y * t)  # t broadcasts over rows
+        # sample rate (points / minute) from the median spacing
+        Fs = 1.0 / np.median(np.diff(time_min))
+        win_pts = max(int(round(window_minutes * Fs)), 1)
 
-        S_t = np.pad(np.cumsum(t, dtype=np.float64), (1, 0))
-        S_t2 = np.pad(np.cumsum(t * t, dtype=np.float64), (1, 0))
+        # running sum of the True/False mask
+        run_sum = np.convolve(mask.astype(int),
+                            np.ones(win_pts, dtype=int),
+                            mode='valid')
 
-        # 3) gather rolling sums for each end index k using start k0[k]
-        idx = np.arange(T)
+        # first index where *all* points in the window are True
+        stable_candidates = np.where(run_sum == win_pts)[0]
 
-        def take_roll(S, rowwise=True):
-            if rowwise:  # S: (n, T+1)
-                return S[:, idx + 1] - S[:, k0]
-            else:  # S: (T+1,)
-                return S[idx + 1] - S[k0]
+        if stable_candidates.size:
+            idx0 = stable_candidates[0]               # start of the first stable window
+        else:
+            idx0 = 0
 
-        sum_y = take_roll(S_y, rowwise=True)  # (n, T)
-        sum_y2 = take_roll(S_y2, rowwise=True)  # (n, T)
-        sum_ty = take_roll(S_ty, rowwise=True)  # (n, T)
-        sum_t = take_roll(S_t, rowwise=False)  # (T,)
-        sum_t2 = take_roll(S_t2, rowwise=False)  # (T,)
-
-        # 4) slope + stats per window
-        w = idx - k0 + 1  # samples per window (T,)
-
-        denom = (w * sum_t2) - (sum_t**2)  # (T,)
-        mean = sum_y / w
-        var = (sum_y2 / w) - mean * mean
-        var = np.maximum(var, 0.0)
-        cv = np.sqrt(var) / (mean + 1e-12)
-
-        slope = ((w * sum_ty) - (sum_t * sum_y)) / (denom + 1e-12)  # per second
-
-        stable = (np.abs(slope) <= eps_roc * mean) & (cv <= eps_cv)
-
-        # 5) require stability to persist for hold_sec
-        k_hold = np.searchsorted(t, t - hold_sec, side="left")
-        S_stable = np.pad(np.cumsum(stable.astype(np.int32), axis=1), ((0, 0), (1, 0)))
-        consec = S_stable[:, idx + 1] - S_stable[:, k_hold]  # (n, T)
-        ok = consec >= (idx - k_hold + 1)  # all samples in last hold_sec stable
-
-        # 6) first time per trace
-        first = np.argmax(ok, axis=1)  # 0 if none
-        has = ok.any(axis=1)
-        first = np.where(has, first, -1)
-        t_idx = first
-        t_sec = np.where(first >= 0, t[first], np.nan)
-
-        return t_idx.astype(int), t_sec
+        return idx0

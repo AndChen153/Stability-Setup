@@ -84,7 +84,7 @@ class PlotterWidget(QWidget):
         toolbar = NavigationToolbar(canvas, self)
 
         # Create the custom legend widget.
-        legend_widget = self.create_legend_widget(ax)
+        legend_widget = self.create_legend_widget(ax, self.mppt)
         legend_widget.setFixedWidth(160)
         legend_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
 
@@ -279,10 +279,10 @@ class PlotterWidget(QWidget):
                 data = arr[:, 2:-1] # Gets rid of time and voltage applied columns
                 pixel_V = data[:, ::2].astype(float)
                 pixel_mA = data[:, 1::2].astype(float)
-                # if ("Cell Area (mm^2)" in meta_data):
-                #     pixel_mA /= float(meta_data["Cell Area (mm^2)"])
-                # else:
-                #     pixel_mA /= 0.128
+                if ("Cell Area (mm^2)" in meta_data):
+                    pixel_mA /= float(meta_data["Cell Area (mm^2)"])
+                else:
+                    pixel_mA /= 0.128
                 jvLen = pixel_V.shape[0] // 2
                 file_color = colors[file_idx]
 
@@ -339,14 +339,14 @@ class PlotterWidget(QWidget):
         ax.grid(True)
         ax.spines["bottom"].set_position("zero")
 
-    def create_legend_widget(self, ax):
+    def create_legend_widget(self, ax, mppt):
         """Creates a custom legend with checkboxes to toggle line visibility."""
         legend_widget = QWidget()
         legend_layout = QVBoxLayout(legend_widget)
         legend_layout.setContentsMargins(5, 5, 5, 5)
 
         # Three-way toggle for PCE, Voltage, Current (only if MPPT mode)
-        if self.mppt:
+        if mppt:
             toggle_layout = QVBoxLayout()
             toggle_label = QLabel("Display Mode:")
             toggle_layout.addWidget(toggle_label)
