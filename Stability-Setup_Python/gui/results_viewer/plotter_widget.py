@@ -23,6 +23,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from PySide6.QtCore import Qt
 from helper.global_helpers import get_logger
+from .calculations import ScanCalculations, MPPTCalculations
 
 #TODO: add raw current/current density measurement
 #TODO: force tight layout
@@ -310,92 +311,7 @@ class PlotterWidget(QWidget):
         ax.grid(True)
         ax.spines["bottom"].set_position("zero")
 
-    def scan_calcs(self, arr, headers, cell_area):
-        """
-        returns: reverse:[fillFactorListSplit, jscListSplit, vocListSplit], forward:[fillFactorListSplit, jscListSplit, vocListSplit]
-        """
-        dead_pixels = self.get_dead_pixels(arr, headers)
 
-        length = len(headers) - 1
-
-        jvList = []
-
-        for i in range(2, length):
-            jvList.append(arr[:, i])
-
-        jList = []  # current
-        vList = []  # voltage
-        for i in range(0, len(jvList), 2):
-            jList.append([float(j) for j in jvList[i + 1]])
-            vList.append([float(x) for x in jvList[i]])
-
-        jList = np.array(jList).T
-        vList = np.array(vList).T
-        jListReverse, jListForward = np.array_split(jList, 2)
-        vListReverse, vListForward = np.array_split(vList, 2)
-
-        return (
-            self.calc(jListReverse, vListReverse, cell_area, dead_pixels),
-            self.calc(jListForward, vListForward, cell_area, dead_pixels),
-        )
-
-    def calc(self, jList, vList, cell_area, dead_pixels):
-        # find Jsc (V = 0)
-        jscList = np.zeros((vList.shape[1]))
-        for i in range(vList.shape[1]):
-            difference_array = np.absolute(vList[:, i])
-            idx = difference_array.argmin()
-            jscList[i] = jList[idx, i]
-
-        # find Voc (J = 0)
-        vocList = np.zeros((jList.shape[1]))
-        for i in range(jList.shape[1]):
-            difference_array = np.absolute(jList[:, i])
-            idx = difference_array.argmin()
-            vocList[i] = vList[idx, i]
-
-        # find Fill Factor
-        pce_list = jList * vList
-        maxVIdx = np.argmax(pce_list, axis=0)  # find index of max pce value
-        vmppList = []
-        jmppList = []
-        for i in range(len(maxVIdx)):  # for i in number of pixels
-            # if vList[maxVIdx[i],i]>0:
-            vmppList.append(vList[maxVIdx[i], i])
-            jmppList.append(jList[maxVIdx[i], i])
-        vmppList = np.array(vmppList)
-        jmppList = np.array(jmppList)
-
-        fillFactorList = 100 * vmppList * jmppList / (jscList * vocList)
-        jscList = jscList / cell_area
-
-        fillFactorList = np.delete(fillFactorList, dead_pixels)
-        jscList = np.delete(jscList, dead_pixels)
-        vocList = np.delete(vocList, dead_pixels)
-
-        # fillFactorList, jscList, vocList
-        return (fillFactorList, jscList, vocList)
-
-    def getDeadPixels(self, arr, headers):
-        length = len(headers) - 1
-
-        jvList = []
-        for i in range(2, length):  # remove timing and volts output
-            jvList.append(arr[:, i])
-
-        dead_pixels = []
-        for i in range(0, len(jvList), 2):
-            # get_logger().log(i)
-            # get_logger().log(jvList[i], jvList[i+1])
-            jvList[i] = [float(j) for j in jvList[i]]
-            jvList[i + 1] = [float(x) for x in jvList[i + 1]]
-            if (
-                np.mean(np.absolute(np.array(jvList[i]))) < 0.2
-                or np.mean(np.absolute(np.array(jvList[i + 1]))) < 0.2
-            ):
-                dead_pixels.append(int(i / 2))  # [9, 12, 13, 19, 21, 27, 30, 31]
-
-        return dead_pixels
 
     def create_legend_widget(self, ax):
         """Creates a custom legend with checkboxes to toggle line visibility."""
@@ -511,7 +427,7 @@ class PlotterWidget(QWidget):
         all_stats = []
         for csv_file in csv_files:
             try:
-                file_stats = self.calculate_scan_stats(csv_file)
+                file_stats = ScanCalculations.calculate_scan_stats(csv_file)
                 if file_stats:
                     all_stats.extend(file_stats)
             except Exception as e:
@@ -550,142 +466,7 @@ class PlotterWidget(QWidget):
         stats_layout.addWidget(table)
         return stats_widget
 
-    def calculate_scan_stats(self, csv_file):
-        """Calculate statistics for all pixels in a single CSV file."""
-        try:
-            arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
-            header_row = np.where(arr == "Time")[0][0]
 
-            meta_data = {}
-            for data in arr[:header_row, :2]:
-                meta_data[data[0]] = data[1]
-
-            arr = arr[header_row + 1:, :]
-            data = arr[:, 2:-1] # Gets rid of time and voltage applied columns
-            pixel_V = data[:, ::2].astype(float)
-            pixel_mA = data[:, 1::2].astype(float)
-
-            # Get cell area for current density calculation
-            cell_area = float(meta_data.get("Cell Area (mm^2)", 0.128))
-
-            # Convert to current density (mA/cm²)
-            pixel_mA_cm2 = pixel_mA / cell_area
-
-            # Split data into two halves
-            jvLen = pixel_V.shape[0] // 2
-
-            # Extract file ID from filename
-            basename = os.path.basename(csv_file)
-            match = re.search(r"ID(\d+)", basename, re.IGNORECASE)
-            file_id = match.group(1) if match else "Unknown"
-
-            stats_list = []
-
-            # Process each pixel
-            for pixel_idx in range(pixel_V.shape[1]):
-                # Split voltage and current data into two halves
-                V_first_half = pixel_V[0:jvLen, pixel_idx]
-                I_first_half = pixel_mA_cm2[0:jvLen, pixel_idx]
-
-                V_second_half = pixel_V[jvLen:, pixel_idx]
-                I_second_half = pixel_mA_cm2[jvLen:, pixel_idx]
-
-                # Determine which half is forward (increasing voltage) and which is reverse (decreasing voltage)
-                # Calculate voltage trends for each half
-                first_half_trend = np.polyfit(range(len(V_first_half)), V_first_half, 1)[0] if len(V_first_half) > 1 else 0
-                second_half_trend = np.polyfit(range(len(V_second_half)), V_second_half, 1)[0] if len(V_second_half) > 1 else 0
-
-                # Assign forward (increasing voltage) and reverse (decreasing voltage) based on trends
-                if first_half_trend > second_half_trend:
-                    # First half is forward (increasing), second half is reverse (decreasing)
-                    V_forward, I_forward = V_first_half, I_first_half
-                    V_reverse, I_reverse = V_second_half, I_second_half
-                else:
-                    # Second half is forward (increasing), first half is reverse (decreasing)
-                    V_forward, I_forward = V_second_half, I_second_half
-                    V_reverse, I_reverse = V_first_half, I_first_half
-
-                # Calculate stats for reverse sweep
-                try:
-                    reverse_stats = self.get_stats(V_reverse, I_reverse)
-                    stats_list.append({
-                        "file_id": file_id,
-                        "pixel": pixel_idx + 1,
-                        "sweep": "Reverse",
-                        "FF": reverse_stats["FF"] * 100,  # Convert to percentage
-                        "PCE": reverse_stats["PCE"],
-                        "Jsc": abs(reverse_stats["Jsc"]),  # Take absolute value
-                        "Voc": reverse_stats["Voc"]
-                    })
-                except Exception as e:
-                    get_logger().log(f"Error calculating reverse stats for pixel {pixel_idx + 1}: {e}")
-
-                # Calculate stats for forward sweep
-                try:
-                    forward_stats = self.get_stats(V_forward, I_forward)
-                    stats_list.append({
-                        "file_id": file_id,
-                        "pixel": pixel_idx + 1,
-                        "sweep": "Forward",
-                        "FF": forward_stats["FF"] * 100,  # Convert to percentage
-                        "PCE": forward_stats["PCE"],
-                        "Jsc": abs(forward_stats["Jsc"]),  # Take absolute value
-                        "Voc": forward_stats["Voc"]
-                    })
-                except Exception as e:
-                    get_logger().log(f"Error calculating forward stats for pixel {pixel_idx + 1}: {e}")
-
-            return stats_list
-
-        except Exception as e:
-            get_logger().log(f"Error processing file {csv_file}: {e}")
-            return []
-
-    def get_stats(self, voltage, current):
-        """Calculate photovoltaic statistics for a single pixel's I-V curve.
-
-        Args:
-            voltage: 1D array of voltage values
-            current: 1D array of current values
-
-        Returns:
-            dict: Dictionary containing FF, PCE, Jsc, and Voc values
-        """
-        V = np.asarray(voltage)
-        I = np.asarray(current)
-        if V.shape != I.shape:
-            raise ValueError("voltages and currents must have the same shape")
-
-        # 1) Voc: interpolate V at I=0
-        sort_I = np.argsort(I)
-        I_sorted = I[sort_I]
-        V_sorted_by_I = V[sort_I]
-        Voc = float(np.interp(0.0, I_sorted, V_sorted_by_I))
-
-        # 2) Jsc: interpolate I at V=0
-        sort_V = np.argsort(V)
-        V_sorted = V[sort_V]
-        I_sorted_by_V = I[sort_V]
-        Jsc = float(np.interp(0.0, V_sorted, I_sorted_by_V))
-
-        # 3) Maximum power point
-        P = V * I
-        idx_mp = np.argmax(P)
-        Vmp = float(V[idx_mp])
-        Imp = float(I[idx_mp])
-
-        # 4) Fill Factor
-        FF = (Vmp * Imp) / (Voc * Jsc) if (Voc * Jsc) != 0 else np.nan
-
-        # 5) PCE (assuming 100 mW/cm² illumination)
-        PCE = (Vmp * Imp) / 100 * 100
-
-        return {
-            "FF": FF,
-            "PCE": PCE,
-            "Jsc": Jsc,
-            "Voc": Voc
-        }
 
     def create_mppt_stats_table(self, csv_files):
         """Creates a table widget displaying MPPT statistics for each pixel."""
@@ -705,7 +486,7 @@ class PlotterWidget(QWidget):
         all_stats = []
         for csv_file in csv_files:
             try:
-                file_stats = self.calculate_mppt_file_stats(csv_file)
+                file_stats = MPPTCalculations.calculate_mppt_file_stats(csv_file)
                 if file_stats:
                     all_stats.extend(file_stats)
             except Exception as e:
@@ -749,178 +530,6 @@ class PlotterWidget(QWidget):
 
         stats_layout.addWidget(table)
         return stats_widget
-
-    def calculate_mppt_file_stats(self, csv_file):
-        """Calculate MPPT statistics for all pixels in a single CSV file."""
-        try:
-            arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
-            header_row = np.where(arr == "Time")[0][0]
-
-            meta_data = {}
-            for data in arr[:header_row, :2]:
-                meta_data[data[0]] = data[1]
-
-            headers = arr[header_row, :]
-            arr = arr[header_row + 1:, :]
-
-            header_dict = {value: index for index, value in enumerate(headers)}
-            if "Time" not in header_dict:
-                get_logger().log(f"'Time' header not found in {csv_file}")
-                return []
-
-            pixel_V = arr[:, 1::2][:, 0:8].astype(float)
-            pixel_mA = arr[:, 2::2][:, 0:8].astype(float)
-            time = np.array(arr[:, header_dict["Time"]]).astype("float")
-
-            if len(time) < 1:
-                return []
-
-            # Get cell area for PCE calculation
-            cell_area = float(meta_data.get("Cell Area (mm^2)", 0.128))
-
-            # Calculate PCE for each pixel: (V * I / 1000) / (0.1 * cell_area) * 100
-            data = ((pixel_V * pixel_mA / 1000) / (0.1 * cell_area)) * 100
-
-            # Convert time to minutes
-            time_minutes = time / 60.0
-
-            # Extract file ID from filename
-            basename = os.path.basename(csv_file)
-            match = re.search(r"ID(\d+)", basename, re.IGNORECASE)
-            file_id = match.group(1) if match else "Unknown"
-
-            stats_list = []
-
-            # Process each pixel
-            NUM_PIXELS = data.shape[1]
-            for pixel_idx in range(NUM_PIXELS):
-                pixel_pce = data[:, pixel_idx]
-
-                # Calculate statistics for this pixel
-                pce_last_30s_avg = self.calculate_pce_last_30s(time_minutes, pixel_pce)
-                pce_highest_30s_avg, max_pce_idx = self.calculate_pce_highest_30s_avg(time_minutes, pixel_pce)
-                t90_hours = self.calculate_t90_hours(time_minutes, pixel_pce, pce_highest_30s_avg, max_pce_idx)
-
-                # Calculate degradation percentage
-                if pce_highest_30s_avg > 0:
-                    degradation_percent = ((pce_highest_30s_avg - pce_last_30s_avg) / pce_highest_30s_avg) * 100
-                else:
-                    degradation_percent = 0.0
-
-                stats_list.append({
-                    "file_id": file_id,
-                    "pixel": pixel_idx + 1,
-                    "pce_last_30s_avg": pce_last_30s_avg,
-                    "pce_highest_30s_avg": pce_highest_30s_avg,
-                    "degradation_percent": degradation_percent,
-                    "t90_hours": t90_hours
-                })
-
-            return stats_list
-
-        except Exception as e:
-            get_logger().log(f"Error processing MPPT file {csv_file}: {e}")
-            return []
-
-    def calculate_pce_last_30s(self, time_minutes, pce_data):
-        """Calculate average PCE in the last 30 seconds of data."""
-        if len(time_minutes) == 0 or len(pce_data) == 0:
-            return 0.0
-
-        # Convert 30 seconds to minutes
-        last_30s_minutes = 0.5
-        max_time = np.max(time_minutes)
-
-        # Find indices for the last 30 seconds
-        mask = time_minutes >= (max_time - last_30s_minutes)
-
-        if np.sum(mask) == 0:
-            # If no data in last 30 seconds, return the last value
-            return float(pce_data[-1]) if len(pce_data) > 0 else 0.0
-
-        # Calculate average PCE in last 30 seconds
-        last_30s_pce = pce_data[mask]
-        return float(np.mean(last_30s_pce))
-
-    def calculate_pce_first_30s(self, time_minutes, pce_data):
-        """Calculate average PCE in the last 30 seconds of data."""
-        if len(time_minutes) == 0 or len(pce_data) == 0:
-            return 0.0
-
-        # Find indices for the last 30 seconds
-        mask = time_minutes >= (0.5)
-
-        if np.sum(mask) == 0:
-            # If no data in last 30 seconds, return the last value
-            return float(pce_data[-1]) if len(pce_data) > 0 else 0.0
-
-        # Calculate average PCE in last 30 seconds
-        first_30s_pce = pce_data[mask]
-        return float(np.mean(first_30s_pce))
-
-    def calculate_pce_highest_30s_avg(self, time_minutes, pce_data):
-        """Calculate the average of 30 seconds of PCE values around the highest PCE point.
-
-        Returns:
-            tuple: (average_pce, max_pce_idx) where max_pce_idx is the index of the highest PCE value
-        """
-        if len(time_minutes) == 0 or len(pce_data) == 0:
-            return 0.0, 0
-
-        # Convert 30 seconds to minutes
-        window_minutes = 0.5
-
-        # Find the index of the highest PCE value
-        max_pce_idx = np.argmax(pce_data)
-
-        # If total time is less than 30 seconds, use all data
-        total_time = np.max(time_minutes) - np.min(time_minutes)
-        if total_time <= window_minutes:
-            return float(np.mean(pce_data)), max_pce_idx
-
-        peak_time = time_minutes[max_pce_idx]
-
-        # Define the 30-second window around the peak (±15 seconds)
-        half_window = window_minutes / 2
-        start_time = peak_time - half_window
-        end_time = peak_time + half_window
-
-        # Find data points within the 30-second window around the peak
-        mask = (time_minutes >= start_time) & (time_minutes <= end_time)
-
-        if np.sum(mask) > 0:
-            window_pce = pce_data[mask]
-            return float(np.mean(window_pce)), max_pce_idx
-        else:
-            # Fallback: if no data in window, return the peak value itself
-            return float(pce_data[max_pce_idx]), max_pce_idx
-
-    def calculate_t90_hours(self, time_minutes, pce_data, pce_highest_30s_avg, max_pce_idx):
-        """Calculate T90: time to reach 90% of highest 30s average PCE (10% degradation).
-        Only looks for degradation after the peak PCE point.
-        """
-        if len(time_minutes) == 0 or len(pce_data) == 0:
-            return float('inf')  # Return infinity if no data
-
-        if pce_highest_30s_avg <= 0:
-            return float('inf')
-
-        # Calculate 90% of initial PCE (10% degradation threshold)
-        target_pce = pce_highest_30s_avg * 0.9
-
-        # Only look for degradation after the peak PCE point
-        post_peak_pce = pce_data[max_pce_idx:]
-        post_peak_time = time_minutes[max_pce_idx:]
-
-        # Find the first time when PCE drops to or below 90% of initial (after peak)
-        degraded_indices = np.where(post_peak_pce <= target_pce)[0]
-
-        if len(degraded_indices) == 0:
-            # PCE never dropped to 90% after peak, return infinity
-            return float('inf')
-
-        first_degraded_idx = degraded_indices[0]
-        return float(post_peak_time[first_degraded_idx]/60)
 
     def toggle_group_visibility(self, group_id, checked):
         """Toggles the visibility of all lines in the group."""
