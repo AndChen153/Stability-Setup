@@ -13,7 +13,7 @@ from .calculations import ScanCalculations, MPPTCalculations
 
 class StatsTableFactory:
     """Factory class for creating statistics tables for scan and MPPT data."""
-    
+
     @staticmethod
     def create_scan_stats_table(csv_files):
         """Creates a table widget displaying photovoltaic statistics for each pixel."""
@@ -107,15 +107,15 @@ class StatsTableFactory:
         table.setRowCount(len(all_stats))
         table.setColumnCount(5)  # Pixel, Last 30s PCE, Highest 30s Avg PCE, Degradation %, T90
         table.setHorizontalHeaderLabels([
-            "Pixel", "PCE Highest 30s", "PCE Final 30s", "Degradation", "T90 (hrs)"
+            "Pixel", "PCE Highest 30s (%)", "PCE Final 30s (%)", "Degradation (%)", "T90 (hrs)"
         ])
 
         # Populate table
         for row, stats in enumerate(all_stats):
             table.setItem(row, 0, QTableWidgetItem(f"ID{stats['file_id']} Pixel {stats['pixel']}"))
-            table.setItem(row, 1, QTableWidgetItem(f"{stats['pce_highest_30s_avg']:.2f}%"))
-            table.setItem(row, 2, QTableWidgetItem(f"{stats['pce_last_30s_avg']:.2f}%"))
-            table.setItem(row, 3, QTableWidgetItem(f"{stats['degradation_percent']:.2f}%"))
+            table.setItem(row, 1, QTableWidgetItem(f"{stats['pce_highest_30s_avg']:.2f}"))
+            table.setItem(row, 2, QTableWidgetItem(f"{stats['pce_last_30s_avg']:.2f}"))
+            table.setItem(row, 3, QTableWidgetItem(f"{stats['degradation_percent']:.2f}"))
 
             # Format T90 display
             t90_value = stats['t90_hours']

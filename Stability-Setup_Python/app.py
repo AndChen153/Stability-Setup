@@ -209,7 +209,7 @@ class MainWindow(QMainWindow):
     def run_handler(self, preset: Preset):
         self.running_preset = preset
         self.trial_queue = preset.trials.copy()
-
+        self.today = datetime.now().strftime("%b-%d-%Y %H_%M_%S")
         result = self.multi_controller.initializeMeasurement(
             trial_name=self.trial_name,
             data_dir=self.data_dir,
@@ -388,8 +388,7 @@ if __name__ == "__main__":
     app.setPalette(light_palette)
 
     window = MainWindow()
-    # window.showMaximized()
     window.setWindowIcon(QIcon(":/icons/logo.png"))
     window.setWindowTitle("Stability Measurement System")
-    window.show()
+    window.showMaximized()
     sys.exit(app.exec())
