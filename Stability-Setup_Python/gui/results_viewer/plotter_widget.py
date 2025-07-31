@@ -719,9 +719,9 @@ class PlotterWidget(QWidget):
 
         # Set up table structure
         table.setRowCount(len(all_stats))
-        table.setColumnCount(4)  # File ID, Pixel, Last 30s PCE, Highest 30s Avg PCE, Degradation %
+        table.setColumnCount(5)  #Pixel, Last 30s PCE, Highest 30s Avg PCE, Degradation %, T90
         table.setHorizontalHeaderLabels([
-            "Pixel", "PCE Highest 30s","PCE Final 30s",  "Degradation"
+            "Pixel", "PCE Highest 30s","PCE Final 30s",  "Degradation", "T90 (hrs)"
         ])
 
         # Populate table
@@ -730,6 +730,14 @@ class PlotterWidget(QWidget):
             table.setItem(row, 1, QTableWidgetItem(f"{stats['pce_highest_30s_avg']:.2f}%"))
             table.setItem(row, 2, QTableWidgetItem(f"{stats['pce_last_30s_avg']:.2f}%"))
             table.setItem(row, 3, QTableWidgetItem(f"{stats['degradation_percent']:.2f}%"))
+
+            # Format T90 display
+            t90_value = stats['t90_hours']
+            if t90_value == float('inf'):
+                t90_display = "N/A"
+            else:
+                t90_display = f"{t90_value:.1f}"
+            table.setItem(row, 4, QTableWidgetItem(t90_display))
 
         # Configure table appearance
         table.horizontalHeader().setStretchLastSection(True)
@@ -790,7 +798,8 @@ class PlotterWidget(QWidget):
 
                 # Calculate statistics for this pixel
                 pce_last_30s_avg = self.calculate_pce_last_30s(time_minutes, pixel_pce)
-                pce_highest_30s_avg = self.calculate_pce_highest_30s_avg(time_minutes, pixel_pce)
+                pce_highest_30s_avg, max_pce_idx = self.calculate_pce_highest_30s_avg(time_minutes, pixel_pce)
+                t90_hours = self.calculate_t90_hours(time_minutes, pixel_pce, pce_highest_30s_avg, max_pce_idx)
 
                 # Calculate degradation percentage
                 if pce_highest_30s_avg > 0:
@@ -803,7 +812,8 @@ class PlotterWidget(QWidget):
                     "pixel": pixel_idx + 1,
                     "pce_last_30s_avg": pce_last_30s_avg,
                     "pce_highest_30s_avg": pce_highest_30s_avg,
-                    "degradation_percent": degradation_percent
+                    "degradation_percent": degradation_percent,
+                    "t90_hours": t90_hours
                 })
 
             return stats_list
@@ -849,20 +859,25 @@ class PlotterWidget(QWidget):
         return float(np.mean(first_30s_pce))
 
     def calculate_pce_highest_30s_avg(self, time_minutes, pce_data):
-        """Calculate the average of 30 seconds of PCE values around the highest PCE point."""
+        """Calculate the average of 30 seconds of PCE values around the highest PCE point.
+
+        Returns:
+            tuple: (average_pce, max_pce_idx) where max_pce_idx is the index of the highest PCE value
+        """
         if len(time_minutes) == 0 or len(pce_data) == 0:
-            return 0.0
+            return 0.0, 0
 
         # Convert 30 seconds to minutes
         window_minutes = 0.5
 
+        # Find the index of the highest PCE value
+        max_pce_idx = np.argmax(pce_data)
+
         # If total time is less than 30 seconds, use all data
         total_time = np.max(time_minutes) - np.min(time_minutes)
         if total_time <= window_minutes:
-            return float(np.mean(pce_data))
+            return float(np.mean(pce_data)), max_pce_idx
 
-        # Find the index of the highest PCE value
-        max_pce_idx = np.argmax(pce_data)
         peak_time = time_minutes[max_pce_idx]
 
         # Define the 30-second window around the peak (±15 seconds)
@@ -875,10 +890,37 @@ class PlotterWidget(QWidget):
 
         if np.sum(mask) > 0:
             window_pce = pce_data[mask]
-            return float(np.mean(window_pce))
+            return float(np.mean(window_pce)), max_pce_idx
         else:
             # Fallback: if no data in window, return the peak value itself
-            return float(pce_data[max_pce_idx])
+            return float(pce_data[max_pce_idx]), max_pce_idx
+
+    def calculate_t90_hours(self, time_minutes, pce_data, pce_highest_30s_avg, max_pce_idx):
+        """Calculate T90: time to reach 90% of highest 30s average PCE (10% degradation).
+        Only looks for degradation after the peak PCE point.
+        """
+        if len(time_minutes) == 0 or len(pce_data) == 0:
+            return float('inf')  # Return infinity if no data
+
+        if pce_highest_30s_avg <= 0:
+            return float('inf')
+
+        # Calculate 90% of initial PCE (10% degradation threshold)
+        target_pce = pce_highest_30s_avg * 0.9
+
+        # Only look for degradation after the peak PCE point
+        post_peak_pce = pce_data[max_pce_idx:]
+        post_peak_time = time_minutes[max_pce_idx:]
+
+        # Find the first time when PCE drops to or below 90% of initial (after peak)
+        degraded_indices = np.where(post_peak_pce <= target_pce)[0]
+
+        if len(degraded_indices) == 0:
+            # PCE never dropped to 90% after peak, return infinity
+            return float('inf')
+
+        first_degraded_idx = degraded_indices[0]
+        return float(post_peak_time[first_degraded_idx]/60)
 
     def toggle_group_visibility(self, group_id, checked):
         """Toggles the visibility of all lines in the group."""

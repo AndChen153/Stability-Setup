@@ -1094,38 +1094,6 @@
                 }
             ]
         },
-        "645cbbaa-54a0-47e7-9fa7-09731ccde184": {
-            "trial_name": "light Scan",
-            "trial": [
-                {
-                    "trial_type": "Scan",
-                    "trial_id": "edca295a-44b0-48ee-8165-89af828dbe68",
-                    "trial_params": {
-                        "Scan Range (V)": "1.2",
-                        "Scan Step Size (V)": "0.03",
-                        "Scan Read Count": "5",
-                        "Scan Rate (mV/s)": "50",
-                        "Scan Mode": "1",
-                        "Cell Area (mm^2)": "0.128"
-                    }
-                },
-                {
-                    "trial_type": "Mppt",
-                    "trial_id": "056ce155-04ec-4891-935c-a3a8fea96f1f",
-                    "trial_params": {
-                        "Cell Area (mm^2)": "0.128",
-                        "Settling Time (ms)": "100",
-                        "Measurement Interval (ms)": "1000",
-                        "Measurements Per Step": "1000",
-                        "Starting Voltage (V)": "0.50",
-                        "Starting Voltage Multiplier (%)": "0.85",
-                        "Step Size (V)": "0.005",
-                        "Time Param": "mins",
-                        "Total Time": "1"
-                    }
-                }
-            ]
-        },
         "b34e17e7-7c2b-4844-85df-b066a6060345": {
             "trial_name": "Scan repeat",
             "trial": [
