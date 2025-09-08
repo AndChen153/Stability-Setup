@@ -4,8 +4,6 @@ A Python GUI application for managing long-term device stability trials, real-ti
 
 **Installation and Arduino Firmware Flashing steps are required for completely functionality.**
 
----
-
 ## Installation
 
 ### 1. Using the Precompiled `.exe` (Recommended for End Users)
