@@ -161,7 +161,7 @@ class MPPTCalculations:
     """Handles all calculations related to MPPT data analysis."""
 
     @staticmethod
-    def calculate_mppt_file_stats(csv_file):
+    def calculate_mppt_file_stats(csv_file, combined=False):
         """Calculate MPPT statistics for all pixels in a single CSV file."""
         try:
             arr = np.loadtxt(csv_file, delimiter=",", dtype=str)
@@ -210,30 +210,30 @@ class MPPTCalculations:
         NUM_PIXELS = data.shape[1]
         for pixel_idx in range(NUM_PIXELS):
             pixel_pce = data[:, pixel_idx]
+            if not combined:
+                idx_stable = MPPTCalculations.detect_mppt_stable(pixel_pce, time_minutes)
 
-            idx_stable = MPPTCalculations.detect_mppt_stable(pixel_pce, time_minutes)
+                pixel_pce_stable = pixel_pce[idx_stable:]
+                time_minutes_stable = time_minutes[idx_stable:]
 
-            pixel_pce_stable = pixel_pce[idx_stable:]
-            time_minutes_stable = time_minutes[idx_stable:]
-
-            # Calculate statistics for this pixel
-            pce_last_30s_avg = MPPTCalculations.calculate_pce_last_30s(
-                time_minutes_stable, pixel_pce_stable
-            )
-            pce_first_30s_avg =MPPTCalculations.calculate_pce_first_30s(
+                # Calculate statistics for this pixel
+                pce_last_30s_avg = MPPTCalculations.calculate_pce_last_30s(
                     time_minutes_stable, pixel_pce_stable
                 )
-            t90_hours = MPPTCalculations.calculate_t90_hours(
-                time_minutes_stable, pixel_pce_stable, pce_first_30s_avg
-            )
+                pce_first_30s_avg =MPPTCalculations.calculate_pce_first_30s(
+                        time_minutes_stable, pixel_pce_stable
+                    )
+                t90_hours = MPPTCalculations.calculate_t90_hours(
+                    time_minutes_stable, pixel_pce_stable, pce_first_30s_avg
+                )
 
-            # Calculate degradation percentage
-            if pce_first_30s_avg > 0:
-                degradation_percent = (
-                    (pce_first_30s_avg - pce_last_30s_avg) / pce_first_30s_avg
-                ) * 100
-            else:
-                degradation_percent = 0.0
+                # Calculate degradation percentage
+                if pce_first_30s_avg > 0:
+                    degradation_percent = (
+                        (pce_first_30s_avg - pce_last_30s_avg) / pce_first_30s_avg
+                    ) * 100
+                else:
+                    degradation_percent = 0.0
 
             stats_list.append(
                 {

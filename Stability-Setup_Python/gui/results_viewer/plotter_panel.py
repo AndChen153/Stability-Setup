@@ -14,11 +14,13 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from gui.results_viewer.plotter_widget import PlotterWidget
+from gui.results_viewer.combine_plots import combine_plots_main
+from gui.results_viewer.combine_plots import MINIMUM_MINUTES
 from helper.global_helpers import get_logger
 from constants import Constants
 
 fileTypes = ("scan.csv", "mppt.csv", "compressedmppt.csv")
-plottingKBThreshold = 4000
+PLOTTINGKBTHRESHOLD = 10000
 
 class PlotterPanel(QWidget):
     def __init__(self, default_folder: str = "", parent=None):
@@ -48,6 +50,11 @@ class PlotterPanel(QWidget):
         create_plots_button = QPushButton("Create Plot(s)")
         create_plots_button.clicked.connect(self.create_plots)
         h_layout.addWidget(create_plots_button)
+
+        # Create the "Combine Plots" button.
+        combine_plots_button = QPushButton("Combine Plots")
+        combine_plots_button.clicked.connect(self.combine_plots)
+        h_layout.addWidget(combine_plots_button)
 
         form_layout.addRow("CSV Folder", container)
 
@@ -84,6 +91,20 @@ class PlotterPanel(QWidget):
         else:
             QMessageBox.information(self, "Error", "Invalid Plotting Folder.")
 
+    def combine_plots(self):
+        get_logger().log("Combine Plots Button Pushed")
+        folder_path = self.data_location_line_edit.text().strip()
+        if os.path.isdir(folder_path):
+            plot_groups = combine_plots_main(folder_path)
+
+            if plot_groups:
+                get_logger().log(f"Successfully combined plots: {plot_groups}")
+                self.create_plots()
+            else:
+                QMessageBox.information(self, "Error", f"No MPPT files found to combine. MPPT must be longer than {MINIMUM_MINUTES} minutes to combine")
+        else:
+            QMessageBox.information(self, "Error", "Invalid Plotting Folder.")
+
     def update_plot_tabs(self, plot_groups: dict):
         """Clear the plot container and create a QTabWidget with a tab for each plot group."""
         plot_layout = self.plot_container.layout()
@@ -112,7 +133,7 @@ class PlotterPanel(QWidget):
                 if f.lower().endswith(fileTypes)
             ]
         )
-        get_logger().log(csv_files)
+        # get_logger().log(csv_files)
 
         file_groups_dict = {}
 
@@ -122,20 +143,20 @@ class PlotterPanel(QWidget):
                 "Selected file location has no plottable files")
             return file_groups_dict
         for file in csv_files:
-            get_logger().log(file)
+            # get_logger().log(file)
             head, tail = os.path.split(file)
-            get_logger().log(head, tail)
+            # get_logger().log(head, tail)
 
             # use compressed file if above certain file size threshold
             if tail.endswith("__mppt.csv"):
                 file_size_kb = os.path.getsize(file) / 1024
-                if file_size_kb > plottingKBThreshold:
+                if file_size_kb > PLOTTINGKBTHRESHOLD:
                     continue
             elif tail.endswith("__compressedmppt.csv"):
                 try:
                     filename = file.replace("__compressedmppt", "__mppt")
                     file_size_kb = os.path.getsize(filename) / 1024
-                    if file_size_kb < plottingKBThreshold:
+                    if file_size_kb < PLOTTINGKBTHRESHOLD:
                         continue
                 except:
                     get_logger().log("no full mppt file found")
@@ -147,7 +168,7 @@ class PlotterPanel(QWidget):
             test_name = params[1] if "ID" not in params[1] else ""
             name_parts = [val for val in [test_name, params[0], filetype] if val]
             plot_name = " ".join(name_parts)
-            get_logger().log(plot_name)
+            # get_logger().log(plot_name)
             file_groups_dict.setdefault(plot_name, []).append(file)
-        get_logger().log(file_groups_dict)
+        get_logger().log(f"plotter groups: {file_groups_dict.keys()}")
         return file_groups_dict

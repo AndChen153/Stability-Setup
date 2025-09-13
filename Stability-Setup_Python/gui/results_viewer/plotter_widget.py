@@ -90,7 +90,9 @@ class PlotterWidget(QWidget):
 
         # Create statistics table for both scan and mppt plots
         stats_widget = None
-        if "mppt" in os.path.basename(csv_files[0]).lower():
+        if "combined" in os.path.basename(csv_files[0]).lower():
+            pass
+        elif "mppt" in os.path.basename(csv_files[0]).lower():
             stats_widget = StatsTableFactory.create_mppt_stats_table(csv_files)
             stats_widget.setMinimumWidth(450)  # MPPT table: 4 columns, ~450px optimal
             stats_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -236,24 +238,24 @@ class PlotterWidget(QWidget):
         ax.set_ylabel(y_label)
         ax.grid(True)
 
-        # Create line labels
-        self.line_label_texts = {}
-        lines = ax.get_lines()
-        if lines:
-            x_min, x_max = ax.get_xlim()
-            xvals = np.linspace(
-                x_min + 0.1 * (x_max - x_min), x_max - 0.1 * (x_max - x_min), len(lines)
-            )
-            bold_font = FontProperties(weight="medium")
-            label_texts = labelLines(
-                lines,
-                xvals=xvals,
-                zorder=2.5,
-                align=False,
-                fontsize=11,
-                fontproperties=bold_font,
-            )
-            self.line_label_texts = dict(zip(lines, label_texts))
+        # # Create line labels
+        # self.line_label_texts = {}
+        # lines = ax.get_lines()
+        # if lines:
+        #     x_min, x_max = ax.get_xlim()
+        #     xvals = np.linspace(
+        #         x_min + 0.1 * (x_max - x_min), x_max - 0.1 * (x_max - x_min), len(lines)
+        #     )
+        #     bold_font = FontProperties(weight="medium")
+        #     label_texts = labelLines(
+        #         lines,
+        #         xvals=xvals,
+        #         zorder=2.5,
+        #         align=False,
+        #         fontsize=11,
+        #         fontproperties=bold_font,
+        #     )
+        #     self.line_label_texts = dict(zip(lines, label_texts))
 
     def _plot_scan(self, ax, csv_files, plot_title):
         # Get a color cycle for different CSV files
