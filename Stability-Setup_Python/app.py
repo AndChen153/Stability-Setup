@@ -33,7 +33,6 @@ from gui.trial_manager.preset_window_widget import PresetQueueWidget
 from controller import arduino_assignment
 
 # TODO: fix light/dark button
-# TODO: Add metrics for JV scan
 # TODO: add box plots
 # TODO: limit measurements per mppt to account for measurement time
 # TODO: limit time to 1000 hours for millis wrap around
@@ -48,20 +47,6 @@ from controller import arduino_assignment
 # TODO: fix plotter current axis, shouldn't display 200 ma/cm^2
 
 # TODO: Fix arduino millis() time drift with control from computer to tell arduino when its done
-
-#PAPER
-#TODO: box plot for PCE between litos and my setup, 3-4 minute test
-# collect PCE with litos, my setup, then litos again to show difference between litos and my setup might be due to device degrading
-# PCE DATA: plot pce, current density, voltage, compared to time
-
-
-# TOP of plots: JV comparison 2 pixels, PCE comparison 2 pixels, Box plot comparison PCE between litos and stability setup
-# 2nd row: long panel which has stability for 1000 hours
-
-
-#box plots: fill factor, jsc, voc, pce (From scan), stabilized PCE
-
-# long term stability
 
 class MainWindow(QMainWindow):
     next_trial_signal = Signal(Trial)
