@@ -44,6 +44,8 @@ from controller import arduino_assignment
 # TODO: reenable email notifications
 # TODO: fix trial titles
 
+# TODO: add device name setting
+
 # TODO: fix plotter current axis, shouldn't display 200 ma/cm^2
 
 # TODO: Fix arduino millis() time drift with control from computer to tell arduino when its done
