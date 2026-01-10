@@ -1,18 +1,24 @@
-# Stability Measurement System
+# Stability Measurement System (SMS)
 
 A Python GUI application for managing long-term device stability trials, real-time data collection, Arduino control, and visualization results.
 
 **Installation and Arduino Firmware Flashing steps are required for completely functionality.**
 
+## Hardware
+
+The system is composed of custom-designed hardware to ensure reliable and repeatable measurements. All design files are open-source and available at the links below.
+
+- **SMS Main PCB**: The main controller board that interfaces with the computer and manages the measurement channels. It houses the Arduino, multiplexers, and other core electronic components.
+  - [View Main PCB Design Files](httpss://oshwlab.com/achen1192/stability_setup_1_1)
+- **Holder PCB**: A small, interchangeable board designed to hold the perovskite solar cell (PSC) devices under test. It connects to the main PCB and ensures a consistent connection to the device.
+  - [View Holder PCB Design Files](https://oshwlab.com/achen1192/stability_setup_1_1)
+- **3D-Printed Enclosure**: A custom enclosure to house the main PCB and provide mounting points for the holder PCB and other components.
+  - [View 3D-Enclosure CAD Model](https://cad.onshape.com/documents/2ae80eb71ffa9f4089d254fa/w/bd8477a473605951929b0fd2/e/aee47ea40cd595c8c4f856f5?renderMode=0&uiState=67abd8afd3a4a8741c8eb95c)
+ 
+
 ## Installation
 
-### 1. Using the Precompiled `.exe` (Recommended for End Users)
-
-- Download the latest `StabilitySetup.exe` from the release folder.
-- Double-click to run. No Python or additional installation is required.
-- If Windows Defender blocks it, click **"More Info" → "Run anyway"**.
-
-### 2. From Source (for Developers)
+This project uses **Conda** to manage dependencies. Ensure you have [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed.
 
 #### Requirements:
 - Python 3.9–3.11 (miniconda recommended)
@@ -40,7 +46,22 @@ python app.py
 
 ## Arduino Firmware Flashing
 
-### Installing Arduino CLI
+
+### Option 1: Using Arduino IDE (Recommended for single boards)
+1.  Download and install the [Arduino IDE](https://www.arduino.cc/en/software).
+2.  Open `Stability-Setup_Arduino/Stability-Setup_Arduino.ino`.
+3.  **Install Required Libraries:**
+    Go to `Sketch` -> `Include Library` -> `Manage Libraries...` and install:
+    * `Adafruit INA219`
+    * `Adafruit MCP4725`
+4.  **Board Settings:**
+    * **Board:** Arduino Nano
+    * **Processor:** ATmega328P (Try "ATmega328P (Old Bootloader)" if the standard one fails, as this is common for clones).
+5.  Select the correct **Port** and click **Upload**.
+
+### Option 2: Using the Automation Script (For bulk flashing)
+
+#### Installing Arduino CLI
 
 The flash script requires Arduino CLI to be installed:
 
@@ -61,7 +82,7 @@ arduino-cli lib install "Adafruit INA219"
 arduino-cli lib install "Adafruit MCP4725"
 ```
 
-### Using flash.py
+#### Using flash.py
 
 The `flash.py` script allows you to easily compile and upload the Arduino firmware to multiple boards simultaneously. It now includes enhanced device detection capabilities to help identify and add support for new board types.
 
@@ -141,13 +162,19 @@ detectors = {
 ```
 
 
-## Hardware
+## Usage
 
-The system is composed of custom-designed hardware to ensure reliable and repeatable measurements. All design files are open-source and available at the links below.
+### Running the Controller Software
+1.  Ensure your Python environment is active:
+    ```bash
+    conda activate stabilitySetup
+    ```
+2.  Navigate to the Python source directory:
+    ```bash
+    cd Stability-Setup_Python
+    ```
+3.  Run the application:
+    ```bash
+    python app.py
+    ```
 
-- **SMS Main PCB**: The main controller board that interfaces with the computer and manages the measurement channels. It houses the Arduino, multiplexers, and other core electronic components.
-  - [View Main PCB Design Files](httpss://oshwlab.com/achen1192/stability_setup_1_1)
-- **Holder PCB**: A small, interchangeable board designed to hold the perovskite solar cell (PSC) devices under test. It connects to the main PCB and ensures a consistent connection to the device.
-  - [View Holder PCB Design Files](https://oshwlab.com/achen1192/stability_setup_1_1)
-- **3D-Printed Enclosure**: A custom enclosure to house the main PCB and provide mounting points for the holder PCB and other components.
-  - [View 3D-Enclosure CAD Model](https://cad.onshape.com/documents/2ae80eb71ffa9f4089d254fa/w/bd8477a473605951929b0fd2/e/aee47ea40cd595c8c4f856f5?renderMode=0&uiState=67abd8afd3a4a8741c8eb95c)
