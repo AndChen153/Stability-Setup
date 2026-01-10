@@ -9,3 +9,9 @@ build/
 .env
 data/
 Legacy_Code/
+instructions.txt
+test.ipynb
+gemini.md
+/Stability-Setup_Python/Logs/*
+.cursor/
+/Stability-Setup_Python/data_visualization/.ipynb_checkpoints

@@ -9,7 +9,7 @@ import os
 import sys
 import warnings
 from typing import List
-from helper.global_helpers import custom_print
+from helper.global_helpers import get_logger
 from matplotlib.font_manager import FontProperties
 import matplotlib.ticker as ticker
 
@@ -27,11 +27,11 @@ def plot_all_in_folder(directory_path):
 
 def create_graph(file_location):
     if (file_location.endswith("scan.csv")):
-        custom_print(f"Creating Plots for: {file_location}")
+        get_logger().log(f"Creating Plots for: {file_location}")
         create_scan_graph(file_location, current_density=False)
         return create_scan_graph(file_location, current_density=True, saveInFolder = False)
     elif (file_location.endswith("mppt.csv")):
-        custom_print(f"Creating Plot for: {file_location}")
+        get_logger().log(f"Creating Plot for: {file_location}")
         return create_pce_graph(file_location)
     else:
         return ""
@@ -105,7 +105,7 @@ def create_pce_graph(file_location,
         if i in dead_pixels and not show_dead_pixels:
                 continue
         lineName = "PCE" + str(i + 1)
-        # custom_print(np.array(pce_list[i]))
+        # get_logger().log(np.array(pce_list[i]))
         plt.plot(time,data[:,i], label = lineName)
 
     lines = plt.gca().get_lines()
@@ -134,7 +134,7 @@ def create_scan_graph(file_location,
     plot_size = (10,8)
     arr = np.loadtxt(file_location, delimiter=",", dtype=str)
 
-    # custom_print("PC -> Graph Name", graph_name)
+    # get_logger().log("PC -> Graph Name", graph_name)
     if saveInFolder:
         png_save_location = file_location[:-4]
     else:
@@ -244,7 +244,7 @@ def get_dead_pixels(graph_name) -> List[int]:
     headers = arr[6,:]
     arr = arr[7:, :]
 
-    # custom_print(arr)
+    # get_logger().log(arr)
     length = (len(headers) - 1)
 
     jvList = []
@@ -253,8 +253,8 @@ def get_dead_pixels(graph_name) -> List[int]:
 
     dead_pixels = []
     for i in range(0,len(jvList),2):
-        # custom_print(i)
-        # custom_print(jvList[i], jvList[i+1])
+        # get_logger().log(i)
+        # get_logger().log(jvList[i], jvList[i+1])
         jvList[i] = [float(j) for j in jvList[i]]
         jvList[i+1] = [float(x) for x in jvList[i+1]]
         if np.mean(np.absolute(np.array(jvList[i]))) < 0.2 or np.mean(np.absolute(np.array(jvList[i+1]))) < 0.2:
@@ -268,17 +268,17 @@ def scan_calcs(graph_name):
     '''
     arr = np.loadtxt(graph_name, delimiter=",", dtype=str)
     dead_pixels = get_dead_pixels(graph_name)
-    # custom_print(dead_pixels)
+    # get_logger().log(dead_pixels)
     graph_name = graph_name.split('\\')
-    # custom_print(arr)
+    # get_logger().log(arr)
 
     headers = arr[6,:]
 
     header_dict = {value: index for index, value in enumerate(headers)}
-    # custom_print(header_dict)
+    # get_logger().log(header_dict)
     arr = arr[7:, :]
     length = (len(headers) - 1)
-    # custom_print(length)
+    # get_logger().log(length)
 
     jvList = []
 
@@ -289,7 +289,7 @@ def scan_calcs(graph_name):
     jList = [] #current
     vList = [] #voltage
     for i in range(0,len(jvList),2):
-        # custom_print(i)
+        # get_logger().log(i)
         jList.append([float(j) for j in jvList[i+1]])
         vList.append([float(x) for x in jvList[i]])
         # jvList[i+1] = [float(x) / 0.128 for x in jvList[i+1]]
@@ -317,9 +317,9 @@ def scan_calcs(graph_name):
 
         # find Fill Factor
         pce_list = jList*vList
-        # custom_print(np.array(pce_list).shape)
+        # get_logger().log(np.array(pce_list).shape)
         maxVIdx = np.argmax(pce_list, axis=0) # find index of max pce value
-        # custom_print(np.array(maxVIdx).shape)
+        # get_logger().log(np.array(maxVIdx).shape)
         vmppList = []
         jmppList = []
         for i in range(len(maxVIdx)): # for i in number of pixels
@@ -365,7 +365,7 @@ def load_unplotted_files(directory):
                 csv_mtime = os.path.getmtime(csv_file)
                 png_mtime = os.path.getmtime(png_file)
                 if csv_mtime > png_mtime:
-                    custom_print(csv_mtime, png_mtime)
+                    get_logger().log(csv_mtime, png_mtime)
                     unplotted.append(csv_file)
                 unfound = False
                 break

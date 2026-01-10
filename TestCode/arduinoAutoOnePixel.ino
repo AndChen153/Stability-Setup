@@ -52,8 +52,8 @@ uint16_t dac_val = 0;
 
 
 float voltage_Range_Scan = 0.0;
-float voltage_step_size_scan = 0.000;
-int measurements_per_step_scan = 0;
+float scan_step_size = 0.000;
+int scan_read_count = 0;
 int measurement_Delay_Scan = 0;
 
 
@@ -61,7 +61,7 @@ int measurement_Delay_Scan = 0;
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("started");
+    Serial.println(F("started"));
 
     while (!Serial)
     {
@@ -70,7 +70,7 @@ void setup() {
     }
     if (!ina219_A.begin())
     {
-        Serial.println("Failed to find ina219_A chip");
+        Serial.println(F("Failed to find ina219_A chip"));
         while (1)
         {
             delay(10);
@@ -78,7 +78,7 @@ void setup() {
     }
     if (!dac_A.begin())
     {
-        Serial.println("Failed to find dac_A chip");
+        Serial.println(F("Failed to find dac_A chip"));
         while (1)
         {
             delay(10);
@@ -109,31 +109,31 @@ void loop() {
     }
 
     if (!scanDone) {
-        Serial.println("Scanning");
+        Serial.println(F("Scanning"));
         voltage_Range_Scan = val1;
-        voltage_step_size_scan = val2;
-        measurements_per_step_scan = val3;
+        scan_step_size = val2;
+        scan_read_count = val3;
         measurement_Delay_Scan = val4;
         scan("backward");
         scan("forward");
         scanDone = true;
-        Serial.print("Done!");
+        Serial.print(F("Done!"));
     } else if (!tracking_And_ScanningDone) {
-        Serial.println("TaS");
+        Serial.println(F("TaS"));
         voltage_Starting_TaS = val1;
         voltage_Step__Size_TaS = val2;
         measurement_Delay_TaS = val3;
         measurements_Per_Step_TaS = val4;
         trackingAndScanning();
-        Serial.print("Done!");
+        Serial.print(F("Done!"));
     } else if (!perturb_And_ObserveDone) {
-        Serial.println("PnO");
+        Serial.println(F("PnO"));
         voltage_Starting_PnO = val1;
         voltage_Step__Size_PnO = val2;
         measurements_Per_Step_PnO= val3;
         measurement_Delay_PnO = val4;
         perturbAndObserve();
-        Serial.print("Done!");
+        Serial.print(F("Done!"));
     }
 }
 
@@ -162,23 +162,23 @@ void perturbAndObserve() {
             dac_A.setVoltage(convert_to_12bit(Vset), false);
 
             getINA129_A();
-            // Serial.print(Vset);
-            // Serial.print(", ");
-            // Serial.print(loadvoltage_A, 4);
-            // Serial.print(", ");
-            // Serial.print(current_mA_A_Flipped, 4);
-            // Serial.print(", ");
-            // Serial.print(abs(loadvoltage_A * current_mA_A), 4);
-            // Serial.print(", ");
-            // Serial.print(millis()/1000.0, 4);
-            // Serial.println("");
+            // Serial.print(F(Vset));
+            // Serial.print(F(", "));
+            // Serial.print(F(loadvoltage_A, 4));
+            // Serial.print(F(", "));
+            // Serial.print(F(current_mA_A_Flipped, 4));
+            // Serial.print(F(", "));
+            // Serial.print(F(abs(loadvoltage_A * current_mA_A), 4);
+            // Serial.print(F(", "));
+            // Serial.print(F(millis()/1000.0, 4);
+            // Serial.println(F(""));
 
             avgPowerCalced += abs(loadvoltage_A * current_mA_A);
             delay (measurement_Delay_PnO);
         }
         avgPowerCalced = avgPowerCalced/count;
-        // Serial.print("avg power calced: ");
-        // Serial.println(avgPowerCalced);
+        // Serial.print(F("avg power calced: "));
+        // Serial.println(F(avgPowerCalced));
 
         zero();
         delay(measurement_Delay_PnO);
@@ -227,16 +227,16 @@ void perturbAndObserve() {
 
         PCE = (avgPowerCalced/1000)/(0.1*0.128);
 
-        Serial.print(Vset);
-        Serial.print(", ");
-        Serial.print(loadvoltage_A, 4);
-        Serial.print(", ");
-        Serial.print(current_mA_A_Flipped, 4);
-        Serial.print(", ");
-        Serial.print(PCE, 4);
-        Serial.print(", ");
-        Serial.print(millis()/1000.0, 4);
-        Serial.println("");
+        Serial.print(F(Vset));
+        Serial.print(F(", "));
+        Serial.print(F(loadvoltage_A, 4));
+        Serial.print(F(", "));
+        Serial.print(F(current_mA_A_Flipped, 4));
+        Serial.print(F(", "));
+        Serial.print(F(PCE, 4));
+        Serial.print(F(", "));
+        Serial.print(F(millis()/1000.0, 4);
+        Serial.println(F(""));
     }
 
     perturb_And_ObserveDone = true;
@@ -266,11 +266,11 @@ void zero() {
 void scan(String dir) {
     float upperLimit;
     if (dir == "backward") {
-        voltage_val = voltage_Range_Scan + voltage_step_size_scan;
-        upperLimit = voltage_Range_Scan + voltage_step_size_scan;
+        voltage_val = voltage_Range_Scan + scan_step_size;
+        upperLimit = voltage_Range_Scan + scan_step_size;
     } else if (dir == "forward") {
         voltage_val = 0;
-        upperLimit = voltage_Range_Scan - voltage_step_size_scan;
+        upperLimit = voltage_Range_Scan - scan_step_size;
     }
 
     dac_A.setVoltage(convert_to_12bit(voltage_val), false);
@@ -278,23 +278,23 @@ void scan(String dir) {
 
 
     while (upperLimit >= voltage_val && voltage_val >= 0) {
-        if (volt_step_count > measurements_per_step_scan) {
+        if (volt_step_count > scan_read_count) {
             if (dir == "backward") {
-                voltage_val -= voltage_step_size_scan;
+                voltage_val -= scan_step_size;
             } else if (dir == "forward") {
-                voltage_val += voltage_step_size_scan;
+                voltage_val += scan_step_size;
             }
             dac_A.setVoltage(convert_to_12bit(voltage_val), false);
             delay(measurement_Delay_Scan);                    //settling time
 
-            Serial.print(voltage_val);
-            Serial.print(",");
-            Serial.print(avgVolt_A/volt_step_count, 4);
-            Serial.print(",");
-            Serial.print(avgCurr_A/volt_step_count, 4);
-            Serial.print(",");
-            Serial.print(millis()/1000.0, 4);
-            Serial.println("");
+            Serial.print(F(voltage_val));
+            Serial.print(F(","));
+            Serial.print(F(avgVolt_A/volt_step_count, 4));
+            Serial.print(F(","));
+            Serial.print(F(avgCurr_A/volt_step_count, 4));
+            Serial.print(F(","));
+            Serial.print(F(millis()/1000.0, 4);
+            Serial.println(F(""));
 
 
             avgVolt_A = 0;
@@ -302,15 +302,15 @@ void scan(String dir) {
             volt_step_count = 0;
         } else {
             getINA129_A();
-            // Serial.print(voltage_val);
-            // Serial.print(",");
-            // Serial.print(loadvoltage_A, 4);
-            // Serial.print(",");
-            // Serial.print(current_mA_A_Flipped, 4);
-            // Serial.print(", ");
-            // Serial.print(millis()/1000.0, 4);
-            // Serial.println("");
-            // Serial.println(loadvoltage_A);
+            // Serial.print(F(voltage_val));
+            // Serial.print(F(","));
+            // Serial.print(F(loadvoltage_A, 4));
+            // Serial.print(F(","));
+            // Serial.print(F(current_mA_A_Flipped, 4));
+            // Serial.print(F(", "));
+            // Serial.print(F(millis()/1000.0, 4);
+            // Serial.println(F(""));
+            // Serial.println(F(loadvoltage_A));
             avgVolt_A += loadvoltage_A;
             avgCurr_A += current_mA_A_Flipped;
             volt_step_count++;
@@ -398,13 +398,13 @@ void parseData() {      // split the data into its parts
 
 
 void showParsedData() {
-    Serial.print("Val1: ");
-    Serial.print(val1);
-    Serial.print(", Val2: ");
-    Serial.print(val2);
-    Serial.print(", Val3: ");
-    Serial.print(val3);
-    Serial.print(", Val4: ");
-    Serial.print(val4);
-    Serial.println("");
+    Serial.print(F("Val1: "));
+    Serial.print(F(val1));
+    Serial.print(F(", Val2: "));
+    Serial.print(F(val2));
+    Serial.print(F(", Val3: "));
+    Serial.print(F(val3));
+    Serial.print(F(", Val4: "));
+    Serial.print(F(val4));
+    Serial.println(F(""));
 }

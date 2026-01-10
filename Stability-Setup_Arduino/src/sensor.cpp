@@ -5,7 +5,7 @@
 #define WIRE Wire
 
 // Global sensor variables
-Adafruit_INA219 adcDevices[NUM_ADCS] = {
+static Adafruit_INA219 adcDevices[NUM_ADCS] = {
     Adafruit_INA219(ADC_I2C),
     Adafruit_INA219(ADC_I2C+1),
     Adafruit_INA219(ADC_I2C+2),
@@ -15,7 +15,7 @@ Adafruit_INA219 adcDevices[NUM_ADCS] = {
     Adafruit_INA219(ADC_I2C+6),
     Adafruit_INA219(ADC_I2C+7)};
 
-Adafruit_MCP4725 dacDevices[NUM_DACS];
+static Adafruit_MCP4725 dacDevices[NUM_DACS];
 
 float shunt_voltage;
 float bus_voltage;
@@ -28,13 +28,14 @@ void setupSensor_DAC(uint8_t ID)
 {
     if (!dacDevices[ID].begin(DAC_I2C + ID))
     {
-        Serial.print("Failed to find MCP4725 at 0x");
+        Serial.print(F("Failed to find MCP4725 at 0x"));
         Serial.println(DAC_I2C + ID, HEX);
+        init_success = false;
     }
     // else
     // {
-    //     Serial.print("Found MCP4725 at 0x");
-    //     Serial.println(DAC_I2C + ID, HEX);
+    //     Serial.print(F("Found MCP4725 at 0x"));
+    //     Serial.println(F(DAC_I2C + ID, HEX));
     // }
 }
 
@@ -56,13 +57,14 @@ void setupSensor_ADC(uint8_t ID)
 {
     if (!adcDevices[ID].begin())
     {
-        Serial.print("Failed to find INA219 at 0x");
+        Serial.print(F("Failed to find INA219 at 0x"));
         Serial.println(ADC_I2C + ID, HEX);
+        init_success = false;
     }
     // else
     // {
-    //     Serial.print("Found INA219 at 0x");
-    //     Serial.println(ADC_I2C + ID, HEX);
+    //     Serial.print(F("Found INA219 at 0x"));
+    //     Serial.println(F(ADC_I2C + ID, HEX));
     // }
 }
 

@@ -1,64 +1,1320 @@
 {
     "arduino_ids": {
-        "8F39E7B9": 2,
-        "DDA7FF77": 4,
-        "B6E16E54": 3,
-        "F05123D": 1
+        "8F39E7B9": 3,
+        "1994441C": 2,
+        "2D68076A": 4,
+        "DDA7FF77": 1,
+        "F05123D": 5,
+        "B6E16E54": 14,
+        "6E2D4CE3": 13
     },
     "presets": {
-        "SCAN": {
-            "khj": {
-                "Trial Name": "khj",
-                "Email for Notification": "asdf333",
-                "Scan Range (V)": "1.233",
-                "Scan Step Size (V)": "0.03",
-                "Cell Area (mm^2)": "0.128",
-                "Scan Read Count": "5",
-                "Scan Rate (mV/s)": "50",
-                "Scan Mode": "dark"
-            },
-            "khj33": {
-                "Trial Name": "khj33",
-                "Email for Notification": "asdf",
-                "Scan Range (V)": "1.233",
-                "Scan Step Size (V)": "0.03",
-                "Cell Area (mm^2)": "0.128",
-                "Scan Read Count": "5",
-                "Scan Rate (mV/s)": "50",
-                "Scan Mode": "dark"
-            },
-            "khj333": {
-                "Trial Name": "khj333",
-                "Email for Notification": "asdf333",
-                "Scan Range (V)": "1.233",
-                "Scan Step Size (V)": "0.03",
-                "Cell Area (mm^2)": "0.128",
-                "Scan Read Count": "5",
-                "Scan Rate (mV/s)": "33",
-                "Scan Mode": "dark"
-            },
-            "4 Device First Test": {
-                "Trial Name": "4 Device First Test",
-                "Email for Notification": "",
-                "Scan Range (V)": "1.2",
-                "Scan Step Size (V)": "0.03",
-                "Cell Area (mm^2)": "0.128",
-                "Scan Read Count": "5",
-                "Scan Rate (mV/s)": "50",
-                "Scan Mode": "Light"
-            }
+        "817be44e-ab75-4719-8c95-d527c7f00b44": {
+            "trial_name": "Light Scan + MPPT",
+            "trial": [
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4894-955c-cd59f3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098f-408c-9eec-a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4894-955c-cd59f3ecded4asf3",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098f-408c-9eec-a1f973fe17dfasdf3",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4894fsdf-955c-cd59f3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098f-408c-9eec-asdf3a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4894-955c-afs3cd59f3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098f-4083fsadfc-9eec-a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6asfddc948-f27a-4894-955c-cd59f3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098f-408c-9eec-a1f97sadf63fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4894-955c-cd5kg7yjg9f3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098f-408c-9eec-a1f973fjf76gfhje17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4894-955c-cd59ff6jfgyjh3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098f-408c-9eec-a1f97jft6jgfh3fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4894-955c-cd59f3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-098f-408c-9eec-a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a134-4894-955c-cd59f3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-098f-408c-9eec-a1f973feasf317df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948asdf-f27a-4894-955c-cd59f3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-098f-408c-9eec1324fd-a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d69483sdf-f27a-4894-955c-cd59f3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-098f-4asf308c-9eec-a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6-955c-cd59f3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-09asadfdsafc-a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "823423d955c-cd59f3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-098f-408casf33fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6asdf3-4894-955c-cd59f3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-03eddd1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-489433ddecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-011dcc7df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-433dcghgecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-098f-403asdfsadfa1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4894bcvncghy3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-cvbnf973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4nycvn3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-cvbnyta1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-489nctncvbnecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-098f-408c-9eec-a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f2asdfasdf7a-489nctncvbnecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-3ddd9eec-a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "8273edd4894-955c-cd59f3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098f367jf973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f2drtjgh55c-cd59f3ecded4asf3",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e6hhfe17dfasdf3",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-j6fghj59f3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098f6jfgja1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6946jfg3cd59f3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-096jfgha1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6asfddc948-fkjhlkjl59f3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-nvbmvnbme17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827dcvbnnycnbv3ecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-098fku8kvh17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-489y7jbhvjhed4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6e-0Wzvsw4eg5tt6jgfh3fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6s5eryfghjecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-0dcfghj73fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948xdfghvcb6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-098thfxchf5nchgvasf317df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948ajy67fyged4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234faju78kyfugj9eec1324fd-a1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d69483sdffkgyiu8g6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-098f-4afjt7ghj973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "rdsgdfgsdfgh6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6ejgf78fghf973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "823423d955c-j6fghjcded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fj6dghjcasf33fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6asdf3-j6fghjcded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-03j76dghjnm7df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-jft6hbjddecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fjft6fbjcc7df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948fjgy7jfbjecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6ejy6fghjfhgja1f973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-489j76nnnghg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-cvj7yfnbmnbmbnm17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-4nygfhdfghcvn3jftg6jecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6efjt6-cvbnyta1f97fghjgfh3fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f27a-489nctncvnbmvybnecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a234fa6f3asd408c-9eec-a1hdfbhf973fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "827d6948-f3fasdfchn6hhhvbnecded4",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "1",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.025"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "a233afsdfddd9eec-a1f9h6ghdgh73fe17df",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "150",
+                        "Measurement Interval (ms)": "1500",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.80",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "mins",
+                        "Total Time": "300"
+                    }
+                }
+            ]
         },
-        "MPPT": {
-            "TESTING PRESET 1": {
-                "Trial Name": "TESTING PRESET 1",
-                "Email for Notification": "achen1192@gmail.com",
-                "Starting Voltage (V)": "0.50",
-                "Step Size (V)": "0.01",
-                "Cell Area (mm^2)": "0.128",
-                "Measurements Per Step": "5",
-                "Measurement Delay (ms)": "300",
-                "Measurement Time": "10000"
-            }
+        "b34e17e7-7c2b-4844-85df-b066a6060345": {
+            "trial_name": "Scan repeat",
+            "trial": [
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "498028f0-d944-4e56-81ec-09bd5083be14",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "0",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.03"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "3ca84c2a-8d0c-4017-a713-b19c86496537",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "0",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.03"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "ce6eba10-d57e-4a83-8b71-862089b047cf",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "0",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.03"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "0f0a292a-f85a-448f-9c98-5ae5252510cf",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "0",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.03"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "d622097c-7ae5-4acd-953c-dc0b61dc0440",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "0",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.03"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "37d1fe07-5ade-465c-b67f-e4dc71f4e586",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Scan Mode": "0",
+                        "Scan Range (V)": "1.2",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Read Count": "10",
+                        "Scan Step Size (V)": "0.03"
+                    }
+                }
+            ]
+        },
+        "315d778a-c5fc-44e1-bdfa-b804662a53d9": {
+            "trial_name": "MPPT Repeat",
+            "trial": [
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "02e4464c-c597-4be9-9b41-2d2bb4c4314e",
+                    "trial_params": {
+                        "Scan Range (V)": "1.2",
+                        "Scan Step Size (V)": "0.03",
+                        "Scan Read Count": "10",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Mode": "1",
+                        "Cell Area (mm^2)": "0.128"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "93c613f0-d39a-457a-bf62-c1e0965f76bf",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "100",
+                        "Measurement Interval (ms)": "1000",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.85",
+                        "Step Size (V)": "0.005",
+                        "Time Param": "mins",
+                        "Total Time": "1"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "19f50d1b-cf87-405f-bb70-924a8c9040e7",
+                    "trial_params": {
+                        "Scan Range (V)": "1.2",
+                        "Scan Step Size (V)": "0.03",
+                        "Scan Read Count": "10",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Mode": "1",
+                        "Cell Area (mm^2)": "0.128"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "20a11338-b22c-4f06-b7cb-0a7c99c6f474",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "100",
+                        "Measurement Interval (ms)": "1000",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.85",
+                        "Step Size (V)": "0.005",
+                        "Time Param": "mins",
+                        "Total Time": "1"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "254d6585-8242-40b1-be68-1a3488d8483f",
+                    "trial_params": {
+                        "Scan Range (V)": "1.2",
+                        "Scan Step Size (V)": "0.03",
+                        "Scan Read Count": "10",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Mode": "1",
+                        "Cell Area (mm^2)": "0.128"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "c50841a2-49e9-429c-a43e-fa7e798b0c4a",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "100",
+                        "Measurement Interval (ms)": "1000",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.85",
+                        "Step Size (V)": "0.005",
+                        "Time Param": "mins",
+                        "Total Time": "1"
+                    }
+                },
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "a94e7f33-56ab-4231-9cd8-a050915e36ce",
+                    "trial_params": {
+                        "Scan Range (V)": "1.2",
+                        "Scan Step Size (V)": "0.03",
+                        "Scan Read Count": "10",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Mode": "1",
+                        "Cell Area (mm^2)": "0.128"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "e06453ff-5f5e-4bce-b357-b15fa81ce7aa",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "100",
+                        "Measurement Interval (ms)": "1000",
+                        "Measurements Per Step": "1000",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.85",
+                        "Step Size (V)": "0.005",
+                        "Time Param": "mins",
+                        "Total Time": "1"
+                    }
+                }
+            ]
+        },
+        "1a0cc7a7-e749-417b-bec0-b66e9db620ae": {
+            "trial_name": "Long MPPT",
+            "trial": [
+                {
+                    "trial_type": "Scan",
+                    "trial_id": "6d2c33e5-d4be-46ed-b32a-58ee4957666d",
+                    "trial_params": {
+                        "Scan Range (V)": "1.2",
+                        "Scan Step Size (V)": "0.03",
+                        "Scan Read Count": "10",
+                        "Scan Rate (mV/s)": "50",
+                        "Scan Mode": "1",
+                        "Cell Area (mm^2)": "0.128"
+                    }
+                },
+                {
+                    "trial_type": "Mppt",
+                    "trial_id": "ece359ac-074b-4471-a054-3e23e181dd56",
+                    "trial_params": {
+                        "Cell Area (mm^2)": "0.128",
+                        "Settling Time (ms)": "100",
+                        "Measurement Interval (ms)": "1000",
+                        "Measurements Per Step": "500",
+                        "Starting Voltage (V)": "0.50",
+                        "Starting Voltage Multiplier (%)": "0.85",
+                        "Step Size (V)": "0.003",
+                        "Time Param": "hrs",
+                        "Total Time": "30000"
+                    }
+                }
+            ]
         }
     },
     "email_settings": {

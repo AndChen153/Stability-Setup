@@ -1,7 +1,6 @@
 # constants.py
 from enum import Enum
 
-
 class Mode(Enum):
     STOP = 0
     SCAN = 1
@@ -10,82 +9,63 @@ class Mode(Enum):
     PLOTTER = 4
 
 class Constants:
-    time_param = "Measurement Time"
-    light_mode_text = "Light"
-    dark_mode_text = "Dark"
+    time_param = "Total Time"
+    time_unit = "Time Param"
+    light_mode_text = "1"
+    dark_mode_text = "0"
     scan_mode_param = "Scan Mode"
-    pages = {
+    mppt_voltage_range_param = "Starting Voltage (V)"
+    run_modes = {
         Mode.SCAN: "Scan",
-        Mode.MPPT: "MPPT",
-        Mode.PLOTTER: "Graph Viewer",
-        Mode.LOGGER: "Log Viewer"
+        Mode.MPPT: "Mppt",
     }
-    right_modes = [Mode.PLOTTER, Mode.LOGGER]
-    left_modes = [Mode.SCAN, Mode.MPPT]
-    common_params = ["Trial Name", "Email for Notification"]
-    common_defaults = ["", ""]
+    arduino_commands = {
+        Mode.SCAN: "scan",
+        Mode.MPPT: "mppt",
+    }
+    arduino_param_translate_scan = {
+        "Scan Range (V)":1,
+        "Scan Step Size (V)":2,
+        "Scan Read Count":3,
+        "Scan Rate (mV/s)":4,
+        scan_mode_param:5,
+    }
+    arduino_param_translate_mppt = {
+        mppt_voltage_range_param:1,
+        "Step Size (V)":2,
+        time_param:3,
+        "Measurements Per Step":4,
+        "Settling Time (ms)":5,
+        "Measurement Interval (ms)":6,
+    }
+    translation_dict = {
+        Mode.SCAN : arduino_param_translate_scan,
+        Mode.MPPT : arduino_param_translate_mppt,
+    }
+    run_modes_reversed = {
+        "Scan": Mode.SCAN,
+        "Mppt": Mode.MPPT,
+    }
     params = {
-        Mode.SCAN: [
-            "Scan Range (V)",
-            "Scan Step Size (V)",
-            "Cell Area (mm^2)",
-            "Scan Read Count",
-            "Scan Rate (mV/s)",
-            scan_mode_param,
-        ],
-        Mode.MPPT: [
-            "Starting Voltage (V)",
-            "Step Size (V)",
-            "Cell Area (mm^2)",
-            "Measurements Per Step",
-            "Measurement Delay (ms)",
-            time_param,
-        ],
-        Mode.PLOTTER: ["Data Location"],
+        Mode.SCAN: {
+            "Scan Range (V)":"1.2",
+            "Scan Step Size (V)":"0.03",
+            "Scan Read Count":"10",
+            "Scan Rate (mV/s)":"50",
+            scan_mode_param:light_mode_text,
+            "Cell Area (mm^2)":"0.128",
+        },
+        Mode.MPPT: {
+            "Starting Voltage (V)": "0.50",
+            "Starting Voltage Multiplier (%)": "0.85",
+            "Step Size (V)": "0.005",
+            time_param: "60",
+            "Measurements Per Step": "100",
+            "Settling Time (ms)": "300",
+            "Measurement Interval (ms)": "200",
+            "Cell Area (mm^2)": "0.128",
+            time_unit: "mins"
+       },
     }
-    defaults = {
-        Mode.SCAN: [
-            "1.2",
-            "0.03",
-            "0.128",
-            "5",
-            "50",
-            light_mode_text,
-        ],
-        Mode.MPPT: [
-            "0.50",
-            "0.005",
-            "0.128",
-            "10",
-            "1000",
-            "60",
-        ],
-        Mode.PLOTTER: [""],
-    }
-    recommended_values = {
-        Mode.SCAN: [
-            (0, 3.3),
-            (0.001, 0.1),
-            (0, 1000),
-            (5, 10),
-            (25, 100),
-            (0, 1),
-        ],
-        Mode.MPPT: [
-            (0.1, 1.5),
-            (0.001, 0.02),
-            (0, 1000),
-            (10, 20),
-            (500, 2000),
-            (1, 600000),
-        ],
-    }
-    plotModes = [Mode.PLOTTER]
     line_per_save = 20
-    serial_baud_rate = 115200
-    kbPerDataPoint = 0.15
-    plottingKBThreshold = 1000
-    gbCalculationParams = ["Measurement Delay (ms)", time_param]
-    fileTypes = ("scan.csv", "mppt.csv", "compressedmppt.csv")
     unknown_Arduino_ID = -1
-    warning_precursor = "Some of your values are outside of the recommended ranges, running a trial with these values may result in the program crashing or not performing as expected. Press Continue if you would like to proceed. \n"

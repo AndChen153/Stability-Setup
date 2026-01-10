@@ -95,14 +95,14 @@
 //         uint32_t low  = random(0, 0x10000);  // another 16 bits
 //         uniqueID = (high << 16) | low;
 //         EEPROM.put(idAddress, uniqueID);
-//         Serial.print("seed: ");
-//         Serial.println(seed);
-//         Serial.print("Generated and stored new ID: ");
+//         Serial.print(F("seed: "));
+//         Serial.println(F(seed));
+//         Serial.print(F("Generated and stored new ID: "));
 //     }
 
-//     Serial.print("HW_ID:");
-//     Serial.println(uniqueID, HEX);
-//     Serial.println("Arduino Ready");
+//     Serial.print(F("HW_ID:"));
+//     Serial.println(F(uniqueID, HEX));
+//     Serial.println(F("Arduino Ready"));
 // }
 
 // void loop(void)
@@ -112,7 +112,7 @@
 //     {
 
 //         String mode = String(mode_from_pc);
-//         Serial.println("Measurement Started");
+//         Serial.println(F("Measurement Started"));
 
 //         if (mode.equals("scan"))
 //         {
@@ -131,9 +131,9 @@
 //     if (!scan_done)
 //     {
 //         while(!scan_done){
-//             Serial.print("0.4410,1.2,");
-//             Serial.print(fake_voltage);
-//             Serial.println(",-1.4600,1.2002,-1.6400,1.1921,-1.2600,1.1961,-1.3600,1.2018,-1.5800,1.2002,-1.5000,1.1881,-1.4200,1.2001,-1.4400,1");
+//             Serial.print(F("0.4410,1.2,"));
+//             Serial.print(F(fake_voltage));
+//             Serial.println(F(",-1.4600,1.2002,-1.6400,1.1921,-1.2600,1.1961,-1.3600,1.2018,-1.5800,1.2002,-1.5000,1.1881,-1.4200,1.2001,-1.4400,1"));
 //             if (fake_voltage > 1.2) {
 //                 fake_direction = false;
 //             } else if (fake_voltage < 0) {
@@ -148,20 +148,20 @@
 
 //             delay(300);
 //         }
-//         Serial.println("Done!");
+//         Serial.println(F("Done!"));
 
 
 //     }
 //     else if (!mppt_done)
 //     {
-//         Serial.println("not Implemented");
+//         Serial.println(F("not Implemented"));
 //         mppt_done = true;
-//         Serial.println("Done!");
+//         Serial.println(F("Done!"));
 
 //     }
 //     else if (!constant_voltage_done)
 //     {
-//         Serial.println("not Implemented");
+//         Serial.println(F("not Implemented"));
 //         constant_voltage_done = true;
 //     }
 // }
