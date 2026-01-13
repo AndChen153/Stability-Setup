@@ -20,6 +20,8 @@ The system is composed of custom-designed hardware to ensure reliable and repeat
 
 This project uses **Conda** to manage dependencies. Ensure you have [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed.
 
+*Note that this app has only been tested on Windows environments and certain libraries used are not available in other OS.
+
 #### Requirements:
 - Python 3.9–3.11 (miniconda recommended)
 - Windows OS (tested on Windows 10/11)
@@ -33,11 +35,8 @@ git clone https://github.com/your-org/stability-setup.git
 cd stability-setup
 
 # Create and activate a Conda environment
-conda create -n stabilitySetup python=3.10
+conda env create -f environment.yml
 conda activate stabilitySetup
-
-# Install dependencies
-pip install -r requirements.txt
 
 # Run the app
 python app.py
