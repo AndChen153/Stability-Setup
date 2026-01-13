@@ -35,7 +35,12 @@ git clone https://github.com/your-org/stability-setup.git
 cd stability-setup
 
 # Create and activate a Conda environment
+# Use environment.yml for windows specific environment at time of coding
 conda env create -f environment.yml
+
+# use environment_general.yml for up to date packages and more flexible package installation
+conda env create -f environment_general.yml
+
 conda activate stabilitySetup
 
 # Run the app
